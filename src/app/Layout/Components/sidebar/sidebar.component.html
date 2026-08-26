@@ -1,0 +1,107 @@
+<div [class]="'app-sidebar sidebar-shadow ' + (config$ | async)?.sidebarTheme" (mouseenter)="onSidebarMouseEnter()"
+  (mouseleave)="onSidebarMouseLeave()">
+  <div class="app-header__logo d-flex align-items-center justify-content-between px-3" style="height: 65px; border-bottom: 1px solid rgba(0, 0, 0, 0.06); background: #ffffff;">
+    <div class="d-flex align-items-center">
+      <!-- Soft lavender logo icon square -->
+      <div class="d-flex align-items-center justify-content-center me-2" style="width: 36px; height: 36px; border-radius: 8px; background: #f3e8ff; border: 1px solid #e9d5ff; color: #a855f7;">
+        <i class="pe-7s-like" style="font-size: 1.15rem; color: #a855f7;"></i>
+      </div>
+      <!-- Brand Name -->
+      <span class="font-weight-bold text-dark" style="font-family: 'Poppins', sans-serif; font-size: 1.15rem; font-weight: 700;">HealthAdmin</span>
+    </div>
+    <!-- Hamburger button -->
+    <button (click)="toggleSidebar()" class="btn btn-link text-muted p-0 border-0 bg-transparent" style="font-size: 1.3rem; outline: none;">
+      <i class="pe-7s-menu"></i>
+    </button>
+  </div>
+  <div class="app-sidebar-content" style="height: calc(100% - 75px) !important;">
+    <div class="app-sidebar-scroll">
+      <div class="sidebar-scrollbar">
+        <div class="v-sidebar-menu vsm-default">
+          <div class="vsm-list">
+
+            @for (item of menuStructure; track $index) {
+            <!-- Headers -->
+            @if (item.type === 'header') {
+            <div class="vsm-header">{{ item.title }}</div>
+            }
+
+            <!-- Direct Links -->
+            @if (item.type === 'link') {
+            <div class="vsm-item">
+              <a [routerLink]="item.route" routerLinkActive="active-item" [routerLinkActiveOptions]="{exact: true}" class="vsm-link" (click)="selectDashboard()">
+                <i class="vsm-icon" [class]="item.icon"></i>
+                <span class="vsm-title">{{ item.title }}</span>
+              </a>
+            </div>
+            }
+
+            <!-- External Links -->
+            @if (item.type === 'ext-link') {
+            <div class="vsm-item">
+              <a [href]="item.url" target="_blank" rel="noopener" class="vsm-link" (click)="onNavigate()">
+                <i class="vsm-icon" [class]="item.icon"></i>
+                <span class="vsm-title">
+                  {{ item.title }}
+                  @if (item.badge) {
+                  <span class="badge rounded-pill bg-primary ms-1">{{ item.badge }}</span>
+                  }
+                </span>
+              </a>
+            </div>
+            }
+
+            <!-- Submenus (Dropdowns) -->
+            @if (item.type === 'submenu') {
+            <div class="vsm-item has-sub" [class.vsm-open]="openMenus.includes(item.menuId)">
+              <a href="javascript:void(0);" class="vsm-link" (click)="toggleSubmenu(item.menuId)">
+                <i class="vsm-icon" [class]="item.icon"></i>
+                <span class="vsm-title">{{ item.title }}</span>
+                <i class="vsm-arrow"></i>
+              </a>
+              <div class="vsm-dropdown" [class.vsm-dropdown-show]="openMenus.includes(item.menuId)">
+                <div class="vsm-list">
+                  <div class="vsm-header">{{ item.title }}</div>
+                  @for (subItem of item.children; track $index) {
+                  <div class="vsm-item">
+                    <a [routerLink]="subItem.route" [class.active-item]="activeSubItem === subItem.title" class="vsm-link"
+                      (click)="selectSubItem(subItem.title)">
+                      <span class="vsm-title">{{ subItem.title }}</span>
+                    </a>
+                  </div>
+                  }
+                </div>
+              </div>
+            </div>
+            }
+            }
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sidebar Footer Profile per User Request -->
+  <div class="sidebar-profile-footer d-flex align-items-center justify-content-between p-3" style="border-top: 1px solid rgba(0, 0, 0, 0.08); background: #ffffff; height: 75px; position: absolute; bottom: 0; left: 0; right: 0; z-index: 10;">
+    <div class="d-flex align-items-center">
+      <!-- Avatar with letter A and soft light-blue background -->
+      <div class="rounded-circle d-flex align-items-center justify-content-center font-weight-bold" style="width: 44px; height: 44px; background: #e0f2fe; border: 1px solid #bae6fd; color: #0284c7; font-size: 1.15rem; font-family: 'Poppins', sans-serif;">
+        A
+      </div>
+      <!-- User Info -->
+      <div class="d-flex flex-column ms-2" style="font-family: 'Poppins', sans-serif;">
+        <span class="font-weight-bold text-dark" style="font-size: 0.95rem; line-height: 1.2;">Admin User</span>
+        <span class="text-muted" style="font-size: 0.78rem;">admin&#64;health.com</span>
+      </div>
+    </div>
+    <!-- Logout button with exit arrow icon -->
+    <button (click)="logout()" class="btn btn-link text-muted p-0 border-0 bg-transparent ms-2" style="font-size: 1.3rem; outline: none; display: flex; align-items: center;" title="Sign Out">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6c757d" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.85; transition: opacity 0.2s;">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+        <polyline points="16 17 21 12 16 7"></polyline>
+        <line x1="21" y1="12" x2="9" y2="12"></line>
+      </svg>
+    </button>
+  </div>
+</div>

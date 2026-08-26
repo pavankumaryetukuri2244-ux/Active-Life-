@@ -1,0 +1,24 @@
+<div [ngClass]="{
+'closed-sidebar' : globals.toggleSidebar(),
+'closed-sidebar-md' : globals.toggleSidebarMobile(),
+'closed-sidebar-open': globals.sidebarHover() || globals.toggleSidebarMobile(),
+'header-menu-open' : globals.toggleHeaderMobile(),
+'fixed-footer' : globals.toggleFixedFooter()
+}" [class]="'app-container app-theme-white'">
+  <app-sidebar></app-sidebar>
+  <div class="app-main__outer">
+    @if (showToast) {
+    <div class="login-toast shadow-lg d-flex align-items-center animate-slide-in" style="position: fixed; top: 30px; right: 30px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 12px 20px; z-index: 9999; font-family: 'Inter', sans-serif; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;">
+      <i class="pe-7s-check" style="font-size: 1.25rem; font-weight: bold; color: #16a34a; margin-right: 8px;"></i>
+      <span style="color: #16a34a; font-weight: 600; font-size: 0.85rem; letter-spacing: 0.2px;">Log In Sucesfully</span>
+    </div>
+    }
+    <div class="app-main__inner">
+      <div class="router-outlet-container">
+        <router-outlet #o="outlet"></router-outlet>
+      </div>
+    </div>
+    <app-footer></app-footer>
+  </div>
+  <div class="sidebar-menu-overlay" (click)="toggleSidebarMobile()"></div>
+</div>

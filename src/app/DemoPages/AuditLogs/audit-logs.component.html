@@ -1,0 +1,169 @@
+<div class="app-page-title mb-4 bg-transparent p-0 shadow-none border-0">
+  <div class="page-title-wrapper d-flex align-items-center justify-content-between">
+    <div class="page-title-heading">
+      <div class="d-flex flex-column">
+        <h1 class="font-weight-bold m-0" style="font-family: 'Outfit', sans-serif; font-size: 2rem; color: #1e293b;">
+          Audit Logs
+        </h1>
+        <div class="page-title-subheading text-muted mt-1" style="font-size: 0.95rem; font-family: 'Inter', sans-serif;">
+          Track and monitor all system activities
+        </div>
+      </div>
+    </div>
+    <div class="page-title-actions">
+      <button class="btn font-weight-bold d-flex align-items-center gap-2" style="background: #00a86b; color: #ffffff; border-radius: 8px; padding: 10px 20px; font-size: 0.9rem; border: none; font-family: 'Poppins', sans-serif; box-shadow: 0 4px 12px rgba(0, 168, 107, 0.2);">
+        <i class="pe-7s-download" style="font-size: 1.1rem; font-weight: bold; margin-right: 4px;"></i>
+        <span>Export Logs</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Four Stat Cards -->
+<div class="row mb-4">
+  <!-- Card 1: Total Logs -->
+  <div class="col-sm-6 col-md-6 col-xl-3 mb-3">
+    <div class="card border-0" style="border-radius: 12px; background: #f0f4ff; border: 1px solid #dbeafe;">
+      <div class="card-body p-4">
+        <span style="font-size: 0.85rem; font-family: 'Inter', sans-serif; font-weight: 500; color: #6b7280;">Total Logs</span>
+        <h2 class="font-weight-bold mt-2 mb-0" style="font-family: 'Outfit', sans-serif; font-size: 2.2rem; font-weight: 700; color: #2563eb;">
+          45,234
+        </h2>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 2: Today's Activity -->
+  <div class="col-sm-6 col-md-6 col-xl-3 mb-3">
+    <div class="card border-0" style="border-radius: 12px; background: #f1fbf4; border: 1px solid #dcfce7;">
+      <div class="card-body p-4">
+        <span style="font-size: 0.85rem; font-family: 'Inter', sans-serif; font-weight: 500; color: #6b7280;">Today's Activity</span>
+        <h2 class="font-weight-bold mt-2 mb-0" style="font-family: 'Outfit', sans-serif; font-size: 2.2rem; font-weight: 700; color: #16a34a;">
+          342
+        </h2>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 3: Failed Actions -->
+  <div class="col-sm-6 col-md-6 col-xl-3 mb-3">
+    <div class="card border-0" style="border-radius: 12px; background: #fff5f5; border: 1px solid #fee2e2;">
+      <div class="card-body p-4">
+        <span style="font-size: 0.85rem; font-family: 'Inter', sans-serif; font-weight: 500; color: #6b7280;">Failed Actions</span>
+        <h2 class="font-weight-bold mt-2 mb-0" style="font-family: 'Outfit', sans-serif; font-size: 2.2rem; font-weight: 700; color: #e53e3e;">
+          23
+        </h2>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 4: Active Admins -->
+  <div class="col-sm-6 col-md-6 col-xl-3 mb-3">
+    <div class="card border-0" style="border-radius: 12px; background: #f3f0ff; border: 1px solid #f3e8ff;">
+      <div class="card-body p-4">
+        <span style="font-size: 0.85rem; font-family: 'Inter', sans-serif; font-weight: 500; color: #6b7280;">Active Admins</span>
+        <h2 class="font-weight-bold mt-2 mb-0" style="font-family: 'Outfit', sans-serif; font-size: 2.2rem; font-weight: 700; color: #a855f7;">
+          12
+        </h2>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Filters & Search Card (Separate box) -->
+<div class="row mb-4">
+  <div class="col-md-12">
+    <div class="card border-0 shadow-sm" style="border-radius: 16px; background: #ffffff; border: 1px solid #eef2f6;">
+      <div class="card-body p-4">
+        <div class="d-flex flex-column gap-3">
+          <!-- Search Bar -->
+          <div class="position-relative mb-3">
+            <i class="pe-7s-search position-absolute text-muted" style="left: 16px; top: 13px; font-size: 1.25rem;"></i>
+            <input type="text" 
+                   (input)="onSearch($event)"
+                   placeholder="Search logs by action, admin, or ID..." 
+                   class="form-control border-0"
+                   style="height: 46px; border-radius: 10px; background: #f3f4f6; font-size: 0.95rem; font-family: 'Inter', sans-serif; padding-left: 45px !important;">
+          </div>
+          <!-- Filter Dropdowns -->
+          <div class="d-flex flex-wrap">
+            <!-- Modules Select dropdown -->
+            <select (change)="onModuleChange($event)" 
+                    class="form-select border-0 me-3 px-3 py-2"
+                    style="height: 42px; border-radius: 8px; background: #f3f4f6; font-size: 0.9rem; font-family: 'Inter', sans-serif; color: #374151; font-weight: 500; min-width: 160px; outline: none; cursor: pointer;">
+              <option *ngFor="let mod of modulesList" [value]="mod">{{ mod }}</option>
+            </select>
+
+            <!-- Status Select dropdown -->
+            <select (change)="onStatusChange($event)" 
+                    class="form-select border-0 px-3 py-2"
+                    style="height: 42px; border-radius: 8px; background: #f3f4f6; font-size: 0.9rem; font-family: 'Inter', sans-serif; color: #374151; font-weight: 500; min-width: 140px; outline: none; cursor: pointer;">
+              <option *ngFor="let stat of statusesList" [value]="stat">{{ stat }}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Table Card (Separate container) -->
+<div class="row">
+  <div class="col-md-12">
+    <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px; background: #ffffff; border: 1px solid #eef2f6; overflow: hidden;">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0" style="font-size: 0.9rem; font-family: 'Inter', sans-serif;">
+          <thead style="background: #f8fafc; border-bottom: 1px solid #eef2f6;">
+            <tr>
+              <th class="text-uppercase text-muted border-0 py-3 ps-4" style="font-size: 0.75rem; font-weight: 600; letter-spacing: 0.5px;">Log ID</th>
+              <th class="text-uppercase text-muted border-0 py-3" style="font-size: 0.75rem; font-weight: 600; letter-spacing: 0.5px;">Admin</th>
+              <th class="text-uppercase text-muted border-0 py-3" style="font-size: 0.75rem; font-weight: 600; letter-spacing: 0.5px;">Action</th>
+              <th class="text-uppercase text-muted border-0 py-3" style="font-size: 0.75rem; font-weight: 600; letter-spacing: 0.5px;">Module</th>
+              <th class="text-uppercase text-muted border-0 py-3" style="font-size: 0.75rem; font-weight: 600; letter-spacing: 0.5px;">Timestamp</th>
+              <th class="text-uppercase text-muted border-0 py-3" style="font-size: 0.75rem; font-weight: 600; letter-spacing: 0.5px;">IP Address</th>
+              <th class="text-uppercase text-muted border-0 py-3" style="font-size: 0.75rem; font-weight: 600; letter-spacing: 0.5px;">Status</th>
+              <th class="text-uppercase text-muted border-0 py-3 text-end pe-4" style="font-size: 0.75rem; font-weight: 600; letter-spacing: 0.5px; width: 80px;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let log of filteredLogs" style="border-bottom: 1px solid #f1f5f9;">
+              <td class="text-dark font-weight-normal py-3 ps-4" style="font-size: 0.9rem;">{{ log.id }}</td>
+              <td class="py-3">
+                <div class="d-flex flex-column">
+                  <span class="font-weight-bold text-dark" style="font-size: 0.95rem; line-height: 1.2;">{{ log.adminName }}</span>
+                  <span class="text-muted" style="font-size: 0.8rem;">{{ log.adminId }}</span>
+                </div>
+              </td>
+              <td class="text-dark py-3" style="font-weight: 500;">{{ log.action }}</td>
+              <td class="py-3">
+                <span class="badge" style="border-radius: 6px; font-size: 0.78rem; padding: 6px 10px; border: 1px solid #cbd5e1; background: #ffffff; color: #374151; font-weight: 500;">
+                  {{ log.module }}
+                </span>
+              </td>
+              <td class="text-muted py-3">{{ log.timestamp }}</td>
+              <td class="text-muted py-3">{{ log.ipAddress }}</td>
+              <td class="py-3">
+                <span class="badge font-weight-bold px-2.5 py-1.5" 
+                      [style.background]="log.status === 'Success' ? '#e6fcf5' : '#fff0f6'"
+                      [style.color]="log.status === 'Success' ? '#0ca678' : '#c2255c'"
+                      style="border-radius: 6px; font-size: 0.78rem; padding: 6px 10px;">
+                  {{ log.status }}
+                </span>
+              </td>
+              <td class="py-3 text-end pe-4">
+                <button class="btn btn-link text-muted p-0 border-0 bg-transparent" style="font-size: 1.25rem; outline: none;">
+                  ⋮
+                </button>
+              </td>
+            </tr>
+            <tr *ngIf="filteredLogs.length === 0">
+              <td colspan="8" class="text-center text-muted py-5 ps-4 pe-4" style="font-size: 1rem;">
+                No logs found matching your search and filter criteria.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

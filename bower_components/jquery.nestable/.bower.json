@@ -1,0 +1,22 @@
+{
+  "name": "jquery.nestable",
+  "main": "jquery.nestable.js",
+  "authors": [
+    "Victor <v.istrati@developmentaid.org>"
+  ],
+  "description": "",
+  "keywords": [
+    "table"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/pmt-devs/nestable",
+  "_release": "c06942484f",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "c06942484f7ef3b674de571a65e57a5d78422792"
+  },
+  "_source": "https://github.com/pmt-devs/nestable.git",
+  "_target": "*",
+  "_originalSource": "jquery.nestable"
+}

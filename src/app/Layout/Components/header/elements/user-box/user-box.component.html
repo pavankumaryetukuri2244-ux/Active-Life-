@@ -1,0 +1,29 @@
+<div class="user-box-container d-flex align-items-center">
+  <div ngbDropdown placement="bottom-right" class="d-inline-block">
+    <button type="button" class="btn btn-profile-trigger d-flex align-items-center p-1" ngbDropdownToggle>
+      
+      <!-- Avatar Wrapper with Active Status indicator -->
+      <div class="avatar-wrapper position-relative me-2">
+        <img width="40" height="40" src="./assets/images/avatars/4.jpg" alt="User Profile" class="rounded-circle profile-img">
+        <span class="status-indicator status-online position-absolute bottom-0 end-0 rounded-circle border border-2 border-white"></span>
+      </div>
+      
+      <!-- Down Chevron Arrow -->
+      <i class="fa-solid fa-chevron-down chevron-icon text-muted small ms-1"></i>
+    </button>
+
+    <!-- Custom Premium Dropdown Menu -->
+    <div ngbDropdownMenu class="dropdown-menu-custom shadow border-0 mt-2 p-2">
+
+
+      <!-- Action Button -->
+      <button type="button" class="dropdown-item logout-item d-flex align-items-center justify-content-between p-2-5 rounded-3 font-poppins" (click)="logout()">
+        <span class="d-flex align-items-center">
+          <i class="fa-solid fa-power-off text-danger me-2-5"></i>
+          <span>Sign Out</span>
+        </span>
+        <i class="fa-solid fa-chevron-right arrow-right text-muted small opacity-50"></i>
+      </button>
+    </div>
+  </div>
+</div>
