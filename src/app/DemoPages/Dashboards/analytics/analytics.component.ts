@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { ChartConfiguration } from 'chart.js';
 import { UserinfoService } from '../../../services/userinfo.service';
+import { WebapiService } from '../../../services/webapi.service';
 
 @Component({
   selector: 'app-analytics',
@@ -8,28 +9,74 @@ import { UserinfoService } from '../../../services/userinfo.service';
   standalone: false
 })
 export class AnalyticsComponent implements OnInit {
+  totalUsers = 0;
 
-  constructor(public userInfo: UserinfoService) { }
+  constructor(
+    public userInfo: UserinfoService,
+    private webApiService: WebapiService,
+    private cdr: ChangeDetectorRef
+  ) { }
 
-  ngOnInit(): void { }
+  ngOnInit(): void {
+    this.loadStatistics();
+  }
 
-  // 1. User Registrations Line Chart
+  loadStatistics(): void {
+    this.webApiService.GetDashboardStatistics().subscribe({
+      next: (response: any) => {
+        if (response && response.success) {
+          this.totalUsers = response.data.totalUsers;
+          
+          if (response.data.userRegistrations) {
+            const labels = response.data.userRegistrations.map((item: any) => item.month);
+            const counts = response.data.userRegistrations.map((item: any) => item.count);
+            
+            this.userRegData = {
+              labels: labels,
+              datasets: [
+                {
+                  label: 'Users',
+                  data: counts,
+                  borderColor: '#3b82f6',
+                  backgroundColor: 'rgba(59, 130, 246, 0.12)',
+                  borderWidth: 2.5,
+                  fill: 'origin',
+                  tension: 0,
+                  pointBackgroundColor: '#ffffff',
+                  pointBorderColor: '#3b82f6',
+                  pointBorderWidth: 2.5,
+                  pointRadius: 5,
+                  pointHoverRadius: 7
+                }
+              ]
+            };
+          }
+          this.cdr.detectChanges();
+        }
+      },
+      error: (error: any) => {
+        console.error('Error fetching dashboard statistics:', error);
+      }
+    });
+  }
+
+  // 1. User Registrations Line Chart (Default Placeholder matching mockup curve)
   public userRegData: ChartConfiguration<'line'>['data'] = {
     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
     datasets: [
       {
         label: 'Users',
-        data: [6500, 8500, 10000, 9200, 11500, 12459],
+        data: [10, 14, 17, 15, 19, 21],
         borderColor: '#3b82f6',
-        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-        borderWidth: 3,
-        fill: true,
-        tension: 0.4,
-        pointBackgroundColor: '#fff',
+        backgroundColor: 'rgba(59, 130, 246, 0.12)',
+        borderWidth: 2.5,
+        fill: 'origin',
+        tension: 0,
+        pointBackgroundColor: '#ffffff',
         pointBorderColor: '#3b82f6',
-        pointBorderWidth: 2,
-        pointRadius: 4,
-        pointHoverRadius: 6
+        pointBorderWidth: 2.5,
+        pointRadius: 5,
+        pointHoverRadius: 7
       }
     ]
   };
@@ -47,6 +94,9 @@ export class AnalyticsComponent implements OnInit {
         grid: {
           display: false
         },
+        border: {
+          display: false
+        },
         ticks: {
           color: '#9ca3af',
           font: {
@@ -57,14 +107,14 @@ export class AnalyticsComponent implements OnInit {
       },
       y: {
         grid: {
-          color: '#f3f4f6'
+          color: '#f1f5f9',
+          drawTicks: false
+        },
+        border: {
+          display: false
         },
         ticks: {
-          color: '#9ca3af',
-          font: {
-            family: 'Outfit, sans-serif',
-            size: 11
-          }
+          display: false
         }
       }
     }

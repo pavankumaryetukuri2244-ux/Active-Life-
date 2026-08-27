@@ -1,17 +1,32 @@
 import { Component, OnInit } from '@angular/core';
+import { WebapiService } from '../../services/webapi.service';
 
 interface User {
   id: string;
-  name: string;
-  email: string;
+  fullName: string | null;
+  email: string | null;
   contact: string;
-  status: 'Active' | 'Inactive' | 'Blocked';
-  familyMembers: number;
+  status: 'ACTIVE' | 'INACTIVE' | 'BLOCKED';
+  familyMembersCount: number;
   created: string;
-  initials: string;
-  initialsBg: string;
-  initialsColor: string;
 }
+
+interface UserStats {
+  totalUsers: number;
+  activeUsers: number;
+  inactiveUsers: number;
+  blockedUsers: number;
+}
+
+// Avatar gradient palette matching Figma design
+const AVATAR_GRADIENTS = [
+  'linear-gradient(135deg, #818CF8 0%, #6366F1 100%)',
+  'linear-gradient(135deg, #60A5FA 0%, #6366F1 100%)',
+  'linear-gradient(135deg, #A78BFA 0%, #8B5CF6 100%)',
+  'linear-gradient(135deg, #818CF8 0%, #4F46E5 100%)',
+  'linear-gradient(135deg, #C084FC 0%, #A855F7 100%)',
+  'linear-gradient(135deg, #6366F1 0%, #7C3AED 100%)'
+];
 
 @Component({
   selector: 'app-user-management',
@@ -19,64 +34,191 @@ interface User {
   standalone: false
 })
 export class UserManagementComponent implements OnInit {
-  
-  usersList: User[] = [
-    { id: 'U001', name: 'Sarah Johnson', email: 'sarah.j@email.com', contact: '+1 234-567-8901', status: 'Active', familyMembers: 4, created: '2026-01-15', initials: 'SJ', initialsBg: 'rgba(59, 130, 246, 0.15)', initialsColor: '#3b82f6' },
-    { id: 'U002', name: 'Michael Chen', email: 'm.chen@email.com', contact: '+1 234-567-8902', status: 'Active', familyMembers: 3, created: '2026-02-10', initials: 'MC', initialsBg: 'rgba(139, 92, 246, 0.15)', initialsColor: '#8b5cf6' },
-    { id: 'U003', name: 'Emma Wilson', email: 'emma.w@email.com', contact: '+1 234-567-8903', status: 'Inactive', familyMembers: 2, created: '2026-01-28', initials: 'EW', initialsBg: 'rgba(20, 184, 166, 0.15)', initialsColor: '#14b8a6' },
-    { id: 'U004', name: 'James Brown', email: 'james.b@email.com', contact: '+1 234-567-8904', status: 'Active', familyMembers: 5, created: '2026-03-05', initials: 'JB', initialsBg: 'rgba(59, 130, 246, 0.15)', initialsColor: '#1d4ed8' },
-    { id: 'U005', name: 'Patricia Davis', email: 'p.davis@email.com', contact: '+1 234-567-8905', status: 'Blocked', familyMembers: 1, created: '2026-02-18', initials: 'PD', initialsBg: 'rgba(239, 68, 68, 0.15)', initialsColor: '#ef4444' },
-    { id: 'U006', name: 'Robert Miller', email: 'r.miller@email.com', contact: '+1 234-567-8906', status: 'Active', familyMembers: 3, created: '2026-03-01', initials: 'RM', initialsBg: 'rgba(245, 158, 11, 0.15)', initialsColor: '#f59e0b' }
-  ];
 
-  filteredUsers: User[] = [];
-  searchQuery: string = '';
-  activeTab: 'All' | 'Active' | 'Inactive' | 'Blocked' = 'All';
-  selectedUserId: string | null = null;
+  stats: UserStats = { totalUsers: 0, activeUsers: 0, inactiveUsers: 0, blockedUsers: 0 };
+
+  usersList: User[] = [];
+  isLoading = false;
+  errorMessage = '';
+
+  // Pagination
+  currentPage = 0;
+  pageSize = 10;
+  totalElements = 0;
+  totalPages = 0;
+
+  // Filters
+  searchQuery = '';
+  activeTab: 'ALL' | 'ACTIVE' | 'INACTIVE' | 'BLOCKED' = 'ALL';
+  sortBy = 'id';
+  sortDirection = 'ASC';
+
+  openDropdownId: string | null = null;
+
+  private filterTimer: any;
+
+  constructor(private api: WebapiService) {
+    // Close dropdown when clicking outside
+    document.addEventListener('click', () => this.closeDropdown());
+  }
+
+  toggleDropdown(userId: string, event: Event) {
+    event.stopPropagation();
+    this.openDropdownId = this.openDropdownId === userId ? null : userId;
+  }
+
+  closeDropdown() {
+    this.openDropdownId = null;
+  }
+
+  onAction(action: string, user: User) {
+    console.log(`Action: ${action} on User ID: ${user.id}`);
+    if (action === 'inactive' || action === 'block' || action === 'blocked') {
+      const apiAction = action === 'block' ? 'blocked' : action;
+      this.isLoading = true;
+      this.api.UpdateUserStatus(Number(user.id), apiAction).subscribe({
+        next: (res: any) => {
+          if (res?.success) {
+            this.applyFilters();
+          } else {
+            this.errorMessage = res?.message || 'Failed to update user status.';
+            this.isLoading = false;
+          }
+        },
+        error: (err: any) => {
+          console.error('Update status error:', err);
+          this.errorMessage = 'Failed to update user status. Please try again.';
+          this.isLoading = false;
+        }
+      });
+    }
+  }
 
   ngOnInit() {
-    this.filterUsers();
+    this.loadUsers();
   }
 
-  selectRow(userId: string) {
-    this.selectedUserId = userId;
+  loadUsers() {
+    this.applyFilters();
   }
 
-  setTab(tab: 'All' | 'Active' | 'Inactive' | 'Blocked') {
-    this.activeTab = tab;
-    this.filterUsers();
+  /** Filter/search/paginate call */
+  applyFilters(showLoader = true) {
+    if (showLoader) {
+      this.isLoading = true;
+    }
+    this.errorMessage = '';
+
+    const body: any = {
+      page: this.currentPage,
+      size: this.pageSize,
+      sortBy: this.sortBy,
+      sortDirection: this.sortDirection,
+      status: this.activeTab
+    };
+
+    if (this.searchQuery.trim()) body['search'] = this.searchQuery.trim();
+
+    this.api.GetUsersFiltered(body).subscribe({
+      next: (res: any) => {
+        this.handleResponse(res);
+      },
+      error: (err: any) => {
+        console.error('Users filter error:', err);
+        this.errorMessage = 'Failed to apply filters. Please try again.';
+        this.isLoading = false;
+      }
+    });
+  }
+
+  private handleResponse(res: any) {
+    if (res?.success) {
+      const d = res.data;
+      this.stats = {
+        totalUsers: d.statistics?.totalUsers ?? 0,
+        activeUsers: d.statistics?.activeUsers ?? 0,
+        inactiveUsers: d.statistics?.inactiveUsers ?? 0,
+        blockedUsers: d.statistics?.blockedUsers ?? 0
+      };
+      const pageData = d.users;
+      const rawContent = pageData?.content ?? [];
+      this.usersList = [...rawContent].sort((a: any, b: any) => {
+        const idA = Number(a.id) || 0;
+        const idB = Number(b.id) || 0;
+        return idA - idB;
+      });
+      this.totalElements = pageData?.totalElements ?? 0;
+      this.totalPages = pageData?.totalPages ?? 0;
+      this.currentPage = pageData?.pageable?.pageNumber ?? 0;
+    }
+    this.isLoading = false;
   }
 
   onSearch(event: any) {
     this.searchQuery = event.target.value;
-    this.filterUsers();
+    this.currentPage = 0;
+    clearTimeout(this.filterTimer);
+    this.filterTimer = setTimeout(() => this.applyFilters(false), 400);
   }
 
-  filterUsers() {
-    this.filteredUsers = this.usersList.filter(user => {
-      const matchesSearch = user.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-                            user.email.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-                            user.id.toLowerCase().includes(this.searchQuery.toLowerCase());
-      
-      const matchesTab = this.activeTab === 'All' || user.status === this.activeTab;
-      
-      return matchesSearch && matchesTab;
-    });
+  setTab(tab: 'ALL' | 'ACTIVE' | 'INACTIVE' | 'BLOCKED') {
+    this.activeTab = tab;
+    this.currentPage = 0;
+    this.applyFilters(false);
   }
 
-  get totalUsersCount() {
-    return this.usersList.length;
+  goToPage(page: number) {
+    if (page < 0 || page >= this.totalPages) return;
+    this.currentPage = page;
+    this.applyFilters(false);
   }
 
-  get activeUsersCount() {
-    return this.usersList.filter(u => u.status === 'Active').length;
+  get pages(): number[] {
+    return Array.from({ length: this.totalPages }, (_, i) => i);
   }
 
-  get inactiveUsersCount() {
-    return this.usersList.filter(u => u.status === 'Inactive').length;
+  /** Generate avatar initials from fullName or contact */
+  getInitials(user: User): string {
+    if (user.fullName) {
+      const parts = user.fullName.trim().split(' ');
+      if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+      return parts[0].substring(0, 2).toUpperCase();
+    }
+    return 'U';
   }
 
-  get blockedUsersCount() {
-    return this.usersList.filter(u => u.status === 'Blocked').length;
+  /** Cycle avatar gradient by user index */
+  getAvatarGradient(index: number): string {
+    return AVATAR_GRADIENTS[index % AVATAR_GRADIENTS.length];
+  }
+
+  formatDate(dateStr: string): string {
+    if (!dateStr) return '-';
+    return dateStr.split('T')[0];
+  }
+
+  formatUserId(id: string): string {
+    const num = Number(id);
+    if (isNaN(num)) return id;
+    return 'U' + id.padStart(3, '0');
+  }
+
+  formatContact(contact: string): string {
+    if (!contact) return '-';
+    // strip leading country code digits if 12+ digits (e.g. 91XXXXXXXXXX → +91 XXXXX XXXXX)
+    if (contact.length >= 12 && contact.startsWith('91')) {
+      const num = contact.slice(2);
+      return `+91 ${num.slice(0, 5)} ${num.slice(5)}`;
+    }
+    return contact;
+  }
+
+  getStatusStyle(status: string) {
+    switch (status) {
+      case 'ACTIVE':   return { bg: '#DCFCE7', color: '#16A34A', class: 'um-status-active' };
+      case 'INACTIVE': return { bg: '#FEF3C7', color: '#D97706', class: 'um-status-inactive' };
+      case 'BLOCKED':  return { bg: '#FEE2E2', color: '#DC2626', class: 'um-status-blocked' };
+      default:         return { bg: '#F1F5F9', color: '#64748B', class: '' };
+    }
   }
 }

@@ -1,104 +1,115 @@
-<div class="vh-100 login-bg d-flex align-items-center justify-content-end p-3 p-md-5" style="background-image: url('assets/images/originals/realestate_bg.jpg') !important;">
-  <div class="login-overlay"></div>
+<div class="vh-100 login-bg d-flex flex-column align-items-center justify-content-center p-3">
   
-  <div class="col-12 col-md-8 col-lg-5 col-xl-4 position-relative z-index-2 me-md-4">
-    <!-- Login Card -->
-    <div class="card login-card border-0 shadow-lg rounded-5 overflow-hidden">
-      <div class="card-body p-4 p-md-5 text-center">
-        
-        <!-- Logo Area -->
-        <div class="logo-container mb-4 d-flex align-items-center justify-content-center gap-3">
-          <svg width="45" height="45" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <!-- Rounded Card Background -->
-            <rect x="25" y="15" width="50" height="50" rx="10" fill="#f0f2f5" />
-            
-            <!-- Checkmark 1 (Teal/Green) -->
-            <path d="M33 27L37 31L44 23" stroke="#48cbb5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-            <!-- Line 1 (Dark Slate) -->
-            <rect x="49" y="25" width="16" height="3.5" rx="1.75" fill="#3b4d61" />
-            
-            <!-- Checkmark 2 (Yellow) -->
-            <path d="M33 39L37 43L44 35" stroke="#ffc043" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-            <!-- Line 2 (Dark Slate) -->
-            <rect x="49" y="37" width="16" height="3.5" rx="1.75" fill="#3b4d61" />
+  <!-- Logo & Title Section -->
+  <div class="brand-section mb-4 text-center animate-fade-in">
+    <!-- Heart Icon inside rounded white card -->
+    <div class="logo-box d-inline-flex align-items-center justify-content-center mb-2" 
+         style="width: 58px; height: 58px; border-radius: 16px; background: #ffffff; box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#f43f5e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+      </svg>
+    </div>
+    <!-- Brand Title -->
+    <h2 class="text-white font-weight-bold m-0" style="font-family: 'Poppins', sans-serif; font-size: 1.8rem; font-weight: 700; letter-spacing: -0.3px;">HealthFamily</h2>
+    <p class="text-white-50 m-0" style="font-size: 0.88rem; font-family: 'Inter', sans-serif; opacity: 0.85; letter-spacing: 0.2px;">Admin Portal</p>
+  </div>
 
-            <!-- Checkmark 3 (Orange/Red) -->
-            <path d="M33 51L37 55L44 47" stroke="#f06449" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-            <!-- Line 3 (Dark Slate) -->
-            <rect x="49" y="49" width="10" height="3.5" rx="1.75" fill="#3b4d61" />
-            
-            <!-- Circle Badge (Light Blue) at Bottom Right with white border -->
-            <circle cx="65" cy="65" r="16" fill="#4caee3" stroke="#ffffff" stroke-width="2.5" />
-            <!-- White Tick inside circle -->
-            <path d="M58 65L63 70L72 59" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-
-          <h1 class="logo-text m-0">
-            <span class="text-priority">Priority</span>&nbsp;<span class="text-pulse">Pulse</span>
-          </h1>
-        </div>
-
-        <!-- Form Title -->
-        <h2 class="login-title mb-4">Login</h2>
-
-        <!-- Alerts for feedback -->
-        <div *ngIf="errorMessage" class="alert alert-danger-custom d-flex align-items-center border-0 rounded-3 mb-4 animate-fade-in" role="alert">
-          <i class="fa-solid fa-circle-exclamation me-2 fs-5"></i>
-          <div>{{ errorMessage }}</div>
-        </div>
-
-        <div *ngIf="successMessage" class="alert alert-success-custom d-flex align-items-center border-0 rounded-3 mb-4 animate-fade-in" role="alert">
-          <i class="fa-solid fa-circle-check me-2 fs-5"></i>
-          <div>{{ successMessage }}</div>
-        </div>
-
-        <!-- Form -->
-        <form class="needs-validation" [formGroup]="Form" (ngSubmit)="login()" autocomplete="off"
-          [ngClass]="{'was-validated': submitted}">
-          
-          <!-- Username -->
-          <div class="mb-3 position-relative">
-            <input id="usernameInput" type="text" class="form-control custom-input" placeholder="User Name" required
-              formControlName="loginid" autocomplete="new-name">
-            <div class="invalid-feedback text-start mt-1 ms-2">
-              This field is required.
-            </div>
-          </div>
-
-          <!-- Password -->
-          <div class="mb-4 position-relative">
-            <input id="passwordInput" [type]="showPassword ? 'text' : 'password'" class="form-control custom-input pe-5" placeholder="Password" required
-              formControlName="password" autocomplete="password">
-            <button type="button" class="btn btn-link password-toggle-btn text-secondary" (click)="togglePasswordVisibility()">
-              <i class="fa-regular" [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
-            </button>
-            <div class="invalid-feedback text-start mt-1 ms-2">
-              This field is required.
-            </div>
-          </div>
-
-          <!-- Login Button -->
-          <div class="d-grid mb-3">
-            <button type="submit" class="btn btn-login btn-lg rounded-3 py-3 fw-bold uppercase-text" [ngClass]="{'button--loading': success}">
-              LOGIN
-            </button>
-          </div>
-
-          <!-- Forgot Password Button -->
-          <div class="d-grid mb-2">
-            <button type="button" [routerLink]="'/pages/forgot-password-boxed'" class="btn btn-forgot btn-lg rounded-3 py-3 fw-bold uppercase-text">
-              FORGOT PASSWORD
-            </button>
-          </div>
-
-          <!-- Helper Hint -->
-          <p class="text-muted small mt-4 mb-0">
-            Hint: Use <strong>admin</strong> / <strong>admin123</strong>
-          </p>
-
-        </form>
-
+  <!-- Login Card container -->
+  <div class="card border-0 shadow-lg login-card-custom animate-fade-in" 
+       style="border-radius: 20px; background: #ffffff; width: 420px; max-width: 100%; box-shadow: 0 15px 35px rgba(0,0,0,0.15) !important;">
+    <div class="card-body p-4 p-md-5">
+      
+      <!-- Card header -->
+      <div class="mb-4">
+        <h3 class="font-weight-bold mb-1 text-dark" style="font-family: 'Poppins', sans-serif; font-size: 1.55rem; font-weight: 700; letter-spacing: -0.5px;">Welcome back</h3>
+        <p class="text-muted" style="font-size: 0.88rem; font-family: 'Inter', sans-serif;">Sign in to your admin account</p>
       </div>
+
+      <!-- Alerts for feedback -->
+      <div *ngIf="errorMessage" class="alert alert-danger-custom d-flex align-items-center border-0 rounded-3 mb-4 animate-fade-in" role="alert">
+        <i class="fa-solid fa-circle-exclamation me-2 fs-5"></i>
+        <div>{{ errorMessage }}</div>
+      </div>
+
+      <div *ngIf="successMessage" class="alert alert-success-custom d-flex align-items-center border-0 rounded-3 mb-4 animate-fade-in" role="alert">
+        <i class="fa-solid fa-circle-check me-2 fs-5"></i>
+        <div>{{ successMessage }}</div>
+      </div>
+
+      <!-- Form -->
+      <form class="needs-validation" [formGroup]="Form" (ngSubmit)="login()" autocomplete="off"
+            [ngClass]="{'was-validated': submitted}">
+        
+        <!-- Email Input -->
+        <div class="mb-3">
+          <label class="form-label-custom" for="usernameInput">Email Address</label>
+          <div class="position-relative">
+            <input id="usernameInput" type="text" class="form-control custom-input-field" placeholder="admin@healthfamily.com" required
+                   formControlName="loginid" autocomplete="new-name">
+            <div class="invalid-feedback text-start mt-1 ms-1" style="font-size: 0.78rem;">
+              This field is required.
+            </div>
+          </div>
+        </div>
+
+        <!-- Password Input -->
+        <div class="mb-4">
+          <label class="form-label-custom" for="passwordInput">Password</label>
+          <div class="position-relative">
+            <input id="passwordInput" [type]="showPassword ? 'text' : 'password'" class="form-control custom-input-field pe-5" placeholder="Enter your password" required
+                   formControlName="password" autocomplete="password">
+            <!-- Eye Show/Hide Icon -->
+            <button type="button" class="btn btn-link password-toggle-btn-custom text-secondary" (click)="togglePasswordVisibility()">
+              <svg *ngIf="!showPassword" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+              <svg *ngIf="showPassword" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                <line x1="1" y1="1" x2="23" y2="23"></line>
+              </svg>
+            </button>
+            <div class="invalid-feedback text-start mt-1 ms-1" style="font-size: 0.78rem;">
+              This field is required.
+            </div>
+          </div>
+        </div>
+
+        <!-- Remember Me & Forgot Password Row -->
+        <div class="d-flex align-items-center justify-content-between mb-4" style="font-size: 0.85rem; font-family: 'Inter', sans-serif;">
+          <div class="form-check d-flex align-items-center">
+            <input class="form-check-input" type="checkbox" id="rememberMe" style="cursor: pointer; width: 15px; height: 15px;">
+            <label class="form-check-label text-muted ms-2" for="rememberMe" style="cursor: pointer; user-select: none;">
+              Remember me
+            </label>
+          </div>
+          <a [routerLink]="'/pages/forgot-password-boxed'" class="forgot-link-custom">
+            Forgot password?
+          </a>
+        </div>
+
+        <!-- Login Button -->
+        <div class="d-grid mb-3">
+          <button type="submit" class="btn btn-login-custom py-2.5 fw-bold d-flex align-items-center justify-content-center" [disabled]="success">
+            <span *ngIf="success" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true" style="width: 16px; height: 16px; border-width: 2px;"></span>
+            <span>Sign In</span>
+          </button>
+        </div>
+
+        <!-- SSL Secured Center Footer -->
+        <div class="text-center mt-4">
+          <span class="ssl-text-custom">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -1px; margin-right: 4px; opacity: 0.7;">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            Secured with 256-bit SSL encryption
+          </span>
+        </div>
+
+      </form>
+
     </div>
   </div>
+
 </div>

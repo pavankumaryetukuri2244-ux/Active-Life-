@@ -23,6 +23,21 @@ import { ActivatedRoute, Router } from '@angular/router';
       background: #ffffff !important;
     }
 
+    :host ::ng-deep .v-sidebar-menu,
+    :host ::ng-deep .vsm-list {
+      padding: 15px 0 0 0 !important;
+      margin: 0 !important;
+      width: 100% !important;
+      overflow-x: hidden !important;
+    }
+
+    :host ::ng-deep .app-sidebar,
+    :host ::ng-deep .app-sidebar-content,
+    :host ::ng-deep .app-sidebar .scrollbar-container {
+      overflow-x: hidden !important;
+      padding-right: 0 !important;
+    }
+
     :host ::ng-deep .app-header__logo {
       background: #ffffff !important;
       border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
@@ -56,9 +71,9 @@ import { ActivatedRoute, Router } from '@angular/router';
     }
     
     /* Premium style overrides for sidebar links */
-    :host ::ng-deep .app-container:not(.closed-sidebar) .vsm-list .vsm-item,
-    :host ::ng-deep .app-container.closed-sidebar-open .vsm-list .vsm-item {
-      margin: 4px 14px !important;
+    ::ng-deep .vsm-list .vsm-item,
+    ::ng-deep .vsm-item {
+      margin: 2px 0px !important;
       height: auto !important;
     }
     
@@ -66,20 +81,20 @@ import { ActivatedRoute, Router } from '@angular/router';
       color: #334155 !important;
       font-family: 'Poppins', sans-serif !important;
       font-weight: 500 !important;
-      font-size: 0.95rem !important;
+      font-size: 0.88rem !important;
       text-decoration: none !important;
       transition: all 0.2s ease !important;
     }
 
-    :host ::ng-deep .app-container:not(.closed-sidebar) .vsm-list .vsm-link,
-    :host ::ng-deep .app-container.closed-sidebar-open .vsm-list .vsm-link {
-      padding: 10px 16px !important;
-      border-radius: 10px !important;
+    ::ng-deep .vsm-list .vsm-link,
+    ::ng-deep .vsm-link {
+      padding: 12px 24px !important;
+      border-radius: 0px !important;
     }
 
     :host ::ng-deep .vsm-list .vsm-icon {
-      font-size: 1.25rem !important;
-      color: #475569 !important;
+      font-size: 1.2rem !important;
+      color: #1e293b !important;
       transition: all 0.2s ease !important;
     }
 
@@ -87,25 +102,31 @@ import { ActivatedRoute, Router } from '@angular/router';
       color: #334155 !important;
       font-family: 'Poppins', sans-serif !important;
       font-weight: 500 !important;
+      font-size: 0.88rem !important;
       transition: all 0.2s ease !important;
     }
 
-    /* Active link item overrides - Light Soft Theme style */
+    /* Active link item overrides - Gradient Blue-Purple style */
     :host ::ng-deep .vsm-list .vsm-item.vsm-active .vsm-link,
     :host ::ng-deep .vsm-list .vsm-link.active-item {
-      background: #eef2ff !important;
-      box-shadow: none !important;
+      background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%) !important;
+      box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2) !important;
     }
 
     :host ::ng-deep .vsm-list .vsm-item.vsm-active .vsm-link .vsm-title,
     :host ::ng-deep .vsm-list .vsm-link.active-item .vsm-title {
-      color: #4f46e5 !important;
+      color: #ffffff !important;
       font-weight: 600 !important;
     }
 
-    :host ::ng-deep .vsm-list .vsm-item.vsm-active .vsm-link .vsm-icon,
-    :host ::ng-deep .vsm-link.active-item .vsm-icon {
-      color: #4f46e5 !important;
+    :host ::ng-deep .vsm-list .vsm-icon-svg {
+      color: #64748b !important;
+      transition: all 0.2s ease !important;
+    }
+
+    :host ::ng-deep .vsm-list .vsm-item.vsm-active .vsm-link .vsm-icon-svg,
+    :host ::ng-deep .vsm-list .vsm-link.active-item .vsm-icon-svg {
+      color: #ffffff !important;
     }
 
     :host ::ng-deep .vsm-list .vsm-link:hover:not(.active-item) {

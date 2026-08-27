@@ -1,14 +1,22 @@
 import { Component, OnInit } from '@angular/core';
+import { WebapiService } from '../../services/webapi.service';
 
 interface AuditLog {
-  id: string;
+  id: number;
+  logId: string;
   adminName: string;
-  adminId: string;
   action: string;
   module: string;
-  timestamp: string;
+  createdAt: string;
   ipAddress: string;
-  status: 'Success' | 'Failed';
+  status: 'SUCCESS' | 'FAILED';
+}
+
+interface AuditStats {
+  totalLogs: number;
+  todayActivity: number;
+  failedActions: number;
+  activeAdmins: number;
 }
 
 @Component({
@@ -17,51 +25,161 @@ interface AuditLog {
   standalone: false
 })
 export class AuditLogsComponent implements OnInit {
-  
-  logsList: AuditLog[] = [
-    { id: 'AL001', adminName: 'Admin User', adminId: 'A001', action: 'Updated user profile', module: 'User Management', timestamp: '2026-03-30 14:32:15', ipAddress: '192.168.1.1', status: 'Success' },
-    { id: 'AL002', adminName: 'Super Admin', adminId: 'A002', action: 'Deleted wellness content', module: 'Content Management', timestamp: '2026-03-30 13:15:42', ipAddress: '192.168.1.2', status: 'Success' },
-    { id: 'AL003', adminName: 'Admin User', adminId: 'A001', action: 'Approved doctor registration', module: 'Doctor Management', timestamp: '2026-03-30 12:05:23', ipAddress: '192.168.1.1', status: 'Success' },
-    { id: 'AL004', adminName: 'Support Admin', adminId: 'A003', action: 'Failed login attempt', module: 'Authentication', timestamp: '2026-03-30 11:48:10', ipAddress: '192.168.1.3', status: 'Failed' }
+
+  // Stat cards
+  stats: AuditStats = {
+    totalLogs: 0,
+    todayActivity: 0,
+    failedActions: 0,
+    activeAdmins: 0
+  };
+
+  // Table data
+  logsList: AuditLog[] = [];
+  isLoading = false;
+  errorMessage = '';
+
+  // Pagination
+  currentPage = 0;
+  pageSize = 20;
+  totalElements = 0;
+  totalPages = 0;
+
+  // Filters
+  searchQuery = '';
+  selectedModule = '';
+  selectedStatus = '';
+  sortBy = 'createdAt';
+  sortDirection = 'DESC';
+
+  // Filter timer (debounce search)
+  private filterTimer: any;
+
+  modulesList: string[] = [
+    'All Modules',
+    'User Management',
+    'Content Management',
+    'Preventive Care',
+    'Authentication',
+    'System Settings',
+    'Notifications'
   ];
 
-  filteredLogs: AuditLog[] = [];
-  searchQuery: string = '';
-  selectedModule: string = 'All Modules';
-  selectedStatus: string = 'All Status';
+  statusesList: string[] = ['All Status', 'SUCCESS', 'FAILED'];
 
-  modulesList: string[] = ['All Modules', 'User Management', 'Content Management', 'Doctor Management', 'Authentication'];
-  statusesList: string[] = ['All Status', 'Success', 'Failed'];
+  constructor(private api: WebapiService) {}
 
   ngOnInit() {
-    this.filterLogs();
+    this.loadAuditLogs();
+  }
+
+  /** Initial load — empty body to get all logs + stats */
+  loadAuditLogs() {
+    this.isLoading = true;
+    this.errorMessage = '';
+    this.api.GetAuditLogs().subscribe({
+      next: (res: any) => {
+        if (res?.success) {
+          this.stats = {
+            totalLogs: res.data.totalLogs ?? 0,
+            todayActivity: res.data.todayActivity ?? 0,
+            failedActions: res.data.failedActions ?? 0,
+            activeAdmins: res.data.activeAdmins ?? 0
+          };
+          const pageData = res.data.logs;
+          this.logsList = pageData?.content ?? [];
+          this.totalElements = pageData?.totalElements ?? 0;
+          this.totalPages = pageData?.totalPages ?? 0;
+          this.currentPage = pageData?.pageable?.pageNumber ?? 0;
+        }
+        this.isLoading = false;
+      },
+      error: (err: any) => {
+        console.error('Audit logs API error:', err);
+        this.errorMessage = 'Failed to load audit logs. Please try again.';
+        this.isLoading = false;
+      }
+    });
+  }
+
+  /** Filter/search/paginate call */
+  applyFilters(showLoader = true) {
+    if (showLoader) {
+      this.isLoading = true;
+    }
+    this.errorMessage = '';
+
+    const body: any = {
+      page: this.currentPage,
+      size: this.pageSize,
+      sortBy: this.sortBy,
+      sortDirection: this.sortDirection
+    };
+
+    if (this.searchQuery.trim()) body['search'] = this.searchQuery.trim();
+    if (this.selectedModule && this.selectedModule !== 'All Modules') body['module'] = this.selectedModule;
+    if (this.selectedStatus && this.selectedStatus !== 'All Status') body['status'] = this.selectedStatus;
+
+    this.api.GetAuditLogsFiltered(body).subscribe({
+      next: (res: any) => {
+        if (res?.success) {
+          this.stats = {
+            totalLogs: res.data.totalLogs ?? this.stats.totalLogs,
+            todayActivity: res.data.todayActivity ?? this.stats.todayActivity,
+            failedActions: res.data.failedActions ?? this.stats.failedActions,
+            activeAdmins: res.data.activeAdmins ?? this.stats.activeAdmins
+          };
+          const pageData = res.data.logs;
+          this.logsList = pageData?.content ?? [];
+          this.totalElements = pageData?.totalElements ?? 0;
+          this.totalPages = pageData?.totalPages ?? 0;
+          this.currentPage = pageData?.pageable?.pageNumber ?? 0;
+        }
+        this.isLoading = false;
+      },
+      error: (err: any) => {
+        console.error('Audit logs filter error:', err);
+        this.errorMessage = 'Failed to apply filters. Please try again.';
+        this.isLoading = false;
+      }
+    });
   }
 
   onSearch(event: any) {
     this.searchQuery = event.target.value;
-    this.filterLogs();
+    this.currentPage = 0;
+    clearTimeout(this.filterTimer);
+    this.filterTimer = setTimeout(() => this.applyFilters(false), 400);
   }
 
   onModuleChange(event: any) {
     this.selectedModule = event.target.value;
-    this.filterLogs();
+    this.currentPage = 0;
+    this.applyFilters(false);
   }
 
   onStatusChange(event: any) {
     this.selectedStatus = event.target.value;
-    this.filterLogs();
+    this.currentPage = 0;
+    this.applyFilters(false);
   }
 
-  filterLogs() {
-    this.filteredLogs = this.logsList.filter(log => {
-      const matchesSearch = log.action.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-                            log.adminName.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-                            log.id.toLowerCase().includes(this.searchQuery.toLowerCase());
-      
-      const matchesModule = this.selectedModule === 'All Modules' || log.module === this.selectedModule;
-      const matchesStatus = this.selectedStatus === 'All Status' || log.status === this.selectedStatus;
-      
-      return matchesSearch && matchesModule && matchesStatus;
+  goToPage(page: number) {
+    if (page < 0 || page >= this.totalPages) return;
+    this.currentPage = page;
+    this.applyFilters(false);
+  }
+
+  get pages(): number[] {
+    return Array.from({ length: this.totalPages }, (_, i) => i);
+  }
+
+  formatDate(dateStr: string): string {
+    if (!dateStr) return '-';
+    const d = new Date(dateStr);
+    return d.toLocaleString('en-IN', {
+      day: '2-digit', month: 'short', year: 'numeric',
+      hour: '2-digit', minute: '2-digit', hour12: true
     });
   }
 }

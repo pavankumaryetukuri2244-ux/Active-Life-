@@ -30,9 +30,18 @@ export class ContentManagementComponent implements OnInit {
   filteredContent: ContentItem[] = [];
   searchQuery: string = '';
   activeTab: 'All' | 'Gym' | 'Meditation' | 'Videos' = 'All';
+  showUploadModal = false;
 
   ngOnInit() {
     this.filterContent();
+  }
+
+  openUploadModal() {
+    this.showUploadModal = true;
+  }
+
+  closeUploadModal() {
+    this.showUploadModal = false;
   }
 
   setTab(tab: 'All' | 'Gym' | 'Meditation' | 'Videos') {

@@ -10,7 +10,7 @@ import { CommonService } from './services/common.service';
       <div class="spinner-container">
         <div class="premium-spinner"></div>
         <div class="pulsing-core"></div>
-        <span class="loading-text">Active Life</span>
+        <span class="loading-text">HealthFamily</span>
       </div>
     </div>
   `,
@@ -39,8 +39,8 @@ import { CommonService } from './services/common.service';
       width: 70px;
       height: 70px;
       border: 3px solid transparent;
-      border-top: 3px solid #3b82f6; /* Active Life Blue */
-      border-right: 3px solid #8b5cf6; /* Active Life Violet */
+      border-top: 3px solid #3b82f6; /* HealthFamily Blue */
+      border-right: 3px solid #8b5cf6; /* HealthFamily Violet */
       border-radius: 50%;
       animation: spin-forward 1.2s cubic-bezier(0.5, 0.1, 0.5, 0.9) infinite;
     }
