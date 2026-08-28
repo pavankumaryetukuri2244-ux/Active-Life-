@@ -314,47 +314,45 @@
 }
 
 <!-- Add Pregnancy Stage Modal Overlay -->
-<div *ngIf="showAddStageModal" class="position-fixed d-flex align-items-center justify-content-center" style="top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.4); z-index: 10000; font-family: 'Inter', sans-serif;">
-  <div class="card border-0 shadow-lg p-4" style="width: 100%; max-width: 500px; border-radius: 16px; background: #ffffff; position: relative;">
+<div *ngIf="showAddStageModal" class="position-fixed d-flex align-items-center justify-content-center" style="top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.45); z-index: 10000; font-family: 'Inter', -apple-system, sans-serif;">
+  <div class="card border-0 p-4" style="width: 100%; max-width: 390px; border-radius: 14px; background: #ffffff; position: relative; box-shadow: none !important; padding: 20px 24px !important;">
     <!-- Close icon button -->
-    <button (click)="closeAddStageModal()" class="position-absolute border-0 bg-transparent text-muted" style="top: 20px; right: 20px; font-size: 1.25rem; outline: none; cursor: pointer;">
+    <button (click)="closeAddStageModal()" class="position-absolute border-0 bg-transparent text-muted" style="top: 16px; right: 16px; font-size: 1.2rem; outline: none; cursor: pointer;">
       &times;
     </button>
 
     <!-- Modal Title -->
-    <h4 class="font-weight-bold mb-4" style="font-family: 'Outfit', sans-serif; font-size: 1.35rem; color: #111827; margin: 0 0 20px 0;">
+    <h4 class="font-weight-bold mb-3" style="font-family: 'Inter', -apple-system, sans-serif; font-size: 1.1rem; color: #0F172A; margin: 0 0 16px 0;">
       Add Pregnancy Stage
     </h4>
 
     <!-- Form Content -->
-    <div class="d-flex flex-column" style="gap: 16px;">
+    <div class="d-flex flex-column" style="gap: 12px;">
       <!-- Week Range -->
-      <div class="d-flex flex-column" style="gap: 6px;">
-        <label style="font-size: 0.85rem; font-weight: 600; color: #1f2937;">Week Range</label>
-        <input type="text" [(ngModel)]="stageWeekRange" placeholder="e.g. Week 17-20" class="form-control border-0 px-3" style="height: 42px; border-radius: 8px; background: #f3f4f6; font-size: 0.9rem;">
+      <div class="d-flex flex-column" style="gap: 5px;">
+        <label style="font-size: 0.8rem; font-weight: 600; color: #0F172A;">Week Range</label>
+        <input type="text" [(ngModel)]="stageWeekRange" placeholder="e.g. Week 17-20" class="form-control px-3" style="height: 38px; border-radius: 10px; background: #F4F5F7; border: none !important; font-size: 0.85rem; color: #0F172A;">
       </div>
 
-
-
       <!-- Milestones -->
-      <div class="d-flex flex-column" style="gap: 6px;">
-        <label style="font-size: 0.85rem; font-weight: 600; color: #1f2937;">Milestones (comma-separated)</label>
-        <input type="text" [(ngModel)]="stageMilestones" placeholder="e.g. Fetal movement, Anatomy scan" class="form-control border-0 px-3" style="height: 42px; border-radius: 8px; background: #f3f4f6; font-size: 0.9rem;">
+      <div class="d-flex flex-column" style="gap: 5px;">
+        <label style="font-size: 0.8rem; font-weight: 600; color: #0F172A;">Milestones (comma-separated)</label>
+        <input type="text" [(ngModel)]="stageMilestones" placeholder="e.g. Fetal movement, Anatomy scan" class="form-control px-3" style="height: 38px; border-radius: 10px; background: #F4F5F7; border: none !important; font-size: 0.85rem; color: #0F172A;">
       </div>
 
       <!-- Scans -->
-      <div class="d-flex flex-column" style="gap: 6px;">
-        <label style="font-size: 0.85rem; font-weight: 600; color: #1f2937;">Scans (comma-separated)</label>
-        <input type="text" [(ngModel)]="stageScans" placeholder="e.g. Level 2 Ultrasound" class="form-control border-0 px-3" style="height: 42px; border-radius: 8px; background: #f3f4f6; font-size: 0.9rem;">
+      <div class="d-flex flex-column" style="gap: 5px;">
+        <label style="font-size: 0.8rem; font-weight: 600; color: #0F172A;">Scans (comma-separated)</label>
+        <input type="text" [(ngModel)]="stageScans" placeholder="e.g. Level 2 Ultrasound" class="form-control px-3" style="height: 38px; border-radius: 10px; background: #F4F5F7; border: none !important; font-size: 0.85rem; color: #0F172A;">
       </div>
     </div>
 
     <!-- Actions Footer -->
-    <div class="d-flex align-items-center justify-content-end mt-4" style="gap: 12px;">
-      <button (click)="closeAddStageModal()" class="btn border px-4 py-2" style="border-radius: 8px; border-color: #cbd5e1 !important; color: #1f2937; background: #ffffff; font-size: 0.9rem; font-weight: 600; cursor: pointer; outline: none;">
+    <div class="d-flex align-items-center justify-content-end mt-4" style="gap: 10px;">
+      <button (click)="closeAddStageModal()" class="btn border px-3" style="height: 38px; border-radius: 8px; border-color: #E2E8F0 !important; color: #0F172A; background: #ffffff; font-size: 0.85rem; font-weight: 600; cursor: pointer; outline: none;">
         Cancel
       </button>
-      <button (click)="submitAddStage()" class="btn px-4 py-2" style="border-radius: 8px; background: #ff2d55; color: #ffffff; font-size: 0.9rem; font-weight: 600; border: none; cursor: pointer; outline: none;">
+      <button (click)="submitAddStage()" class="btn px-3" style="height: 38px; border-radius: 8px; background: #ff2d55; color: #ffffff; font-size: 0.85rem; font-weight: 600; border: none; cursor: pointer; outline: none;">
         Add Stage
       </button>
     </div>
@@ -362,51 +360,51 @@
 </div>
 
 <!-- Add Child Vaccine Modal Overlay -->
-<div *ngIf="showAddChildVaccineModal" class="position-fixed d-flex align-items-center justify-content-center" style="top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.4); z-index: 10000; font-family: 'Inter', sans-serif;">
-  <div class="card border-0 shadow-lg p-4" style="width: 100%; max-width: 500px; border-radius: 16px; background: #ffffff; position: relative;">
+<div *ngIf="showAddChildVaccineModal" class="position-fixed d-flex align-items-center justify-content-center" style="top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.45); z-index: 10000; font-family: 'Inter', -apple-system, sans-serif;">
+  <div class="card border-0 p-4" style="width: 100%; max-width: 390px; border-radius: 14px; background: #ffffff; position: relative; box-shadow: none !important; padding: 20px 24px !important;">
     <!-- Close icon button -->
-    <button (click)="closeAddChildVaccineModal()" class="position-absolute border-0 bg-transparent text-muted" style="top: 20px; right: 20px; font-size: 1.25rem; outline: none; cursor: pointer;">
+    <button (click)="closeAddChildVaccineModal()" class="position-absolute border-0 bg-transparent text-muted" style="top: 16px; right: 16px; font-size: 1.2rem; outline: none; cursor: pointer;">
       &times;
     </button>
 
     <!-- Modal Title -->
-    <h4 class="font-weight-bold mb-4" style="font-family: 'Outfit', sans-serif; font-size: 1.35rem; color: #111827; margin: 0 0 20px 0;">
+    <h4 class="font-weight-bold mb-3" style="font-family: 'Inter', -apple-system, sans-serif; font-size: 1.1rem; color: #0F172A; margin: 0 0 16px 0;">
       Add Child Vaccine
     </h4>
 
     <!-- Form Content -->
-    <div class="d-flex flex-column" style="gap: 16px;">
+    <div class="d-flex flex-column" style="gap: 12px;">
       <!-- Vaccine Name -->
-      <div class="d-flex flex-column" style="gap: 6px;">
-        <label style="font-size: 0.85rem; font-weight: 600; color: #1f2937;">Vaccine Name</label>
-        <input type="text" [(ngModel)]="childVaccineName" placeholder="e.g. Rotavirus" class="form-control border-0 px-3" style="height: 42px; border-radius: 8px; background: #f3f4f6; font-size: 0.9rem;">
+      <div class="d-flex flex-column" style="gap: 5px;">
+        <label style="font-size: 0.8rem; font-weight: 600; color: #0F172A;">Vaccine Name</label>
+        <input type="text" [(ngModel)]="childVaccineName" placeholder="e.g. Rotavirus" class="form-control px-3" style="height: 38px; border-radius: 10px; background: #F4F5F7; border: none !important; font-size: 0.85rem; color: #0F172A;">
       </div>
 
       <!-- Recommended Age -->
-      <div class="d-flex flex-column" style="gap: 6px;">
-        <label style="font-size: 0.85rem; font-weight: 600; color: #1f2937;">Recommended Age</label>
-        <input type="text" [(ngModel)]="childRecommendedAge" placeholder="e.g. 4 months" class="form-control border-0 px-3" style="height: 42px; border-radius: 8px; background: #f3f4f6; font-size: 0.9rem;">
+      <div class="d-flex flex-column" style="gap: 5px;">
+        <label style="font-size: 0.8rem; font-weight: 600; color: #0F172A;">Recommended Age</label>
+        <input type="text" [(ngModel)]="childRecommendedAge" placeholder="e.g. 4 months" class="form-control px-3" style="height: 38px; border-radius: 10px; background: #F4F5F7; border: none !important; font-size: 0.85rem; color: #0F172A;">
       </div>
 
       <!-- Number of Doses -->
-      <div class="d-flex flex-column" style="gap: 6px;">
-        <label style="font-size: 0.85rem; font-weight: 600; color: #1f2937;">Number of Doses</label>
-        <input type="text" [(ngModel)]="childDoseNumber" placeholder="e.g. 3" class="form-control border-0 px-3" style="height: 42px; border-radius: 8px; background: #f3f4f6; font-size: 0.9rem;">
+      <div class="d-flex flex-column" style="gap: 5px;">
+        <label style="font-size: 0.8rem; font-weight: 600; color: #0F172A;">Number of Doses</label>
+        <input type="text" [(ngModel)]="childDoseNumber" placeholder="e.g. 3" class="form-control px-3" style="height: 38px; border-radius: 10px; background: #F4F5F7; border: none !important; font-size: 0.85rem; color: #0F172A;">
       </div>
 
       <!-- Description -->
-      <div class="d-flex flex-column" style="gap: 6px;">
-        <label style="font-size: 0.85rem; font-weight: 600; color: #1f2937;">Description</label>
-        <textarea [(ngModel)]="childDescription" placeholder="Brief description of the vaccine schedule and benefits" class="form-control border-0 p-3" style="height: 90px; border-radius: 8px; background: #f3f4f6; font-size: 0.9rem; resize: none;"></textarea>
+      <div class="d-flex flex-column" style="gap: 5px;">
+        <label style="font-size: 0.8rem; font-weight: 600; color: #0F172A;">Description</label>
+        <textarea [(ngModel)]="childDescription" placeholder="Brief description of the vaccine schedule and benefits" class="form-control p-3" style="height: 75px; border-radius: 10px; background: #F4F5F7; border: none !important; font-size: 0.85rem; resize: none; color: #0F172A;"></textarea>
       </div>
     </div>
 
     <!-- Actions Footer -->
-    <div class="d-flex align-items-center justify-content-end mt-4" style="gap: 12px;">
-      <button (click)="closeAddChildVaccineModal()" class="btn border px-4 py-2" style="border-radius: 8px; border-color: #cbd5e1 !important; color: #1f2937; background: #ffffff; font-size: 0.9rem; font-weight: 600; cursor: pointer; outline: none;">
+    <div class="d-flex align-items-center justify-content-end mt-4" style="gap: 10px;">
+      <button (click)="closeAddChildVaccineModal()" class="btn border px-3" style="height: 38px; border-radius: 8px; border-color: #E2E8F0 !important; color: #0F172A; background: #ffffff; font-size: 0.85rem; font-weight: 600; cursor: pointer; outline: none;">
         Cancel
       </button>
-      <button (click)="submitAddChildVaccine()" class="btn px-4 py-2" style="border-radius: 8px; background: #0084c8; color: #ffffff; font-size: 0.9rem; font-weight: 600; border: none; cursor: pointer; outline: none;">
+      <button (click)="submitAddChildVaccine()" class="btn px-3" style="height: 38px; border-radius: 8px; background: #0084c8; color: #ffffff; font-size: 0.85rem; font-weight: 600; border: none; cursor: pointer; outline: none;">
         Add Vaccine
       </button>
     </div>
@@ -414,47 +412,45 @@
 </div>
 
 <!-- Add Pregnancy Vaccine Modal Overlay -->
-<div *ngIf="showAddPregnancyVaccineModal" class="position-fixed d-flex align-items-center justify-content-center" style="top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.4); z-index: 10000; font-family: 'Inter', sans-serif;">
-  <div class="card border-0 shadow-lg p-4" style="width: 100%; max-width: 500px; border-radius: 16px; background: #ffffff; position: relative;">
+<div *ngIf="showAddPregnancyVaccineModal" class="position-fixed d-flex align-items-center justify-content-center" style="top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.45); z-index: 10000; font-family: 'Inter', -apple-system, sans-serif;">
+  <div class="card border-0 p-4" style="width: 100%; max-width: 390px; border-radius: 14px; background: #ffffff; position: relative; box-shadow: none !important; padding: 20px 24px !important;">
     <!-- Close icon button -->
-    <button (click)="closeAddPregnancyVaccineModal()" class="position-absolute border-0 bg-transparent text-muted" style="top: 20px; right: 20px; font-size: 1.25rem; outline: none; cursor: pointer;">
+    <button (click)="closeAddPregnancyVaccineModal()" class="position-absolute border-0 bg-transparent text-muted" style="top: 16px; right: 16px; font-size: 1.2rem; outline: none; cursor: pointer;">
       &times;
     </button>
 
     <!-- Modal Title -->
-    <h4 class="font-weight-bold mb-4" style="font-family: 'Outfit', sans-serif; font-size: 1.35rem; color: #111827; margin: 0 0 20px 0;">
+    <h4 class="font-weight-bold mb-3" style="font-family: 'Inter', -apple-system, sans-serif; font-size: 1.1rem; color: #0F172A; margin: 0 0 16px 0;">
       Add Pregnancy Vaccine
     </h4>
 
     <!-- Form Content -->
-    <div class="d-flex flex-column" style="gap: 16px;">
+    <div class="d-flex flex-column" style="gap: 12px;">
       <!-- Vaccine Name -->
-      <div class="d-flex flex-column" style="gap: 6px;">
-        <label style="font-size: 0.85rem; font-weight: 600; color: #1f2937;">Vaccine Name</label>
-        <input type="text" [(ngModel)]="pregnancyVaccineName" placeholder="e.g. Hepatitis A Vaccine" class="form-control border-0 px-3" style="height: 42px; border-radius: 8px; background: #f3f4f6; font-size: 0.9rem;">
+      <div class="d-flex flex-column" style="gap: 5px;">
+        <label style="font-size: 0.8rem; font-weight: 600; color: #0F172A;">Vaccine Name</label>
+        <input type="text" [(ngModel)]="pregnancyVaccineName" placeholder="e.g. Hepatitis A Vaccine" class="form-control px-3" style="height: 38px; border-radius: 10px; background: #F4F5F7; border: none !important; font-size: 0.85rem; color: #0F172A;">
       </div>
 
       <!-- Recommended Timing -->
-      <div class="d-flex flex-column" style="gap: 6px;">
-        <label style="font-size: 0.85rem; font-weight: 600; color: #1f2937;">Recommended Timing</label>
-        <input type="text" [(ngModel)]="pregnancyRecommendedTiming" placeholder="e.g. 20-28 weeks" class="form-control border-0 px-3" style="height: 42px; border-radius: 8px; background: #f3f4f6; font-size: 0.9rem;">
+      <div class="d-flex flex-column" style="gap: 5px;">
+        <label style="font-size: 0.8rem; font-weight: 600; color: #0F172A;">Recommended Timing</label>
+        <input type="text" [(ngModel)]="pregnancyRecommendedTiming" placeholder="e.g. 20-28 weeks" class="form-control px-3" style="height: 38px; border-radius: 10px; background: #F4F5F7; border: none !important; font-size: 0.85rem; color: #0F172A;">
       </div>
 
-
-
       <!-- Description -->
-      <div class="d-flex flex-column" style="gap: 6px;">
-        <label style="font-size: 0.85rem; font-weight: 600; color: #1f2937;">Description</label>
-        <textarea [(ngModel)]="pregnancyDescription" placeholder="Brief description of the vaccine and its benefits" class="form-control border-0 p-3" style="height: 90px; border-radius: 8px; background: #f3f4f6; font-size: 0.9rem; resize: none;"></textarea>
+      <div class="d-flex flex-column" style="gap: 5px;">
+        <label style="font-size: 0.8rem; font-weight: 600; color: #0F172A;">Description</label>
+        <textarea [(ngModel)]="pregnancyDescription" placeholder="Brief description of the vaccine and its benefits" class="form-control p-3" style="height: 75px; border-radius: 10px; background: #F4F5F7; border: none !important; font-size: 0.85rem; resize: none; color: #0F172A;"></textarea>
       </div>
     </div>
 
     <!-- Actions Footer -->
-    <div class="d-flex align-items-center justify-content-end mt-4" style="gap: 12px;">
-      <button (click)="closeAddPregnancyVaccineModal()" class="btn border px-4 py-2" style="border-radius: 8px; border-color: #cbd5e1 !important; color: #1f2937; background: #ffffff; font-size: 0.9rem; font-weight: 600; cursor: pointer; outline: none;">
+    <div class="d-flex align-items-center justify-content-end mt-4" style="gap: 10px;">
+      <button (click)="closeAddPregnancyVaccineModal()" class="btn border px-3" style="height: 38px; border-radius: 8px; border-color: #E2E8F0 !important; color: #0F172A; background: #ffffff; font-size: 0.85rem; font-weight: 600; cursor: pointer; outline: none;">
         Cancel
       </button>
-      <button (click)="submitAddPregnancyVaccine()" class="btn px-4 py-2" style="border-radius: 8px; background: linear-gradient(135deg, #a855f7, #ff2d55); color: #ffffff; font-size: 0.9rem; font-weight: 600; border: none; cursor: pointer; outline: none; box-shadow: 0 4px 10px rgba(255, 45, 85, 0.15);">
+      <button (click)="submitAddPregnancyVaccine()" class="btn px-3" style="height: 38px; border-radius: 8px; background: linear-gradient(135deg, #a855f7, #ff2d55); color: #ffffff; font-size: 0.85rem; font-weight: 600; border: none; cursor: pointer; outline: none;">
         Add Vaccine
       </button>
     </div>

@@ -155,4 +155,38 @@ export class WebapiService {
     const url = `${this.WebApi}/api/v1/admin/preventive-care/add-pregnancy-vaccine`;
     return this.Http.post<any>(url, body, { headers });
   }
+
+  public UploadContent(body: {
+    title: string;
+    category: string;
+    path: string;
+    level: string;
+    tags: string;
+  }) {
+    const token = localStorage.getItem('accessToken');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+    const url = `${this.WebApi}/api/v1/content/upload`;
+    return this.Http.post<any>(url, body, { headers });
+  }
+
+  public GetAllContent(filters: any = {}) {
+    const token = localStorage.getItem('accessToken');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+    const url = `${this.WebApi}/api/v1/content/all`;
+    return this.Http.post<any>(url, filters, { headers });
+  }
+
+  public SendOtp(email: string, resendOtp: boolean = false) {
+    const url = `${this.WebApi}/api/v1/admin/auth/send-otp`;
+    return this.Http.post<any>(url, { email, resendOtp });
+  }
+
+  public VerifyOtp(email: string, otp: string) {
+    const url = `${this.WebApi}/api/v1/admin/auth/verify-otp`;
+    return this.Http.post<any>(url, { email, otp });
+  }
 }
