@@ -11,7 +11,6 @@ export interface StorageGetItem {
   key: string;
   storageArea: "localStorage" | "sessionStorage";
 }
-
 @Injectable({ providedIn: "root" })
 export class StorageService {
   public storageChange$: ReplaySubject<StorageChange> = new ReplaySubject();
