@@ -1,6 +1,7 @@
 @use "assets/base";
 @import 'datatables.net-dt/css/dataTables.dataTables.css';
 @import 'datatables.net-buttons-dt/css/buttons.dataTables.css';
+@import 'assets/scss/pages/dashboards/dashboard';
 
 .app-main__inner {
   position: relative !important;

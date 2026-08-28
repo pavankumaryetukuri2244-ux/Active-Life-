@@ -38,3 +38,145 @@
     stroke: rgba(0, 0, 0, 0.15);
   }
 }
+
+/* ==========================================
+   DASHBOARD MODERN UI STYLES
+========================================== */
+
+.db-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 42px;
+  font-weight: 800;
+  color: #0f2b57;
+  line-height: 1.1;
+  margin-bottom: 8px;
+}
+
+.db-subtitle {
+  font-family: 'Inter', sans-serif;
+  font-size: 17px;
+  font-weight: 400;
+  color: #64748b;
+}
+
+/* Statistic Cards */
+
+.db-stat-card {
+  border: 1px solid #e5e7eb !important;
+  border-radius: 20px !important;
+  background: #ffffff !important;
+  box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
+  transition: all .3s ease;
+  overflow: hidden;
+}
+
+.db-stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.10);
+}
+
+.metric-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  color: #64748b;
+  margin-bottom: 10px !important;
+}
+
+.db-metric-number {
+  font-family: 'Inter', sans-serif;
+  font-size: 42px;
+  font-weight: 800;
+  color: #0f2b57;
+  line-height: 1;
+  margin-bottom: 12px;
+}
+
+.db-trend-green {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #22c55e;
+}
+
+/* Icon Box */
+
+.db-icon-box {
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.db-icon-box svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* Chart Cards */
+
+.db-chart-card {
+  border: 1px solid #e5e7eb !important;
+  border-radius: 24px !important;
+  background: #ffffff !important;
+  box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
+}
+
+.db-chart-card .card-header {
+  background: transparent !important;
+}
+
+.db-chart-card .card-header h3 {
+  font-family: 'Inter', sans-serif !important;
+  font-size: 20px !important;
+  font-weight: 700 !important;
+  color: #0f2b57 !important;
+}
+
+/* Recent Activity */
+
+.card-body span,
+.card-body p,
+.card-body div {
+  font-family: 'Inter', sans-serif;
+}
+
+/* Alerts */
+
+.db-chart-card .fa-info-circle,
+.db-chart-card .fa-triangle-exclamation {
+  font-size: 18px !important;
+}
+
+/* Card Spacing */
+
+.row.mb-4 {
+  margin-bottom: 24px !important;
+}
+
+/* Canvas */
+
+canvas {
+  max-width: 100%;
+}
+
+/* Mobile */
+
+@media (max-width: 768px) {
+
+  .db-title {
+    font-size: 32px;
+  }
+
+  .db-metric-number {
+    font-size: 32px;
+  }
+
+  .db-chart-card .card-header h3 {
+    font-size: 17px !important;
+  }
+
+}
+
