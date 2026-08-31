@@ -10,130 +10,343 @@ import { WebapiService } from '../../../services/webapi.service';
   standalone: false,
   
   styles: [`
+
+    /* ============================================================
+       LOGIN PAGE
+       ============================================================ */
+
+    /* Background: diagonal gradient */
     .login-bg {
-      background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #ec4899 100%) !important;
+      background: linear-gradient(135deg,
+        #2563EB  0%,
+        #4F46E5 25%,
+        #7C3AED 50%,
+        #9333EA 75%,
+        #C026D3 100%) !important;
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
       bottom: 0;
-      overflow: hidden;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
+
+    /* ---- Brand section above card ---- */
+    .brand-section {
+      margin-bottom: 28px;
+    }
+
+    /* Logo white rounded square: 64×64, radius 18px, white bg, soft shadow */
+    .logo-box {
+      width: 64px;
+      height: 64px;
+      border-radius: 18px;
+      background: #ffffff;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+
+    /* "HealthFamily" title: Inter 700, 26px, white, letter-spacing -0.4px */
+    .brand-title {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 26px;
+      font-weight: 700;
+      color: #ffffff !important;
+      letter-spacing: -0.4px;
+      line-height: 1.2;
+      margin: 0 0 4px 0;
+    }
+
+    /* "Admin Portal" subtitle: Inter 400, 14px, rgba(255,255,255,0.85) */
+    .brand-subtitle {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 14px;
+      font-weight: 400;
+      color: rgba(255, 255, 255, 0.85);
+      line-height: 1.4;
+      margin: 0;
+    }
+
+    /* ---- Login card: white, 440px max, radius 20px, shadow ---- */
     .login-card-custom {
-      max-width: 420px;
+      max-width: 440px;
       width: 100%;
+      border-radius: 20px !important;
+      background: #ffffff !important;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.18) !important;
+      border: none !important;
+      padding: 36px 36px 28px 36px !important;
     }
+
+    /* ---- Card header text ---- */
+    /* "Welcome back": Inter 700, 22px, #0F172A */
+    .login-heading {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: #0F172A;
+      letter-spacing: -0.3px;
+      line-height: 1.25;
+      margin: 0 0 4px 0;
+    }
+
+    /* "Sign in to your admin account": Inter 400, 13.5px, #64748B */
+    .login-subheading {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 13.5px;
+      font-weight: 400;
+      color: #64748B;
+      line-height: 1.4;
+      margin: 0;
+    }
+
+    .login-header-block {
+      margin-bottom: 26px;
+    }
+
+    /* ---- Field labels: Inter 500, 13px, #334155 ---- */
     .form-label-custom {
       display: block;
-      font-size: 0.82rem;
-      font-weight: 600;
-      color: #374151;
-      margin-bottom: 6px;
-      font-family: 'Inter', sans-serif;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+      font-size: 13px !important;
+      font-weight: 500 !important;
+      color: #334155 !important;
+      letter-spacing: 0 !important;
+      margin-bottom: 7px !important;
+      line-height: 1.4;
     }
+
+    /* Field spacing: 18px between fields */
+    .field-group {
+      margin-bottom: 18px;
+    }
+
+    /* ---- Input fields: 46px height, #F8FAFC bg, radius 10px, 1px border ---- */
     .custom-input-field {
-      background-color: #f9fafb !important;
-      border: 1px solid #e5e7eb !important;
-      border-radius: 8px !important;
-      padding: 0.75rem 1rem !important;
-      font-size: 0.9rem;
-      color: #1f2937 !important;
-      font-family: 'Inter', sans-serif;
-      transition: all 0.2s ease;
-      height: 44px;
+      height: 46px !important;
+      background-color: #F8FAFC !important;
+      border: 1px solid #E2E8F0 !important;
+      border-radius: 10px !important;
+      padding: 0 16px !important;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+      font-size: 14px !important;
+      font-weight: 400 !important;
+      color: #0F172A !important;
+      width: 100% !important;
+      transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+      line-height: 1;
     }
+
     .custom-input-field::placeholder {
-      color: #9ca3af;
-      font-size: 0.85rem;
+      font-family: 'Inter', sans-serif !important;
+      font-size: 13.5px !important;
+      font-weight: 400 !important;
+      color: #9CA3AF !important;
     }
+
+    /* Focus state: white bg, purple border, soft purple ring */
     .custom-input-field:focus {
       background-color: #ffffff !important;
-      border-color: #8b5cf6 !important;
-      box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15) !important;
+      border-color: #8B5CF6 !important;
+      box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.10) !important;
+      outline: none !important;
     }
+
+    /* Padding-right for password field to not overlap toggle icon */
+    .custom-input-field.pe-5 {
+      padding-right: 48px !important;
+    }
+
+    /* ---- Password toggle button ---- */
     .password-toggle-btn-custom {
       position: absolute;
-      right: 12px;
+      right: 14px;
       top: 50%;
       transform: translateY(-50%);
       border: none;
       background: none;
       z-index: 10;
-      padding: 0;
-      color: #9ca3af;
+      padding: 4px;
+      color: #9CA3AF;
       display: flex;
       align-items: center;
       justify-content: center;
-    }
-    .password-toggle-btn-custom:hover {
-      color: #6b7280;
-    }
-    .forgot-link-custom {
-      color: #3b82f6;
-      font-weight: 600;
-      text-decoration: none;
+      cursor: pointer;
       transition: color 0.15s ease;
+      line-height: 1;
     }
+
+    .password-toggle-btn-custom:hover {
+      color: #6B7280;
+    }
+
+    /* ---- Remember Me & Forgot Password row ---- */
+    .login-bottom-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      font-family: 'Inter', sans-serif;
+      font-size: 13.5px;
+    }
+
+    /* Checkbox label: Inter 400, 13.5px, #4B5563 */
+    .remember-label {
+      font-family: 'Inter', sans-serif !important;
+      font-size: 13.5px !important;
+      font-weight: 400 !important;
+      color: #4B5563 !important;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    /* Checkbox: 16×16, radius 4px, #D1D5DB border */
+    .remember-check {
+      width: 16px !important;
+      height: 16px !important;
+      border-radius: 4px !important;
+      border: 1.5px solid #D1D5DB !important;
+      cursor: pointer;
+      margin: 0 !important;
+      accent-color: #6366F1;
+    }
+
+    /* "Forgot password?": Inter 600, 13.5px, #3B82F6 */
+    .forgot-link-custom {
+      font-family: 'Inter', sans-serif !important;
+      font-size: 13.5px !important;
+      font-weight: 600 !important;
+      color: #3B82F6 !important;
+      text-decoration: none !important;
+      transition: color 0.15s ease;
+      letter-spacing: 0;
+    }
+
     .forgot-link-custom:hover {
-      color: #2563eb;
-      text-decoration: underline;
+      color: #1D4ED8 !important;
+      text-decoration: none !important;
     }
+
+    /* ---- Sign In button: gradient, 48px, radius 10px, Inter 600, 14.5px ---- */
     .btn-login-custom {
-      background: linear-gradient(135deg, #446ef2 0%, #9a44f2 100%) !important;
+      background: linear-gradient(90deg, #3B82F6 0%, #6366F1 50%, #8B5CF6 100%) !important;
       color: #ffffff !important;
       border: none !important;
-      font-size: 0.92rem;
-      border-radius: 8px !important;
-      font-family: 'Poppins', sans-serif;
-      font-weight: 600;
-      height: 45px;
-      transition: all 0.2s ease;
-      box-shadow: 0 4px 12px rgba(154, 68, 242, 0.25);
+      border-radius: 10px !important;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+      font-size: 15px !important;
+      font-weight: 600 !important;
+      letter-spacing: 0.1px;
+      height: 48px !important;
+      width: 100% !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 8px;
+      cursor: pointer;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+      box-shadow: 0 4px 16px rgba(99, 102, 241, 0.32) !important;
     }
-    .btn-login-custom:hover {
+
+    .btn-login-custom:hover:not(:disabled) {
       transform: translateY(-1px);
-      box-shadow: 0 6px 16px rgba(154, 68, 242, 0.35);
-      opacity: 0.95;
+      box-shadow: 0 6px 22px rgba(99, 102, 241, 0.42) !important;
     }
-    .btn-login-custom:active {
-      transform: translateY(1px);
+
+    .btn-login-custom:active:not(:disabled) {
+      transform: translateY(0);
+      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.25) !important;
     }
+
+    .btn-login-custom:disabled {
+      opacity: 0.75;
+      cursor: not-allowed;
+    }
+
+    .btn-login-custom-wrap {
+      margin-bottom: 20px;
+    }
+
+    /* ---- SSL footer text: Inter 400, 11.5px, #94A3B8 ---- */
     .ssl-text-custom {
-      font-size: 0.72rem;
-      color: #9ca3af;
-      font-family: 'Inter', sans-serif;
+      font-family: 'Inter', sans-serif !important;
+      font-size: 11.5px !important;
+      font-weight: 400 !important;
+      color: #94A3B8 !important;
+      letter-spacing: 0.1px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      letter-spacing: 0.2px;
+      gap: 5px;
     }
+
+    .ssl-footer {
+      margin-top: 20px;
+    }
+
+    /* ---- Alert feedback blocks ---- */
     .alert-danger-custom {
-      background-color: rgba(239, 68, 68, 0.06);
-      color: #ef4444;
-      border: 1px solid rgba(239, 68, 68, 0.1) !important;
-      font-size: 0.82rem;
-      font-family: 'Inter', sans-serif;
-      border-radius: 8px !important;
+      background-color: rgba(239, 68, 68, 0.06) !important;
+      color: #ef4444 !important;
+      border: 1px solid rgba(239, 68, 68, 0.12) !important;
+      border-radius: 10px !important;
+      font-family: 'Inter', sans-serif !important;
+      font-size: 0.82rem !important;
+      margin-bottom: 18px;
     }
+
     .alert-success-custom {
-      background-color: rgba(16, 185, 129, 0.06);
-      color: #10b981;
-      border: 1px solid rgba(16, 185, 129, 0.1) !important;
-      font-size: 0.82rem;
-      font-family: 'Inter', sans-serif;
-      border-radius: 8px !important;
+      background-color: rgba(16, 185, 129, 0.06) !important;
+      color: #10b981 !important;
+      border: 1px solid rgba(16, 185, 129, 0.12) !important;
+      border-radius: 10px !important;
+      font-family: 'Inter', sans-serif !important;
+      font-size: 0.82rem !important;
+      margin-bottom: 18px;
     }
+
+    /* ---- Validation feedback text ---- */
+    .invalid-feedback {
+      font-family: 'Inter', sans-serif !important;
+      font-size: 12px !important;
+      color: #ef4444 !important;
+      margin-top: 5px !important;
+    }
+
+    /* ---- Fade-in animation ---- */
     .animate-fade-in {
-      animation: fadeIn 0.4s ease-out forwards;
+      animation: lgFadeIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
-    @keyframes fadeIn {
+
+    @keyframes lgFadeIn {
       from {
         opacity: 0;
-        transform: translateY(-10px);
+        transform: translateY(-12px);
       }
       to {
         opacity: 1;
         transform: translateY(0);
+      }
+    }
+
+    /* ---- Responsive: tighten card padding on small screens ---- */
+    @media (max-width: 480px) {
+      .login-card-custom .card-body {
+        padding: 28px 22px 24px 22px;
+      }
+      .brand-title {
+        font-size: 22px;
       }
     }
   `]

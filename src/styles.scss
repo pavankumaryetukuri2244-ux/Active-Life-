@@ -1,14 +1,144 @@
 @use "assets/base";
+
+/* ================================================================
+   GOOGLE FONTS — loaded via index.html to avoid build-time SSL issues
+   Inter (primary), Poppins, Outfit are declared in <head> link tags
+   ================================================================ */
 @import 'datatables.net-dt/css/dataTables.dataTables.css';
 @import 'datatables.net-buttons-dt/css/buttons.dataTables.css';
-@import 'assets/scss/pages/dashboards/dashboard';
+
+/* ================================================================
+   DESIGN TOKENS — CSS Custom Properties
+   ================================================================ */
+:root {
+  /* ── Typography ── */
+  --font-primary:   'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-display:   'Outfit', 'Inter', sans-serif;
+
+  /* Font sizes */
+  --fs-xs:    11.5px;   /* SSL text, badges             */
+  --fs-sm:    12px;     /* avatar initials, small labels */
+  --fs-body:  13.5px;   /* input text, field labels body */
+  --fs-label: 13px;     /* form field labels             */
+  --fs-base:  14px;     /* table cells, body text        */
+  --fs-md:    16px;     /* section/card titles           */
+  --fs-lg:    21px;     /* "Welcome back" heading        */
+  --fs-xl:    22px;     /* page/card headings            */
+  --fs-2xl:   24px;     /* page titles                  */
+  --fs-3xl:   32px;     /* metric numbers               */
+
+  /* Font weights */
+  --fw-normal:  400;
+  --fw-medium:  500;
+  --fw-semibold: 600;
+  --fw-bold:    700;
+
+  /* Line heights */
+  --lh-tight:  1.2;
+  --lh-normal: 1.4;
+  --lh-loose:  1.5;
+
+  /* ── Color Palette ── */
+  /* Grays */
+  --color-text-primary:   #111827;   /* headings, metric numbers     */
+  --color-text-secondary: #374151;   /* field values, card text       */
+  --color-text-muted:     #6B7280;   /* subtitles, labels, meta       */
+  --color-text-placeholder: #9CA3AF; /* input placeholders            */
+  --color-text-disabled:  #D1D5DB;   /* disabled states               */
+  --color-text-light:     #94A3B8;   /* SSL text, chart ticks         */
+
+  /* Background layers */
+  --color-bg-page:        #EEF2F7;   /* main content area bg          */
+  --color-bg-card:        #FFFFFF;   /* all cards                     */
+  --color-bg-input:       #F8FAFC;   /* input default background      */
+  --color-bg-input-focus: #FFFFFF;   /* input focus background        */
+  --color-bg-subtle:      #F3F4F6;   /* chip/badge/subtle bg          */
+
+  /* Brand / accent */
+  --color-brand-blue:     #3B82F6;   /* links, primary actions        */
+  --color-brand-indigo:   #6366F1;   /* button mid gradient           */
+  --color-brand-purple:   #8B5CF6;   /* button end gradient, focus    */
+  --color-brand-violet:   #7C3AED;   /* appointments icon             */
+
+  /* Status colors */
+  --color-success:        #22C55E;
+  --color-success-dark:   #16A34A;
+  --color-success-bg:     #DCFCE7;
+  --color-warning:        #F59E0B;
+  --color-warning-dark:   #D97706;
+  --color-warning-bg:     #FEF3C7;
+  --color-danger:         #EF4444;
+  --color-danger-dark:    #DC2626;
+  --color-danger-bg:      #FEE2E2;
+  --color-info:           #3B82F6;
+  --color-info-bg:        rgba(59, 130, 246, 0.08);
+
+  /* Borders */
+  --color-border:         #E2E8F0;   /* card, input default borders   */
+  --color-border-light:   #F1F5F9;   /* table row dividers            */
+  --color-border-focus:   #8B5CF6;   /* input focus border            */
+
+  /* Gradients */
+  --gradient-login-bg:    linear-gradient(135deg, #2563eb 0%, #4f46e5 22%, #7c3aed 48%, #9333ea 72%, #c026d3 100%);
+  --gradient-btn-primary: linear-gradient(90deg, #3B82F6 0%, #6366F1 50%, #8B5CF6 100%);
+
+  /* ── Spacing ── */
+  --space-1:   4px;
+  --space-2:   6px;
+  --space-3:   8px;
+  --space-4:  12px;
+  --space-5:  16px;
+  --space-6:  20px;
+  --space-7:  24px;
+  --space-8:  28px;
+  --space-9:  32px;
+  --space-10: 36px;
+  --space-11: 40px;
+  --space-12: 48px;
+
+  /* ── Border Radii ── */
+  --radius-sm:   6px;
+  --radius-md:   8px;
+  --radius-lg:  10px;
+  --radius-xl:  12px;
+  --radius-2xl: 16px;
+  --radius-3xl: 18px;
+  --radius-pill: 9999px;
+
+  /* ── Shadows ── */
+  --shadow-card:   0 1px 3px rgba(0,0,0,0.04);
+  --shadow-card-hover: 0 6px 20px rgba(0,0,0,0.07);
+  --shadow-modal:  0 20px 60px -12px rgba(0,0,0,0.25), 0 8px 20px -6px rgba(0,0,0,0.10);
+  --shadow-btn:    0 4px 16px rgba(99,102,241,0.32);
+  --shadow-icon:   0 4px 14px rgba(26,115,232,0.35);
+  --shadow-logo:   0 8px 24px rgba(0,0,0,0.12);
+}
+
+/* ================================================================
+   BASE TYPOGRAPHY — Inter everywhere, antialiased
+   ================================================================ */
+html, body {
+  font-family: var(--font-primary) !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  line-height: var(--lh-loose) !important;
+  color: var(--color-text-muted) !important;
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+  text-rendering: optimizeLegibility !important;
+}
+
+*, *::before, *::after {
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+}
 
 .app-main__inner {
   position: relative !important;
   display: block !important;
   flex: none !important;
   min-height: calc(100vh - 120px) !important;
-  padding: 50px !important;
+  padding: 28px 36px 40px 36px !important;
 }
 
 .app-main__outer {
@@ -325,48 +455,42 @@ table.dataTable tbody td {
   }
 }
 
-/* Premium typography overrides for the whole application */
+/* ================================================================
+   GLOBAL TYPOGRAPHY — Inter for all UI, headings use Outfit
+   ================================================================ */
 body {
-  font-family: 'Inter', sans-serif !important;
-  font-size: 15px !important;
-  font-weight: 400 !important;
-  line-height: 1.5 !important;
-  color: #6b7280 !important;
+  font-family: var(--font-primary) !important;
+  font-size: var(--fs-base) !important;
+  font-weight: var(--fw-normal) !important;
+  line-height: var(--lh-loose) !important;
+  color: var(--color-text-muted) !important;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-h1,
-.h1,
-h2,
-.h2,
-h3,
-.h3,
-h4,
-.h4,
-h5,
-.h5,
-h6,
-.h6,
+h1, .h1,
+h2, .h2,
+h3, .h3,
+h4, .h4,
+h5, .h5,
+h6, .h6,
 .card-title,
 .font-outfit,
 .font-weight-bold {
-  font-family: 'Outfit', sans-serif !important;
-  font-weight: 700 !important;
-  color: #475569 !important;
+  font-family: var(--font-primary) !important;
+  font-weight: var(--fw-bold) !important;
+  color: var(--color-text-primary) !important;
 }
 
-span,
-div,
-p,
-td,
-th,
-a,
-li,
-input,
-select,
-button {
-  font-family: 'Inter', sans-serif !important;
+/* Login brand title must stay white — override the h2 rule above */
+.login-bg .brand-title,
+.login-bg h2.brand-title {
+  color: #ffffff !important;
+}
+
+span, div, p, td, th, a, li,
+input, select, button {
+  font-family: var(--font-primary) !important;
 }
 
 /* Prevent blue row highlights, outlines, and text selection inside tables */
@@ -461,15 +585,15 @@ button {
   animation: toastSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* ==========================================================================
-   Modern SaaS User Management Table (Figma Exact Match)
-   ========================================================================== */
+/* ================================================================
+   MODERN USER MANAGEMENT TABLE
+   ================================================================ */
 .um-filter-card {
-  background: #FFFFFF !important;
-  border: 1px solid #E2E8F0 !important;
-  border-radius: 14px !important;
-  padding: 16px 20px !important;
-  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.04) !important;
+  background: var(--color-bg-card) !important;
+  border: 1px solid #E5E7EB !important;
+  border-radius: var(--radius-2xl) !important;
+  padding: var(--space-6) var(--space-7) !important;
+  box-shadow: var(--shadow-card) !important;
 }
 
 .um-search-wrapper {
@@ -483,66 +607,76 @@ button {
   top: 50%;
   transform: translateY(-50%);
   color: #94A3B8;
-  font-size: 16px;
+  width: 15px;
+  height: 15px;
   pointer-events: none;
 }
 
 .um-search-input {
-  height: 42px !important;
-  border-radius: 10px !important;
-  background: #F8FAFC !important;
+  height: 38px !important;
+  border-radius: 8px !important;
+  background: #F3F4F6 !important;
   border: 1px solid #E2E8F0 !important;
-  padding-left: 42px !important;
+  padding-left: 38px !important;
   padding-right: 16px !important;
   font-size: 13.5px !important;
-  font-family: 'Inter', sans-serif !important;
-  color: #0F172A !important;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  color: #111827 !important;
   width: 100% !important;
-  transition: all 0.15s ease !important;
+  transition: all 0.2s ease !important;
+}
+
+.um-search-input::placeholder {
+  color: #94A3B8 !important;
+  font-weight: 400 !important;
+  font-size: 13px !important;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
 }
 
 .um-search-input:focus {
   outline: none !important;
-  border-color: #6366F1 !important;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12) !important;
   background: #FFFFFF !important;
+  border-color: #CBD5E1 !important;
+  box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.08) !important;
 }
 
 .um-tab-btn {
   background: #FFFFFF !important;
-  border: 1px solid #E2E8F0 !important;
-  color: #64748B !important;
+  border: 1px solid #E5E7EB !important;
+  color: #111827 !important;
   border-radius: 8px !important;
-  height: 36px !important;
-  padding: 0 16px !important;
+  height: 38px !important;
+  padding: 0 20px !important;
   font-weight: 500 !important;
-  font-size: 13px !important;
-  font-family: 'Inter', sans-serif !important;
+  font-size: 13.5px !important;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
   transition: all 0.15s ease !important;
   outline: none !important;
   cursor: pointer !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
+  letter-spacing: 0.01em !important;
 }
 
 .um-tab-btn:hover {
   background: #F8FAFC !important;
   color: #0F172A !important;
+  border-color: #CBD5E1 !important;
 }
 
 .um-tab-btn.active {
-  background: #0F172A !important;
+  background: #090D16 !important;
   color: #FFFFFF !important;
-  border-color: #0F172A !important;
+  border-color: #090D16 !important;
   font-weight: 600 !important;
 }
 
 .um-table-card {
   background: #FFFFFF !important;
-  border: 1px solid #E2E8F0 !important;
+  border: 1px solid #E5E7EB !important;
   border-radius: 16px !important;
-  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.04), 0 1px 2px 0 rgba(15, 23, 42, 0.02) !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04) !important;
   overflow: hidden !important;
 }
 
@@ -560,13 +694,13 @@ button {
 }
 
 .um-table thead th {
-  font-family: 'Inter', sans-serif !important;
-  font-size: 11.5px !important;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 11px !important;
   font-weight: 600 !important;
-  color: #64748B !important;
+  color: #475569 !important;
   letter-spacing: 0.06em !important;
   text-transform: uppercase !important;
-  padding: 16px 20px !important;
+  padding: 16px 24px !important;
   vertical-align: middle !important;
   border: none !important;
   border-bottom: 1px solid #E2E8F0 !important;
@@ -575,22 +709,23 @@ button {
 }
 
 .um-table thead th.col-id {
-  padding-left: 28px !important;
-  width: 100px !important;
+  padding-left: 32px !important;
+  width: 110px !important;
 }
 
 .um-table thead th.col-actions {
-  width: 70px !important;
+  width: 80px !important;
   text-align: center !important;
+  padding-right: 28px !important;
 }
 
 .um-table thead th.col-family {
-  text-align: center !important;
-  width: 140px !important;
+  text-align: left !important;
+  width: 150px !important;
 }
 
 .um-table tbody tr {
-  height: 74px !important;
+  height: 72px !important;
   background: #FFFFFF !important;
   border-bottom: 1px solid #F1F5F9 !important;
   transition: background-color 0.15s ease !important;
@@ -605,66 +740,72 @@ button {
 }
 
 .um-table tbody td {
-  padding: 12px 20px !important;
+  padding: 16px 24px !important;
   vertical-align: middle !important;
   border: none !important;
   border-bottom: 1px solid #F1F5F9 !important;
-  font-family: 'Inter', sans-serif !important;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
 }
 
 .um-table tbody td.col-id {
-  padding-left: 28px !important;
+  padding-left: 32px !important;
   font-size: 14px !important;
-  font-weight: 600 !important;
-  color: #0F172A !important;
+  font-weight: 500 !important;
+  color: #374151 !important;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
 }
 
 .um-table tbody td.col-text {
-  font-size: 13.5px !important;
+  font-size: 14px !important;
   font-weight: 400 !important;
-  color: #334155 !important;
+  color: #374151 !important;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
 }
 
 .um-table tbody td.col-family {
-  text-align: center !important;
-  font-size: 13.5px !important;
+  text-align: left !important;
+  font-size: 14px !important;
   font-weight: 400 !important;
-  color: #334155 !important;
+  color: #475569 !important;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
 }
 
 .um-table tbody td.col-actions {
   text-align: center !important;
+  padding-right: 28px !important;
   position: relative !important;
 }
 
 .um-avatar-circle {
-  width: 42px !important;
-  height: 42px !important;
-  min-width: 42px !important;
+  width: 40px !important;
+  height: 40px !important;
+  min-width: 40px !important;
   border-radius: 50% !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   color: #FFFFFF !important;
   font-weight: 600 !important;
-  font-size: 14px !important;
+  font-size: 13.5px !important;
   letter-spacing: 0.02em !important;
-  font-family: 'Inter', sans-serif !important;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
 }
 
 .um-user-name {
   font-size: 14px !important;
   font-weight: 600 !important;
-  color: #0F172A !important;
+  color: #111827 !important;
   line-height: 1.3 !important;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
 }
 
 .um-user-email {
   font-size: 12px !important;
   font-weight: 400 !important;
-  color: #64748B !important;
+  color: #6B7280 !important;
   line-height: 1.3 !important;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
 }
 
 .um-status-badge {
@@ -672,13 +813,13 @@ button {
   align-items: center !important;
   justify-content: center !important;
   border-radius: 9999px !important;
-  padding: 4px 12px !important;
-  font-size: 12px !important;
-  font-weight: 600 !important;
+  padding: 4px 14px !important;
+  font-size: 12.5px !important;
+  font-weight: 500 !important;
   line-height: 1.4 !important;
   letter-spacing: 0.01em !important;
   white-space: nowrap !important;
-  font-family: 'Inter', sans-serif !important;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
 }
 
 .um-status-active {
@@ -717,284 +858,248 @@ button {
   color: #0F172A !important;
 }
 
-/* Page Header & Stat Cards (Figma Exact Match) */
+/* Page Header & Stat Cards */
 .um-page-title {
-  font-family: 'Inter', sans-serif !important;
-  font-size: 26px !important;
-  font-weight: 700 !important;
-  color: #0F172A !important;
-  line-height: 1.2 !important;
+  font-family: var(--font-primary) !important;
+  font-size: var(--fs-2xl) !important;
+  font-weight: var(--fw-bold) !important;
+  color: var(--color-text-primary) !important;
+  line-height: var(--lh-tight) !important;
+  letter-spacing: -0.5px !important;
   margin: 0 !important;
 }
 
 .um-page-subtitle {
-  font-family: 'Inter', sans-serif !important;
-  font-size: 14px !important;
-  font-weight: 400 !important;
-  color: #64748B !important;
-  margin-top: 4px !important;
+  font-family: var(--font-primary) !important;
+  font-size: var(--fs-base) !important;
+  font-weight: var(--fw-normal) !important;
+  color: var(--color-text-muted) !important;
+  margin-top: var(--space-1) !important;
 }
 
-.um-stat-card {
+/* ================================================================
+   STAT CARDS & NUMBERS — Unified Styles
+   ================================================================ */
+.um-stat-card,
+.cm-stat-card {
   border-radius: 16px !important;
   padding: 22px 24px !important;
-  border: 1px solid transparent !important;
-  transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+  border: none !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
   height: 100% !important;
   display: flex !important;
   flex-direction: column !important;
   justify-content: space-between !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
 }
 
-.um-stat-card-blue {
-  background-color: #EFF6FF !important;
-  border-color: #DBEAFE !important;
+.um-stat-card:hover,
+.cm-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05) !important;
 }
 
-.um-stat-card-green {
+/* Backgrounds */
+.um-stat-card-blue,
+.cm-stat-card-blue {
+  background-color: #F0F6FF !important;
+}
+
+.um-stat-card-green,
+.cm-stat-card-green {
   background-color: #F0FDF4 !important;
-  border-color: #DCFCE7 !important;
 }
 
-.um-stat-card-yellow {
-  background-color: #FEFCE8 !important;
-  border-color: #FEF9C3 !important;
+.um-stat-card-purple,
+.cm-stat-card-purple {
+  background-color: #FAF5FF !important;
 }
 
-.um-stat-card-red {
+.um-stat-card-yellow,
+.um-stat-card-amber,
+.cm-stat-card-amber {
+  background-color: #FFFBEB !important;
+}
+
+.um-stat-card-red,
+.cm-stat-card-red {
   background-color: #FEF2F2 !important;
-  border-color: #FEE2E2 !important;
 }
 
-.um-stat-label {
-  font-family: 'Inter', sans-serif !important;
-  font-size: 13.5px !important;
+/* Labels */
+.um-stat-label,
+.cm-stat-label {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 13px !important;
   font-weight: 500 !important;
-  color: #475569 !important;
-  margin-bottom: 12px !important;
+  color: #64748B !important;
+  margin-bottom: 8px !important;
   display: block !important;
+  letter-spacing: 0.01em !important;
 }
 
-.um-stat-value {
-  font-family: 'Inter', sans-serif !important;
+/* Values (Numbers) */
+.um-stat-value,
+.cm-stat-value {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
   font-size: 28px !important;
   font-weight: 700 !important;
-  line-height: 1.1 !important;
+  line-height: 1.15 !important;
+  letter-spacing: -0.02em !important;
   margin: 0 !important;
 }
 
-.um-stat-value-blue {
+.um-stat-value-blue,
+.cm-stat-value-blue {
   color: #2563EB !important;
 }
 
-.um-stat-value-green {
+.um-stat-value-green,
+.cm-stat-value-green {
   color: #16A34A !important;
 }
 
-.um-stat-value-yellow {
-  color: #D97706 !important;
+.um-stat-value-purple,
+.cm-stat-value-purple {
+  color: #9333EA !important;
 }
 
-.um-stat-value-red {
+.um-stat-value-yellow,
+.cm-stat-value-amber,
+.cm-stat-value-amber {
+  color: #EA580C !important;
+}
+
+.um-stat-value-red,
+.cm-stat-value-red {
   color: #DC2626 !important;
 }
 
-/* ==========================================================================
- 
-   ========================================================================== */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
-
+/* ================================================================
+   APP LAYOUT BACKGROUNDS — #EEF2F7 page bg
+   ================================================================ */
 .app-main__outer {
-  background-color: #F7F9FC !important;
+  background-color: var(--color-bg-page) !important;
 }
 
-/* Base Font Enforcement */
-.db-title,
-.db-subtitle,
-.db-stat-card,
-.db-metric-label,
-.db-metric-number,
-.db-trend-green,
-.db-chart-card,
-.db-chart-title {
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
-  text-transform: none !important;
-  font-style: normal !important;
+.app-main__inner {
+  background-color: var(--color-bg-page) !important;
 }
 
+/* ================================================================
+   DASHBOARD STYLES
+   ================================================================ */
+
+/* ── Page header ── */
 .db-title {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
-  font-size: 28px !important;
-  font-weight: 800 !important;
-  color: #0F172A !important;
-  line-height: 1.2 !important;
-  letter-spacing: -0.02em !important;
+  font-family: var(--font-primary) !important;
+  font-size: var(--fs-2xl) !important;
+  font-weight: var(--fw-bold) !important;
+  color: var(--color-text-primary) !important;
+  line-height: var(--lh-tight) !important;
+  letter-spacing: -0.5px !important;
   margin: 0 !important;
 }
 
 .db-subtitle {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
-  font-size: 14px !important;
-  font-weight: 400 !important;
-  color: #64748B !important;
-  line-height: 1.4 !important;
-  margin-top: 4px !important;
+  font-family: var(--font-primary) !important;
+  font-size: var(--fs-base) !important;
+  font-weight: var(--fw-normal) !important;
+  color: var(--color-text-muted) !important;
+  line-height: var(--lh-loose) !important;
+  margin-top: var(--space-1) !important;
 }
 
+/* ── Stat cards ── */
 .db-stat-card {
-  background: #FFFFFF !important;
-  border: 1px solid #E5E7EB !important;
-  border-radius: 16px !important;
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.03) !important;
-  transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+  background: var(--color-bg-card) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: var(--radius-2xl) !important;
+  box-shadow: var(--shadow-card) !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+  overflow: hidden !important;
 }
 
-:root {
-  --spacing: 0.25rem;
-  --color-slate-500: #64748b;
-  --color-slate-800: #1e293b;
-  --text-xs: 0.75rem;
-  --text-xs--line-height: 1rem;
-  --text-sm: 0.875rem;
-  --text-sm--line-height: 1.25rem;
-  --text-base: 1rem;
-  --text-base--line-height: 1.5rem;
-  --text-lg: 1.125rem;
-  --text-lg--line-height: 1.75rem;
-  --ring: #3b82f6;
+.db-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-card-hover) !important;
 }
 
+/* Metric label: Inter 400, 12px, #6B7280 */
 .metric-label {
-  font-family: 'Poppins', sans-serif !important;
-  font-size: 14px !important;
-  font-weight: 500 !important;
-  color: #5F6B7A !important;
-  line-height: 1.4 !important;
-  margin: 0 0 4px 0 !important;
+  font-family: var(--font-primary) !important;
+  font-size: var(--fs-sm) !important;
+  font-weight: var(--fw-normal) !important;
+  color: var(--color-text-muted) !important;
+  line-height: var(--lh-normal) !important;
+  margin: 0 0 var(--space-1) 0 !important;
+  letter-spacing: 0.01em !important;
 }
 
-.db-metric-label {
-  font-family: 'Poppins', sans-serif !important;
-  font-size: 14px !important;
-  font-weight: 500 !important;
-  color: #5F6B7A !important;
-  display: block !important;
-  line-height: 1.4 !important;
-  margin: 0 0 4px 0 !important;
+/* Metric number: Inter 700, 32px, #111827, tracking -0.03em */
+.db-metric-number,
+h3.db-metric-number {
+  font-family: var(--font-primary) !important;
+  font-size: var(--fs-3xl) !important;
+  font-weight: var(--fw-bold) !important;
+  color: var(--color-text-primary) !important;
+  line-height: 1.1 !important;
+  margin: 0 0 var(--space-2) 0 !important;
+  letter-spacing: -0.03em !important;
 }
 
-.text-slate-500 {
-  color: var(--color-slate-500) !important;
-}
-
-.text-slate-800 {
-  color: var(--color-slate-800, #1e293b) !important;
-}
-
-.font-semibold {
-  font-weight: 600 !important;
-}
-
-.text-xs {
-  font-size: var(--text-xs) !important;
-  line-height: var(--text-xs--line-height, 1rem) !important;
-}
-
-.text-base {
-  font-size: var(--text-base, 1rem) !important;
-  line-height: var(--text-base--line-height, 1.5rem) !important;
-}
-
-.sm\:text-sm {
-  font-size: var(--text-sm) !important;
-  line-height: var(--text-sm--line-height, 1.25rem) !important;
-}
-
-.sm\:text-lg {
-  font-size: var(--text-lg, 1.125rem) !important;
-  line-height: var(--text-lg--line-height, 1.75rem) !important;
-}
-
-@media (min-width: 40rem) {
-  .sm\:text-sm {
-    font-size: var(--text-sm) !important;
-    line-height: var(--text-sm--line-height, 1.25rem) !important;
-  }
-  .sm\:text-lg {
-    font-size: var(--text-lg, 1.125rem) !important;
-    line-height: var(--text-lg--line-height, 1.75rem) !important;
-  }
-}
-
-.mb-1 {
-  margin-bottom: calc(var(--spacing) * 1) !important;
-}
-
-.mb-4 {
-  margin-bottom: calc(var(--spacing) * 4) !important;
-}
-
-p.text-slate-500 {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
-  font-weight: 500 !important;
-}
-
-h3.text-slate-800 {
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
-  margin: 0 0 calc(var(--spacing) * 4) 0 !important;
-}
-
-@supports (color: color-mix(in lab, red, red)) {
-  * {
-    outline-color: color-mix(in oklab, var(--ring, #3b82f6) 50%, transparent);
-  }
-}
-
-.db-metric-number {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
-  font-size: 28px !important;
-  font-weight: 800 !important;
-  color: #0F172A !important;
-  line-height: 1.15 !important;
-  margin: 3px 0 5px 0 !important;
-  letter-spacing: -0.02em !important;
-}
-
+/* Trend badge: Inter 600, 13px, green */
 .db-trend-green {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
-  font-size: 12.5px !important;
-  font-weight: 600 !important;
-  color: #10B981 !important;
+  font-family: var(--font-primary) !important;
+  font-size: 13px !important;
+  font-weight: var(--fw-semibold) !important;
+  color: var(--color-success) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 3px !important;
 }
 
+/* Icon box: 48×48, radius 12px */
 .db-icon-box {
-  width: 44px !important;
-  height: 44px !important;
-  border-radius: 14px !important;
+  width: 48px !important;
+  height: 48px !important;
+  border-radius: var(--radius-xl) !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   flex-shrink: 0 !important;
 }
 
+.db-icon-box svg {
+  width: 22px !important;
+  height: 22px !important;
+}
+
+/* ── Chart / section cards ── */
 .db-chart-card {
-  background: #FFFFFF !important;
-  border: 1px solid #E5E7EB !important;
-  border-radius: 18px !important;
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.03) !important;
-  transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+  background: var(--color-bg-card) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: var(--radius-2xl) !important;
+  box-shadow: var(--shadow-card) !important;
   overflow: hidden !important;
 }
 
-.db-chart-title {
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
-  font-size: 15.5px !important;
-  font-weight: 500 !important;
-  color: #475569 !important;
-  margin: 0 !important;
-  letter-spacing: -0.01em !important;
-  line-height: 1.4 !important;
+/* Section title: Inter 700, 16px, #111827, tracking -0.3px */
+.db-section-title,
+.db-chart-card .card-header h3 {
+  font-family: var(--font-primary) !important;
+  font-size: var(--fs-md) !important;
+  font-weight: var(--fw-bold) !important;
+  color: var(--color-text-primary) !important;
+  margin: 0 0 var(--space-5) 0 !important;
+  letter-spacing: -0.3px !important;
+  line-height: var(--lh-tight) !important;
 }
+
+canvas {
+  max-width: 100% !important;
+}
+
 
 /* Remove theme box-shadow and background on modal dialog container */
 .modal-dialog {

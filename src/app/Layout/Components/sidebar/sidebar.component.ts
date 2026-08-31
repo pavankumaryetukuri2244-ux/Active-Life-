@@ -73,36 +73,36 @@ import { ActivatedRoute, Router } from '@angular/router';
     /* Premium style overrides for sidebar links */
     ::ng-deep .vsm-list .vsm-item,
     ::ng-deep .vsm-item {
-      margin: 2px 0px !important;
+      margin: 2px 8px !important;
       height: auto !important;
     }
     
     :host ::ng-deep .vsm-list .vsm-link {
       color: #334155 !important;
-      font-family: 'Poppins', sans-serif !important;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
       font-weight: 500 !important;
-      font-size: 0.88rem !important;
+      font-size: 13.5px !important;
       text-decoration: none !important;
       transition: all 0.2s ease !important;
-    }
-
-    ::ng-deep .vsm-list .vsm-link,
-    ::ng-deep .vsm-link {
-      padding: 12px 24px !important;
-      border-radius: 0px !important;
+      padding: 9px 14px !important;
+      border-radius: 8px !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 10px !important;
     }
 
     :host ::ng-deep .vsm-list .vsm-icon {
-      font-size: 1.2rem !important;
+      font-size: 1.15rem !important;
       color: #1e293b !important;
       transition: all 0.2s ease !important;
     }
 
     :host ::ng-deep .vsm-list .vsm-title {
       color: #334155 !important;
-      font-family: 'Poppins', sans-serif !important;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
       font-weight: 500 !important;
-      font-size: 0.88rem !important;
+      font-size: 13.5px !important;
+      letter-spacing: -0.01em !important;
       transition: all 0.2s ease !important;
     }
 
@@ -111,6 +111,7 @@ import { ActivatedRoute, Router } from '@angular/router';
     :host ::ng-deep .vsm-list .vsm-link.active-item {
       background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%) !important;
       box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2) !important;
+      color: #ffffff !important;
     }
 
     :host ::ng-deep .vsm-list .vsm-item.vsm-active .vsm-link .vsm-title,
@@ -121,6 +122,9 @@ import { ActivatedRoute, Router } from '@angular/router';
 
     :host ::ng-deep .vsm-list .vsm-icon-svg {
       color: #64748b !important;
+      width: 18px !important;
+      height: 18px !important;
+      min-width: 18px !important;
       transition: all 0.2s ease !important;
     }
 
@@ -131,7 +135,89 @@ import { ActivatedRoute, Router } from '@angular/router';
 
     :host ::ng-deep .vsm-list .vsm-link:hover:not(.active-item) {
       background-color: #f1f5f9 !important;
-      border-radius: 10px !important;
+      color: #0f172a !important;
+    }
+
+    :host ::ng-deep .vsm-list .vsm-link:hover:not(.active-item) .vsm-icon-svg {
+      color: #0f172a !important;
+    }
+
+    /* Profile footer styling */
+    .sidebar-profile-footer {
+      border-top: 1px solid #EEF2F6 !important;
+      background: #FFFFFF !important;
+      height: 74px !important;
+      padding: 16px 20px !important;
+      position: absolute !important;
+      bottom: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      z-index: 10 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+    }
+
+    .sidebar-user-avatar {
+      width: 42px !important;
+      height: 42px !important;
+      border-radius: 50% !important;
+      background: linear-gradient(135deg, #00D284 0%, #0084FF 100%) !important;
+      color: #FFFFFF !important;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+      font-size: 16px !important;
+      font-weight: 700 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      flex-shrink: 0 !important;
+      box-shadow: 0 2px 6px rgba(0, 132, 255, 0.2) !important;
+    }
+
+    .sidebar-user-info {
+      display: flex !important;
+      flex-direction: column !important;
+      margin-left: 12px !important;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    }
+
+    .sidebar-user-name {
+      font-size: 14px !important;
+      font-weight: 700 !important;
+      color: #0F172A !important;
+      line-height: 1.2 !important;
+      letter-spacing: -0.01em !important;
+    }
+
+    .sidebar-user-email {
+      font-size: 12.5px !important;
+      font-weight: 400 !important;
+      color: #64748B !important;
+      line-height: 1.2 !important;
+      margin-top: 3px !important;
+    }
+
+    .sidebar-logout-btn {
+      background: transparent !important;
+      border: none !important;
+      padding: 6px !important;
+      color: #64748B !important;
+      cursor: pointer !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      border-radius: 8px !important;
+      transition: all 0.2s ease !important;
+      outline: none !important;
+    }
+
+    .sidebar-logout-btn:hover {
+      background: #F1F5F9 !important;
+      color: #0F172A !important;
+    }
+
+    .sidebar-logout-btn svg {
+      stroke: currentColor !important;
     }
   `]
 })

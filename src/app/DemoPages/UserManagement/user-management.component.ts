@@ -18,7 +18,7 @@ interface UserStats {
   blockedUsers: number;
 }
 
-// Avatar gradient palette matching Figma design
+// Avatar gradient palette
 const AVATAR_GRADIENTS = [
   'linear-gradient(135deg, #818CF8 0%, #6366F1 100%)',
   'linear-gradient(135deg, #60A5FA 0%, #6366F1 100%)',

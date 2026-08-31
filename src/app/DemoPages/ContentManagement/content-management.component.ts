@@ -17,7 +17,183 @@ interface ContentItem {
 @Component({
   selector: 'app-content-management',
   templateUrl: './content-management.component.html',
-  standalone: false
+  standalone: false,
+  styles: [`
+    .cm-page-title {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+      font-size: 24px !important;
+      font-weight: 700 !important;
+      color: #111827 !important;
+      letter-spacing: -0.02em !important;
+      margin: 0 0 4px 0 !important;
+    }
+
+    .cm-page-subtitle {
+      font-family: 'Inter', sans-serif !important;
+      font-size: 13.5px !important;
+      font-weight: 400 !important;
+      color: #6B7280 !important;
+      margin: 0 !important;
+    }
+
+    /* Upload Content Button */
+    .cm-btn-upload {
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+      background: #059669 !important;
+      color: #FFFFFF !important;
+      border: none !important;
+      border-radius: 10px !important;
+      padding: 9px 18px !important;
+      font-family: 'Inter', sans-serif !important;
+      font-size: 13.5px !important;
+      font-weight: 600 !important;
+      cursor: pointer !important;
+      box-shadow: 0 2px 6px rgba(5, 150, 105, 0.25) !important;
+      transition: all 0.2s ease !important;
+    }
+    .cm-btn-upload:hover {
+      background: #047857 !important;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(5, 150, 105, 0.35) !important;
+    }
+    .cm-btn-upload:active {
+      transform: translateY(0);
+    }
+
+    /* Stat Cards - Pastel Colored Boxes */
+    .cm-stat-card {
+      border-radius: 16px !important;
+      border: none !important;
+      padding: 22px 24px !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      height: 100% !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: space-between !important;
+    }
+    .cm-stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05) !important;
+    }
+
+    .cm-stat-card-blue {
+      background: #F0F6FF !important;
+    }
+    .cm-stat-card-green {
+      background: #F0FDF4 !important;
+    }
+    .cm-stat-card-purple {
+      background: #FAF5FF !important;
+    }
+    .cm-stat-card-amber {
+      background: #FFFBEB !important;
+    }
+
+    .cm-stat-label {
+      font-family: 'Inter', sans-serif !important;
+      font-size: 13px !important;
+      font-weight: 500 !important;
+      color: #64748B !important;
+      margin-bottom: 8px !important;
+      display: block !important;
+    }
+
+    .cm-stat-value {
+      font-family: 'Inter', sans-serif !important;
+      font-size: 28px !important;
+      font-weight: 700 !important;
+      letter-spacing: -0.02em !important;
+      margin: 0 !important;
+    }
+
+    .cm-stat-value-blue {
+      color: #2563EB !important;
+    }
+
+    .cm-stat-value-green {
+      color: #16A34A !important;
+    }
+
+    .cm-stat-value-purple {
+      color: #9333EA !important;
+    }
+
+    .cm-stat-value-amber {
+      color: #EA580C !important;
+    }
+
+    /* Filter Card */
+    .cm-filter-card {
+      border-radius: 16px !important;
+      border: 1px solid #E5E7EB !important;
+      background: #FFFFFF !important;
+      padding: 20px 24px !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+    }
+
+    .cm-search-wrapper {
+      position: relative !important;
+      width: 100% !important;
+    }
+
+    .cm-search-icon {
+      position: absolute !important;
+      left: 14px !important;
+      top: 50% !important;
+      transform: translateY(-50%) !important;
+      color: #94A3B8 !important;
+      pointer-events: none !important;
+    }
+
+    .cm-search-input {
+      width: 100% !important;
+      height: 42px !important;
+      border-radius: 10px !important;
+      border: 1px solid #E2E8F0 !important;
+      background: #F8FAFC !important;
+      padding: 0 16px 0 42px !important;
+      font-family: 'Inter', sans-serif !important;
+      font-size: 13.5px !important;
+      color: #111827 !important;
+      outline: none !important;
+      transition: all 0.2s ease !important;
+    }
+
+    .cm-search-input:focus {
+      background: #FFFFFF !important;
+      border-color: #3B82F6 !important;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+    }
+
+    .cm-tab-btn {
+      background: #FFFFFF !important;
+      border: 1px solid #E5E7EB !important;
+      color: #374151 !important;
+      border-radius: 8px !important;
+      padding: 7px 18px !important;
+      font-family: 'Inter', sans-serif !important;
+      font-size: 13px !important;
+      font-weight: 500 !important;
+      cursor: pointer !important;
+      transition: all 0.15s ease !important;
+      outline: none !important;
+    }
+
+    .cm-tab-btn:hover {
+      background: #F8FAFC !important;
+      color: #111827 !important;
+    }
+
+    .cm-tab-btn.active {
+      background: #090D16 !important;
+      color: #FFFFFF !important;
+      border-color: #090D16 !important;
+      font-weight: 600 !important;
+    }
+  `]
 })
 export class ContentManagementComponent implements OnInit {
   

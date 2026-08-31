@@ -1,45 +1,31 @@
-<div class="app-page-title mb-4 bg-transparent p-0 shadow-none border-0">
-  <div class="page-title-wrapper">
-    <div class="page-title-heading">
-      <div class="d-flex flex-column">
-        <h1 class="font-weight-bold m-0" style="font-family: 'Outfit', sans-serif; font-size: 2rem; color: #1e293b;">
-          Preventive Care Management
-        </h1>
-        <div class="page-title-subheading text-muted mt-1" style="font-size: 0.95rem; font-family: 'Inter', sans-serif;">
-          Manage pregnancy and child vaccination programs
-        </div>
-      </div>
-    </div>
-  </div>
+<!-- Page Title Header -->
+<div class="mb-4">
+  <h1 class="pc-page-title">Preventive Care Management</h1>
+  <div class="pc-page-subtitle">Manage pregnancy and child vaccination programs</div>
 </div>
 
 <!-- Error Alert -->
 <div *ngIf="errorMessage" class="alert alert-danger mb-4" style="border-radius: 10px; font-family: 'Inter', sans-serif; font-size: 0.95rem;">
   {{ errorMessage }}
 </div>
+
 <!-- Tab Switcher -->
 <div class="row mb-4">
   <div class="col-md-12">
-    <div class="p-1.5 d-flex gap-1" style="background: #f1f3f5; border-radius: 30px; padding: 6px;">
+    <div class="pc-tab-container">
       <button (click)="setTab('Pregnancy Care')" 
-              [style.background]="activeTab === 'Pregnancy Care' ? '#ffffff' : 'transparent'"
-              [style.color]="activeTab === 'Pregnancy Care' ? '#1e293b' : '#495057'"
-              [style.box-shadow]="activeTab === 'Pregnancy Care' ? '0 4px 10px rgba(0, 0, 0, 0.05)' : 'none'"
-              style="border-radius: 20px; font-weight: 600; border: none; flex: 1; padding: 10px 0; text-align: center; font-size: 0.95rem; outline: none; transition: all 0.2s;">
+              class="pc-tab-btn"
+              [class.active]="activeTab === 'Pregnancy Care'">
         Pregnancy Care
       </button>
       <button (click)="setTab('Pregnancy Vaccines')" 
-              [style.background]="activeTab === 'Pregnancy Vaccines' ? '#ffffff' : 'transparent'"
-              [style.color]="activeTab === 'Pregnancy Vaccines' ? '#1e293b' : '#495057'"
-              [style.box-shadow]="activeTab === 'Pregnancy Vaccines' ? '0 4px 10px rgba(0, 0, 0, 0.05)' : 'none'"
-              style="border-radius: 20px; font-weight: 600; border: none; flex: 1; padding: 10px 0; text-align: center; font-size: 0.95rem; outline: none; transition: all 0.2s;">
+              class="pc-tab-btn"
+              [class.active]="activeTab === 'Pregnancy Vaccines'">
         Pregnancy Vaccines
       </button>
       <button (click)="setTab('Child Vaccines')" 
-              [style.background]="activeTab === 'Child Vaccines' ? '#ffffff' : 'transparent'"
-              [style.color]="activeTab === 'Child Vaccines' ? '#1e293b' : '#495057'"
-              [style.box-shadow]="activeTab === 'Child Vaccines' ? '0 4px 10px rgba(0, 0, 0, 0.05)' : 'none'"
-              style="border-radius: 20px; font-weight: 600; border: none; flex: 1; padding: 10px 0; text-align: center; font-size: 0.95rem; outline: none; transition: all 0.2s;">
+              class="pc-tab-btn"
+              [class.active]="activeTab === 'Child Vaccines'">
         Child Vaccines
       </button>
     </div>
@@ -50,116 +36,71 @@
 @if (activeTab === 'Pregnancy Care') {
 <div class="row">
   <div class="col-md-12">
-    <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px; background: #ffffff; border: 1px solid #eef2f6;">
-      <div class="card-body p-4">
-        
-        <!-- Section Header -->
-        <div class="d-flex align-items-center justify-content-between mb-4">
-          <h4 class="font-weight-bold text-dark m-0" style="font-family: 'Outfit', sans-serif; font-size: 1.25rem;">
-            Pregnancy Stages & Milestones
-          </h4>
-          <button (click)="openAddStageModal()" class="btn font-weight-bold d-flex align-items-center gap-2" style="background: #ff2d55; color: #ffffff; border-radius: 8px; padding: 8px 16px; font-size: 0.85rem; border: none; font-family: 'Poppins', sans-serif;">
-            <i class="pe-7s-plus" style="font-size: 0.9rem; font-weight: bold; margin-right: 4px;"></i>
-            <span>Add Stage</span>
-          </button>
-        </div>
-
-        <!-- Stage Cards List -->
-        <div class="d-flex flex-column">
-          <div *ngFor="let stage of stagesList" class="card p-3 mb-3" style="border-radius: 12px; border: 1px solid #eef2f6 !important; background: #ffffff; box-shadow: none;">
-            <div class="d-flex align-items-center justify-content-between flex-wrap">
-              
-              <!-- Left section with Icon & Title details -->
-              <div class="d-flex align-items-center">
-                <!-- Red Rounded icon square -->
-                <div class="rounded-3 d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px; border-radius: 10px; background: #ff2d55; color: #ffffff; box-shadow: 0 4px 10px rgba(255, 45, 85, 0.2); flex-shrink: 0;">
-                  <i class="pe-7s-like" style="font-size: 1.3rem; color: #ffffff;"></i>
-                </div>
-                <!-- Text Details -->
-                <div class="d-flex flex-column">
-                  <div class="d-flex align-items-center flex-wrap">
-                    <span class="font-weight-bold text-dark" style="font-size: 1rem; font-family: 'Poppins', sans-serif;">{{ stage.weekRange }}</span>
-                    <span class="text-muted ms-3" style="font-size: 0.82rem; font-family: 'Poppins', sans-serif;">{{ stage.trimester }}</span>
-                  </div>
-                  <span class="text-muted mt-1" style="font-size: 0.85rem; font-family: 'Poppins', sans-serif;">
-                    <strong class="text-dark">Milestones:</strong> {{ stage.milestones }}
-                  </span>
-                  <span class="text-muted" style="font-size: 0.85rem; font-family: 'Poppins', sans-serif;">
-                    <strong class="text-dark">Scans:</strong> {{ stage.scans }}
-                  </span>
-                </div>
-              </div>
-
-              <!-- Right section with Status Badge and Edit/Delete controls -->
-              <div class="d-flex align-items-center">
-                <span class="badge font-weight-bold me-3" style="border-radius: 6px; font-size: 0.75rem; padding: 5px 10px; background: #e6fcf5; color: #0ca678;">
-                  {{ stage.status }}
-                </span>
-                <button class="btn btn-link text-muted p-0 border-0 bg-transparent me-3" style="font-size: 1.25rem; outline: none; line-height: 1;">
-                  <i class="pe-7s-note"></i>
-                </button>
-                <button class="btn btn-link text-danger p-0 border-0 bg-transparent" style="font-size: 1.25rem; outline: none; line-height: 1;">
-                  <i class="pe-7s-trash"></i>
-                </button>
-              </div>
-
-            </div>
-          </div>
-        </div>
-
+    <div class="pc-content-card mb-4">
+      
+      <!-- Section Header -->
+      <div class="d-flex align-items-center justify-content-between mb-4">
+        <h4 class="pc-card-title">
+          Pregnancy Stages & Milestones
+        </h4>
+        <button (click)="openAddStageModal()" class="pc-btn-add">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          <span>Add Stage</span>
+        </button>
       </div>
-    </div>
-  </div>
-</div>
 
-<!-- Automated Reminder Settings Card -->
-<div class="row">
-  <div class="col-md-12">
-    <div class="card border-0" style="border-radius: 16px; background: #f8faff; border: 1px solid #eef2ff;">
-      <div class="card-body p-4">
-        <h5 class="font-weight-bold text-dark mb-4" style="font-family: 'Outfit', sans-serif; font-size: 1.1rem;">
-          Automated Reminder Settings
-        </h5>
-        
-        <div class="row">
-          <!-- Col 1: Vaccination Reminders -->
-          <div class="col-md-6 mb-4 mb-md-0">
-            <div class="d-flex align-items-start">
-              <div class="d-flex align-items-center justify-content-center me-3" style="width: 44px; height: 44px; background: #ffffff; border-radius: 8px; border: 1px solid #eef2ff; color: #2563eb; flex-shrink: 0;">
-                <i class="pe-7s-date" style="font-size: 1.4rem; color: #2563eb;"></i>
+      <!-- Stage Cards List -->
+      <div class="d-flex flex-column">
+        <div *ngFor="let stage of stagesList" class="pc-list-item">
+          
+          <!-- Left section with Icon & Details -->
+          <div class="d-flex align-items-center" style="gap: 16px;">
+            <!-- Pink Rounded icon square with Heart SVG -->
+            <div class="pc-badge-icon" style="background: #F43F5E;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+              </svg>
+            </div>
+            <!-- Text Details -->
+            <div class="d-flex flex-column" style="gap: 2px;">
+              <div class="d-flex align-items-center flex-wrap" style="gap: 10px;">
+                <span style="font-size: 15px; font-weight: 700; color: #0F172A; font-family: 'Inter', sans-serif;">{{ stage.weekRange }}</span>
+                <span style="font-size: 13px; font-weight: 400; color: #64748B; font-family: 'Inter', sans-serif;">{{ stage.trimester }}</span>
               </div>
-              <div class="d-flex flex-column">
-                <span class="font-weight-bold text-dark" style="font-size: 0.95rem; font-family: 'Poppins', sans-serif;">Vaccination Reminders</span>
-                <span class="text-muted mt-1 mb-2" style="font-size: 0.85rem; font-family: 'Poppins', sans-serif;">Send reminders 7 days before scheduled vaccinations</span>
-                <div>
-                  <span class="badge font-weight-bold" style="border-radius: 6px; font-size: 0.75rem; padding: 4px 8px; background: #e6fcf5; color: #0ca678;">
-                    Enabled
-                  </span>
-                </div>
+              <div style="font-size: 13px; font-family: 'Inter', sans-serif; color: #334155; margin-top: 2px;">
+                <span style="font-weight: 600; color: #0F172A;">Milestones:</span> {{ stage.milestones }}
+              </div>
+              <div style="font-size: 13px; font-family: 'Inter', sans-serif; color: #64748B;">
+                <span style="font-weight: 600; color: #0F172A;">Scans:</span> {{ stage.scans }}
               </div>
             </div>
           </div>
 
-          <!-- Col 2: Milestone Notifications -->
-          <div class="col-md-6">
-            <div class="d-flex align-items-start">
-              <div class="d-flex align-items-center justify-content-center me-3" style="width: 44px; height: 44px; background: #ffffff; border-radius: 8px; border: 1px solid #eef2ff; color: #ff2d55; flex-shrink: 0;">
-                <i class="pe-7s-like" style="font-size: 1.4rem; color: #ff2d55;"></i>
-              </div>
-              <div class="d-flex flex-column">
-                <span class="font-weight-bold text-dark" style="font-size: 0.95rem; font-family: 'Poppins', sans-serif;">Milestone Notifications</span>
-                <span class="text-muted mt-1 mb-2" style="font-size: 0.85rem; font-family: 'Poppins', sans-serif;">Notify users about pregnancy milestones and checkups</span>
-                <div>
-                  <span class="badge font-weight-bold" style="border-radius: 6px; font-size: 0.75rem; padding: 4px 8px; background: #e6fcf5; color: #0ca678;">
-                    Enabled
-                  </span>
-                </div>
-              </div>
-            </div>
+          <!-- Right section with Status Badge and Edit/Delete controls -->
+          <div class="d-flex align-items-center" style="gap: 12px;">
+            <span class="pc-status-badge">
+              {{ stage.status }}
+            </span>
+            <button class="pc-icon-btn" title="Edit Stage">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+            </button>
+            <button class="pc-icon-btn danger" title="Delete Stage">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+            </button>
           </div>
+
         </div>
-
       </div>
+
     </div>
   </div>
 </div>
@@ -169,71 +110,76 @@
 @if (activeTab === 'Pregnancy Vaccines') {
 <div class="row">
   <div class="col-md-12">
-    <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px; background: #ffffff; border: 1px solid #eef2f6;">
-      <div class="card-body p-4">
-        
-        <!-- Section Header -->
-        <div class="d-flex align-items-center justify-content-between mb-4">
-          <h4 class="font-weight-bold text-dark m-0" style="font-family: 'Outfit', sans-serif; font-size: 1.25rem;">
-            Pregnancy Vaccination Schedule
-          </h4>
-          <button (click)="openAddPregnancyVaccineModal()" class="btn font-weight-bold d-flex align-items-center gap-2" style="background: linear-gradient(135deg, #a855f7, #ff2d55); color: #ffffff; border-radius: 8px; padding: 8px 16px; font-size: 0.85rem; border: none; font-family: 'Poppins', sans-serif; box-shadow: 0 4px 10px rgba(255, 45, 85, 0.15);">
-            <i class="pe-7s-plus" style="font-size: 0.9rem; font-weight: bold; margin-right: 4px;"></i>
-            <span>Add Vaccine</span>
-          </button>
-        </div>
+    <div class="pc-content-card mb-4">
+      
+      <!-- Section Header -->
+      <div class="d-flex align-items-center justify-content-between mb-4">
+        <h4 class="pc-card-title">
+          Pregnancy Vaccination Schedule
+        </h4>
+        <button (click)="openAddPregnancyVaccineModal()" class="pc-btn-add" style="background: linear-gradient(135deg, #A855F7, #EC4899) !important;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          <span>Add Vaccine</span>
+        </button>
+      </div>
 
-        <!-- Vaccine Cards List -->
-        <div class="d-flex flex-column">
-          <div *ngFor="let vaccine of pregnancyVaccines" class="card p-3 mb-3" style="border-radius: 12px; border: 1px solid #eef2f6 !important; background: #ffffff; box-shadow: none;">
-            <div class="d-flex align-items-center justify-content-between flex-wrap">
-              
-              <!-- Left section with Icon & Title details -->
-              <div class="d-flex align-items-center">
-                <!-- Violet/pink gradient icon square with Syringe SVG -->
-                <div class="rounded-3 d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px; border-radius: 10px; background: linear-gradient(135deg, #a855f7, #ff2d55); color: #ffffff; box-shadow: 0 4px 10px rgba(255, 45, 85, 0.2); flex-shrink: 0;">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="m18 2 4 4"></path>
-                    <path d="m17 7 3-3"></path>
-                    <path d="M19 9 8.7 19.3c-.2.2-.5.3-.7.3H5v-3c0-.3.1-.5.3-.7L15.6 5.6"></path>
-                    <path d="m9 11 4 4"></path>
-                    <path d="m5 19-3 3"></path>
-                    <path d="m14 4 6 6"></path>
-                  </svg>
-                </div>
-                <!-- Text Details -->
-                <div class="d-flex flex-column">
-                  <span class="font-weight-bold text-dark" style="font-size: 1rem; font-family: 'Poppins', sans-serif;">{{ vaccine.title }}</span>
-                  <span class="text-muted mt-1" style="font-size: 0.85rem; font-family: 'Poppins', sans-serif;">
-                    {{ vaccine.timing }}
-                  </span>
-                  <span class="text-muted" style="font-size: 0.85rem; font-family: 'Poppins', sans-serif;">
-                    {{ vaccine.description }}
-                  </span>
-                </div>
+      <!-- Vaccine Cards List -->
+      <div class="d-flex flex-column">
+        <div *ngFor="let vaccine of pregnancyVaccines" class="pc-list-item">
+          
+          <!-- Left section with Icon & Details -->
+          <div class="d-flex align-items-center" style="gap: 16px;">
+            <!-- Purple-to-pink gradient Rounded icon square with Syringe SVG -->
+            <div class="pc-badge-icon" style="background: linear-gradient(135deg, #A855F7 0%, #EC4899 100%) !important;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m18 2 4 4"></path>
+                <path d="m17 7 3-3"></path>
+                <path d="M19 9 8.7 19.3c-.2.2-.5.3-.7.3H5v-3c0-.3.1-.5.3-.7L15.6 5.6"></path>
+                <path d="m9 11 4 4"></path>
+                <path d="m5 19-3 3"></path>
+                <path d="m14 4 6 6"></path>
+              </svg>
+            </div>
+            <!-- Text Details -->
+            <div class="d-flex flex-column" style="gap: 2px;">
+              <span style="font-size: 15px; font-weight: 700; color: #0F172A; font-family: 'Inter', sans-serif;">{{ vaccine.title }}</span>
+              <div style="font-size: 13px; font-family: 'Inter', sans-serif; color: #64748B; margin-top: 1px;">
+                {{ vaccine.timing }}
               </div>
-
-              <!-- Right section with Priority Badge and Edit/Delete controls -->
-              <div class="d-flex align-items-center">
-                <span class="badge font-weight-bold me-3" 
-                      [style.background]="vaccine.priority === 'High' ? '#fff5f5' : '#fef9c3'"
-                      [style.color]="vaccine.priority === 'High' ? '#ff2d55' : '#ca8a04'"
-                      style="border-radius: 6px; font-size: 0.75rem; padding: 5px 10px;">
-                  {{ vaccine.priority }}
-                </span>
-                <button class="btn btn-link text-muted p-0 border-0 bg-transparent me-3" style="font-size: 1.25rem; outline: none; line-height: 1;">
-                  <i class="pe-7s-note"></i>
-                </button>
-                <button class="btn btn-link text-danger p-0 border-0 bg-transparent" style="font-size: 1.25rem; outline: none; line-height: 1;">
-                  <i class="pe-7s-trash"></i>
-                </button>
+              <div style="font-size: 13px; font-family: 'Inter', sans-serif; color: #334155; margin-top: 4px;">
+                {{ vaccine.description }}
               </div>
-
             </div>
           </div>
-        </div>
 
+          <!-- Right section with Priority Badge and Edit/Delete controls -->
+          <div class="d-flex align-items-center" style="gap: 14px;">
+            <span class="badge font-weight-bold" 
+                  [style.background]="vaccine.priority === 'High' ? '#FFF1F2' : '#FEF9C3'"
+                  [style.color]="vaccine.priority === 'High' ? '#E11D48' : '#CA8A04'"
+                  style="border-radius: 20px; font-size: 12px; font-weight: 600; padding: 4px 14px; font-family: 'Inter', sans-serif;">
+              {{ vaccine.priority }}
+            </span>
+            <button class="pc-icon-btn" title="Edit Vaccine">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+            </button>
+            <button class="pc-icon-btn danger" title="Delete Vaccine">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+            </button>
+          </div>
+
+        </div>
       </div>
+
     </div>
   </div>
 </div>
@@ -243,71 +189,69 @@
 @if (activeTab === 'Child Vaccines') {
 <div class="row">
   <div class="col-md-12">
-    <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px; background: #ffffff; border: 1px solid #eef2f6;">
-      <div class="card-body p-4">
-        
-        <!-- Section Header -->
-        <div class="d-flex align-items-center justify-content-between mb-4">
-          <h4 class="font-weight-bold text-dark m-0" style="font-family: 'Outfit', sans-serif; font-size: 1.25rem;">
-            Child Vaccination Schedule
-          </h4>
-          <button (click)="openAddChildVaccineModal()" class="btn font-weight-bold d-flex align-items-center gap-2" style="background: linear-gradient(135deg, #a855f7, #ff2d55); color: #ffffff; border-radius: 8px; padding: 8px 16px; font-size: 0.85rem; border: none; font-family: 'Poppins', sans-serif; box-shadow: 0 4px 10px rgba(255, 45, 85, 0.15);">
-            <i class="pe-7s-plus" style="font-size: 0.9rem; font-weight: bold; margin-right: 4px;"></i>
-            <span>Add Vaccine</span>
-          </button>
-        </div>
+    <div class="pc-content-card mb-4">
+      
+      <!-- Section Header -->
+      <div class="d-flex align-items-center justify-content-between mb-4">
+        <h4 class="pc-card-title">
+          Child Vaccination Schedule
+        </h4>
+        <button (click)="openAddChildVaccineModal()" class="pc-btn-add" style="background: #0284C7 !important;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          <span>Add Vaccine</span>
+        </button>
+      </div>
 
-        <!-- Vaccine Cards List -->
-        <div class="d-flex flex-column">
-          <div *ngFor="let vaccine of childVaccines" class="card p-3 mb-3" style="border-radius: 12px; border: 1px solid #eef2f6 !important; background: #ffffff; box-shadow: none;">
-            <div class="d-flex align-items-center justify-content-between flex-wrap">
-              
-              <!-- Left section with Icon & Title details -->
-              <div class="d-flex align-items-center">
-                <!-- Violet/pink gradient icon square with Syringe SVG -->
-                <div class="rounded-3 d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px; border-radius: 10px; background: linear-gradient(135deg, #a855f7, #ff2d55); color: #ffffff; box-shadow: 0 4px 10px rgba(255, 45, 85, 0.2); flex-shrink: 0;">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="m18 2 4 4"></path>
-                    <path d="m17 7 3-3"></path>
-                    <path d="M19 9 8.7 19.3c-.2.2-.5.3-.7.3H5v-3c0-.3.1-.5.3-.7L15.6 5.6"></path>
-                    <path d="m9 11 4 4"></path>
-                    <path d="m5 19-3 3"></path>
-                    <path d="m14 4 6 6"></path>
-                  </svg>
-                </div>
-                <!-- Text Details -->
-                <div class="d-flex flex-column">
-                  <span class="font-weight-bold text-dark" style="font-size: 1rem; font-family: 'Poppins', sans-serif;">{{ vaccine.title }}</span>
-                  <span class="text-muted mt-1" style="font-size: 0.85rem; font-family: 'Poppins', sans-serif;">
-                    {{ vaccine.timing }}
-                  </span>
-                  <span class="text-muted" style="font-size: 0.85rem; font-family: 'Poppins', sans-serif;">
-                    {{ vaccine.description }}
-                  </span>
-                </div>
+      <!-- Vaccine Cards List -->
+      <div class="d-flex flex-column">
+        <div *ngFor="let vaccine of childVaccines" class="pc-list-item">
+          
+          <!-- Left section with Icon & Details -->
+          <div class="d-flex align-items-center" style="gap: 16px;">
+            <!-- Blue gradient Rounded icon square with Baby Face SVG -->
+            <div class="pc-badge-icon" style="background: linear-gradient(135deg, #0284C7 0%, #06B6D4 100%) !important;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="9"></circle>
+                <path d="M9 10h.01"></path>
+                <path d="M15 10h.01"></path>
+                <path d="M9.5 15a3.5 3.5 0 0 0 5 0"></path>
+                <path d="M12 3a4.5 4.5 0 0 1 4.5 4.5"></path>
+              </svg>
+            </div>
+            <!-- Text Details -->
+            <div class="d-flex flex-column" style="gap: 2px;">
+              <span style="font-size: 15px; font-weight: 700; color: #0F172A; font-family: 'Inter', sans-serif;">{{ vaccine.title }}</span>
+              <div style="font-size: 13px; font-family: 'Inter', sans-serif; color: #64748B; margin-top: 1px;">
+                {{ vaccine.timing }}
               </div>
-
-              <!-- Right section with Priority Badge and Edit/Delete controls -->
-              <div class="d-flex align-items-center">
-                <span class="badge font-weight-bold me-3" 
-                      [style.background]="vaccine.priority === 'High' ? '#fff5f5' : '#fef9c3'"
-                      [style.color]="vaccine.priority === 'High' ? '#ff2d55' : '#ca8a04'"
-                      style="border-radius: 6px; font-size: 0.75rem; padding: 5px 10px;">
-                  {{ vaccine.priority }}
-                </span>
-                <button class="btn btn-link text-muted p-0 border-0 bg-transparent me-3" style="font-size: 1.25rem; outline: none; line-height: 1;">
-                  <i class="pe-7s-note"></i>
-                </button>
-                <button class="btn btn-link text-danger p-0 border-0 bg-transparent" style="font-size: 1.25rem; outline: none; line-height: 1;">
-                  <i class="pe-7s-trash"></i>
-                </button>
+              <div style="font-size: 13px; font-family: 'Inter', sans-serif; color: #334155; margin-top: 4px;">
+                {{ vaccine.description }}
               </div>
-
             </div>
           </div>
-        </div>
 
+          <!-- Right section with Edit/Delete controls -->
+          <div class="d-flex align-items-center" style="gap: 14px;">
+            <button class="pc-icon-btn" title="Edit Vaccine">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+            </button>
+            <button class="pc-icon-btn danger" title="Delete Vaccine">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+            </button>
+          </div>
+
+        </div>
       </div>
+
     </div>
   </div>
 </div>
