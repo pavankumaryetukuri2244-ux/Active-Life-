@@ -216,6 +216,7 @@ export class ForgotPasswordBoxedComponent {
   showNewPassword: boolean = false;
   showConfirmPassword: boolean = false;
   resetError: string = '';
+  successMessage: string = 'Your password has been reset successfully. Please login with your new password.';
 
   loading: boolean = false;
   errorMessage: string = '';
@@ -396,7 +397,32 @@ export class ForgotPasswordBoxedComponent {
       this.resetError = 'Passwords do not match.';
       return;
     }
-    this.step = 'success';
+
+    this.loading = true;
+    this.resetError = '';
+
+    const payload = {
+      email: this.email,
+      newPassword: this.newPassword,
+      confirmPassword: this.confirmPassword
+    };
+
+    this.webApiService.ResetPassword(payload).subscribe({
+      next: (res: any) => {
+        this.loading = false;
+        if (res && res.success !== false) {
+          this.successMessage = res.message || 'Password reset successfully. Please login with your new password.';
+          this.step = 'success';
+        } else {
+          this.resetError = res?.message || 'Failed to reset password. Please try again.';
+        }
+      },
+      error: (err: any) => {
+        this.loading = false;
+        console.error('Reset password error:', err);
+        this.resetError = err.error?.message || err.message || 'Failed to reset password. Please try again.';
+      }
+    });
   }
 
   toggleNewPassword() {

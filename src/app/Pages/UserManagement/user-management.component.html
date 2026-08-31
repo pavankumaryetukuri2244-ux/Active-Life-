@@ -60,30 +60,16 @@
 <div class="row mb-4">
   <div class="col-md-12">
     <div class="um-filter-card">
-      <div class="d-flex flex-column" style="gap: 14px;">
-        <!-- Search Bar with Explicit Search Button -->
-        <div class="d-flex align-items-center gap-2">
-          <div class="um-search-wrapper flex-grow-1">
-            <svg class="um-search-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
-              viewBox="0 0 24 24">
-              <circle cx="11" cy="11" r="8" />
-              <line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
-            <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearchClick()"
-              placeholder="Search users by name, email, or contact..." class="um-search-input">
-          </div>
-          <button (click)="onSearchClick()" type="button" class="btn btn-primary d-inline-flex align-items-center gap-2"
-            style="height: 42px; border-radius: 10px; font-family: 'Inter', sans-serif; font-size: 13.5px; font-weight: 600; padding: 0 20px; white-space: nowrap; background: #3B82F6; border: none; box-shadow: 0 2px 6px rgba(59, 130, 246, 0.25);">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="11" cy="11" r="8"></circle>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
-            <span>Search</span>
-          </button>
-          <button *ngIf="searchQuery" (click)="clearSearch()" type="button" class="btn btn-light"
-            style="height: 42px; border-radius: 10px; font-family: 'Inter', sans-serif; font-size: 13.5px; font-weight: 500; padding: 0 16px; border: 1px solid #E2E8F0; color: #64748B; background: #FFFFFF;">
-            Clear
-          </button>
+      <div class="d-flex flex-column" style="gap: 12px;">
+        <!-- Extended 100% Full-Width Compact Search Bar -->
+        <div class="um-search-wrapper w-100">
+          <svg class="um-search-icon" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"
+            viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <input type="text" [(ngModel)]="searchQuery" (input)="onSearchInput($event)" (keyup.enter)="onSearchClick()"
+            placeholder="Search users by name, email, or contact..." class="um-search-input">
         </div>
         <!-- Status Tab Filters -->
         <div class="d-flex flex-wrap" style="gap: 8px;">

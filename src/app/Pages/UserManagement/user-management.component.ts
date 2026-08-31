@@ -112,9 +112,19 @@ export class UserManagementComponent implements OnInit, OnDestroy {
     this.applyFilters(true);
   }
 
+  private searchTimer: any;
+
   onSearchClick() {
     this.currentPage = 0;
     this.applyFilters(true);
+  }
+
+  onSearchInput(event: any) {
+    clearTimeout(this.searchTimer);
+    this.searchTimer = setTimeout(() => {
+      this.currentPage = 0;
+      this.applyFilters(true);
+    }, 350);
   }
 
   clearSearch() {

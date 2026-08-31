@@ -682,22 +682,28 @@ button {
 /* ================================================================
    MODERN USER MANAGEMENT TABLE
    ================================================================ */
-.um-filter-card {
+.um-filter-card,
+.cm-filter-card,
+.al-filter-card {
   background: var(--color-bg-card) !important;
   border: 1px solid #E5E7EB !important;
   border-radius: var(--radius-2xl) !important;
-  padding: var(--space-6) var(--space-7) !important;
+  padding: 18px 22px !important;
   box-shadow: var(--shadow-card) !important;
 }
 
-.um-search-wrapper {
+.um-search-wrapper,
+.cm-search-wrapper,
+.al-search-wrapper {
   position: relative;
   width: 100%;
 }
 
-.um-search-icon {
+.um-search-icon,
+.cm-search-icon,
+.al-search-icon {
   position: absolute;
-  left: 14px;
+  left: 12px;
   top: 50%;
   transform: translateY(-50%);
   color: #94A3B8;
@@ -706,28 +712,34 @@ button {
   pointer-events: none;
 }
 
-.um-search-input {
+.um-search-input,
+.cm-search-input,
+.al-search-input {
   height: 38px !important;
   border-radius: 8px !important;
   background: #F3F4F6 !important;
   border: 1px solid #E2E8F0 !important;
   padding-left: 38px !important;
-  padding-right: 16px !important;
-  font-size: 13.5px !important;
+  padding-right: 14px !important;
+  font-size: 13px !important;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
   color: #111827 !important;
   width: 100% !important;
   transition: all 0.2s ease !important;
 }
 
-.um-search-input::placeholder {
+.um-search-input::placeholder,
+.cm-search-input::placeholder,
+.al-search-input::placeholder {
   color: #94A3B8 !important;
   font-weight: 400 !important;
   font-size: 13px !important;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
 }
 
-.um-search-input:focus {
+.um-search-input:focus,
+.cm-search-input:focus,
+.al-search-input:focus {
   outline: none !important;
   background: #FFFFFF !important;
   border-color: #CBD5E1 !important;

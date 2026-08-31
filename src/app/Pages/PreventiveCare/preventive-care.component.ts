@@ -200,12 +200,21 @@ interface Vaccine {
       justify-content: space-between !important;
       flex-wrap: wrap !important;
       gap: 16px !important;
-      transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+      transition: all 0.15s ease !important;
+      cursor: pointer !important;
     }
 
     .pc-list-item:hover {
-      border-color: #E2E8F0 !important;
+      background: #F8FAFC !important;
+      border-color: #CBD5E1 !important;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03) !important;
+    }
+
+    .pc-list-item.selected,
+    .pc-list-item.active {
+      background: #EFF6FF !important;
+      border-color: #3B82F6 !important;
+      box-shadow: 0 0 0 1px #3B82F6, 0 4px 12px rgba(59, 130, 246, 0.08) !important;
     }
 
     .pc-list-item:last-child {
@@ -359,8 +368,22 @@ export class PreventiveCareComponent implements OnInit {
   ];
   
   activeTab: 'Pregnancy Care' | 'Pregnancy Vaccines' | 'Child Vaccines' = 'Pregnancy Care';
+  selectedItem: any = null;
   isLoading = false;
   errorMessage = '';
+
+  setTab(tab: 'Pregnancy Care' | 'Pregnancy Vaccines' | 'Child Vaccines') {
+    this.activeTab = tab;
+    this.selectedItem = null;
+  }
+
+  selectItem(item: any) {
+    if (this.selectedItem === item) {
+      this.selectedItem = null;
+    } else {
+      this.selectedItem = item;
+    }
+  }
 
   // Add Stage Modal state
   showAddStageModal = false;

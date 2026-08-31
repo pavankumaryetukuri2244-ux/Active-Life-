@@ -133,7 +133,7 @@ interface ContentItem {
       border: 1px solid #E5E7EB !important;
       background: #FFFFFF !important;
       padding: 20px 24px !important;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
     }
 
     .cm-search-wrapper {
@@ -143,22 +143,24 @@ interface ContentItem {
 
     .cm-search-icon {
       position: absolute !important;
-      left: 14px !important;
+      left: 12px !important;
       top: 50% !important;
       transform: translateY(-50%) !important;
       color: #94A3B8 !important;
+      width: 15px !important;
+      height: 15px !important;
       pointer-events: none !important;
     }
 
     .cm-search-input {
       width: 100% !important;
-      height: 42px !important;
-      border-radius: 10px !important;
+      height: 38px !important;
+      border-radius: 8px !important;
       border: 1px solid #E2E8F0 !important;
-      background: #F8FAFC !important;
-      padding: 0 16px 0 42px !important;
-      font-family: 'Inter', sans-serif !important;
-      font-size: 13.5px !important;
+      background: #F3F4F6 !important;
+      padding: 0 14px 0 38px !important;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+      font-size: 13px !important;
       color: #111827 !important;
       outline: none !important;
       transition: all 0.2s ease !important;
@@ -166,8 +168,15 @@ interface ContentItem {
 
     .cm-search-input:focus {
       background: #FFFFFF !important;
-      border-color: #3B82F6 !important;
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+      border-color: #CBD5E1 !important;
+      box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.08) !important;
+    }
+
+    .cm-search-input::placeholder {
+      color: #94A3B8 !important;
+      font-weight: 400 !important;
+      font-size: 13px !important;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
     }
 
     .cm-tab-btn {
@@ -245,8 +254,17 @@ export class ContentManagementComponent implements OnInit {
     this.contentSubscription?.unsubscribe();
   }
 
+  private searchTimer: any;
+
   onSearchClick() {
     this.loadAllContent(true);
+  }
+
+  onSearchInput(event: any) {
+    clearTimeout(this.searchTimer);
+    this.searchTimer = setTimeout(() => {
+      this.loadAllContent(true);
+    }, 350);
   }
 
   clearSearch() {

@@ -54,7 +54,10 @@
 
       <!-- Stage Cards List -->
       <div class="d-flex flex-column">
-        <div *ngFor="let stage of stagesList" class="pc-list-item">
+        <div *ngFor="let stage of stagesList" 
+             class="pc-list-item"
+             [class.selected]="selectedItem === stage"
+             (click)="selectItem(stage)">
           
           <!-- Left section with Icon & Details -->
           <div class="d-flex align-items-center" style="gap: 16px;">
@@ -80,7 +83,7 @@
           </div>
 
           <!-- Right section with Status Badge and Edit/Delete controls -->
-          <div class="d-flex align-items-center" style="gap: 12px;">
+          <div class="d-flex align-items-center" style="gap: 12px;" (click)="$event.stopPropagation()">
             <span class="pc-status-badge">
               {{ stage.status }}
             </span>
@@ -128,7 +131,10 @@
 
       <!-- Vaccine Cards List -->
       <div class="d-flex flex-column">
-        <div *ngFor="let vaccine of pregnancyVaccines" class="pc-list-item">
+        <div *ngFor="let vaccine of pregnancyVaccines" 
+             class="pc-list-item"
+             [class.selected]="selectedItem === vaccine"
+             (click)="selectItem(vaccine)">
           
           <!-- Left section with Icon & Details -->
           <div class="d-flex align-items-center" style="gap: 16px;">
@@ -156,7 +162,7 @@
           </div>
 
           <!-- Right section with Priority Badge and Edit/Delete controls -->
-          <div class="d-flex align-items-center" style="gap: 14px;">
+          <div class="d-flex align-items-center" style="gap: 14px;" (click)="$event.stopPropagation()">
             <span class="badge font-weight-bold" 
                   [style.background]="vaccine.priority === 'High' ? '#FFF1F2' : '#FEF9C3'"
                   [style.color]="vaccine.priority === 'High' ? '#E11D48' : '#CA8A04'"
@@ -207,7 +213,10 @@
 
       <!-- Vaccine Cards List -->
       <div class="d-flex flex-column">
-        <div *ngFor="let vaccine of childVaccines" class="pc-list-item">
+        <div *ngFor="let vaccine of childVaccines" 
+             class="pc-list-item"
+             [class.selected]="selectedItem === vaccine"
+             (click)="selectItem(vaccine)">
           
           <!-- Left section with Icon & Details -->
           <div class="d-flex align-items-center" style="gap: 16px;">
@@ -234,7 +243,7 @@
           </div>
 
           <!-- Right section with Edit/Delete controls -->
-          <div class="d-flex align-items-center" style="gap: 14px;">
+          <div class="d-flex align-items-center" style="gap: 14px;" (click)="$event.stopPropagation()">
             <button class="pc-icon-btn" title="Edit Vaccine">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>

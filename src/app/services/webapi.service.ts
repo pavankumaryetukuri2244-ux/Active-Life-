@@ -190,6 +190,11 @@ export class WebapiService {
     return this.Http.post<any>(url, { email, otp });
   }
 
+  public ResetPassword(body: { email: string; newPassword: string; confirmPassword: string }) {
+    const url = `${this.WebApi}/api/v1/admin/auth/reset-password`;
+    return this.Http.post<any>(url, body);
+  }
+
   public Logout(token: string) {
     const url = `${this.WebApi}/api/v1/auth/logout`;
     const headers = new HttpHeaders({

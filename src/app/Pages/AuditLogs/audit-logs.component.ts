@@ -131,50 +131,61 @@ interface AuditStats {
 
     .al-search-icon {
       position: absolute !important;
-      left: 16px !important;
+      left: 12px !important;
       top: 50% !important;
       transform: translateY(-50%) !important;
-      color: #9CA3AF !important;
+      color: #94A3B8 !important;
+      width: 15px !important;
+      height: 15px !important;
       pointer-events: none !important;
     }
 
     .al-search-input {
       width: 100% !important;
-      height: 44px !important;
-      padding-left: 46px !important;
-      padding-right: 16px !important;
-      border: 1px solid #E5E7EB !important;
-      border-radius: 12px !important;
-      font-family: 'Inter', sans-serif !important;
-      font-size: 14px !important;
+      height: 38px !important;
+      padding-left: 38px !important;
+      padding-right: 14px !important;
+      border: 1px solid #E2E8F0 !important;
+      border-radius: 8px !important;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+      font-size: 13px !important;
       color: #111827 !important;
-      background-color: #FFFFFF !important;
+      background-color: #F3F4F6 !important;
       outline: none !important;
-      transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+      transition: all 0.2s ease !important;
     }
 
     .al-search-input:focus {
-      border-color: #3B82F6 !important;
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+      background-color: #FFFFFF !important;
+      border-color: #CBD5E1 !important;
+      box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.08) !important;
     }
 
     .al-search-input::placeholder {
-      color: #9CA3AF !important;
+      color: #94A3B8 !important;
+      font-weight: 400 !important;
+      font-size: 13px !important;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
     }
 
     .al-select-dropdown {
-      height: 42px !important;
+      height: 38px !important;
       padding: 0 16px !important;
       border: 1px solid #E5E7EB !important;
-      border-radius: 10px !important;
-      font-family: 'Inter', sans-serif !important;
+      border-radius: 8px !important;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
       font-size: 13.5px !important;
       font-weight: 500 !important;
-      color: #374151 !important;
+      color: #111827 !important;
       background-color: #FFFFFF !important;
       outline: none !important;
       cursor: pointer !important;
-      transition: border-color 0.15s ease !important;
+      transition: all 0.15s ease !important;
+    }
+
+    .al-select-dropdown:hover {
+      background-color: #F8FAFC !important;
+      border-color: #CBD5E1 !important;
     }
 
     .al-select-dropdown:focus {
@@ -234,7 +245,7 @@ interface AuditStats {
     }
 
     .al-table thead th.col-action-head {
-      min-width: 250px;
+      min-width: 260px;
     }
 
     .al-table thead th.col-module-head {
@@ -315,37 +326,38 @@ interface AuditStats {
     }
 
     .col-action-cell {
-      max-width: 300px;
-      width: 280px;
+      max-width: 260px;
+      width: 240px;
     }
 
     .al-action-text {
       font-size: 13.5px !important;
       font-weight: 400 !important;
-      color: #475569 !important;
+      color: #334155 !important;
       line-height: 1.4 !important;
       display: block !important;
-      max-width: 280px !important;
+      max-width: 240px !important;
       white-space: nowrap !important;
       overflow: hidden !important;
       text-overflow: ellipsis !important;
       cursor: default;
     }
 
-    /* Module Pill */
+    /* Module Pill - Crisp white rounded pill with #0F172A text */
     .al-module-pill {
       display: inline-flex !important;
       align-items: center !important;
-      background: #F8FAFC !important;
+      justify-content: center !important;
+      background: #FFFFFF !important;
       border: 1px solid #E2E8F0 !important;
-      border-radius: 8px !important;
-      padding: 4px 12px !important;
-      font-family: 'Inter', sans-serif !important;
-      font-size: 12px !important;
-      font-weight: 500 !important;
-      color: #334155 !important;
+      border-radius: 20px !important;
+      padding: 4px 14px !important;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+      font-size: 12.5px !important;
+      font-weight: 600 !important;
+      color: #0F172A !important;
       white-space: nowrap !important;
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03) !important;
     }
 
     .al-timestamp-text {
@@ -513,13 +525,14 @@ export class AuditLogsComponent implements OnInit {
 
   // Filters
   searchQuery = '';
-  selectedModule = '';
-  selectedStatus = '';
+  selectedModule = 'All Modules';
+  selectedStatus = 'All Status';
   sortBy = 'createdAt';
   sortDirection = 'DESC';
 
-  // Filter timer (debounce search)
-  private filterTimer: any;
+  private searchSubject = new Subject<string>();
+  private destroy$ = new Subject<void>();
+  private lastAppliedQuery = '';
 
   modulesList: string[] = [
     'All Modules',
@@ -542,6 +555,8 @@ export class AuditLogsComponent implements OnInit {
   }
 
   ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
     this.auditLogsSubscription?.unsubscribe();
   }
 
@@ -551,12 +566,27 @@ export class AuditLogsComponent implements OnInit {
   }
 
   onSearchClick() {
+    const val = (this.searchQuery ?? '').trim();
+    if (val === this.lastAppliedQuery && this.currentPage === 0) return;
+    this.lastAppliedQuery = val;
     this.currentPage = 0;
     this.applyFilters(true);
   }
 
+  onSearchInput(event: any) {
+    const val = (event?.target?.value ?? this.searchQuery ?? '').trim();
+    if (!val && this.lastAppliedQuery) {
+      this.clearSearch();
+    }
+  }
+
+  onSearchClear() {
+    this.clearSearch();
+  }
+
   clearSearch() {
     this.searchQuery = '';
+    this.lastAppliedQuery = '';
     this.currentPage = 0;
     this.applyFilters(true);
   }
@@ -608,18 +638,12 @@ export class AuditLogsComponent implements OnInit {
     });
   }
 
-  onModuleChange(event: any) {
-    const value = event?.target?.value ?? 'All Modules';
-    if (this.selectedModule === value) return;
-    this.selectedModule = value;
+  onModuleChange(event?: any) {
     this.currentPage = 0;
     this.applyFilters(true);
   }
 
-  onStatusChange(event: any) {
-    const value = event?.target?.value ?? 'All Status';
-    if (this.selectedStatus === value) return;
-    this.selectedStatus = value;
+  onStatusChange(event?: any) {
     this.currentPage = 0;
     this.applyFilters(true);
   }
@@ -673,18 +697,97 @@ export class AuditLogsComponent implements OnInit {
     }
   }
 
+  formatModule(module: string): string {
+    if (!module) return 'User Management';
+    const m = module.trim().toUpperCase().replace(/[\s_-]+/g, '_');
+    switch (m) {
+      case 'USER_MANAGEMENT':
+      case 'USER':
+      case 'USERS':
+        return 'User Management';
+      case 'CONTENT_MANAGEMENT':
+      case 'CONTENT':
+        return 'Content Management';
+      case 'DOCTOR_MANAGEMENT':
+      case 'DOCTOR':
+      case 'DOCTORS':
+        return 'Doctor Management';
+      case 'AUTH':
+      case 'AUTHENTICATION':
+      case 'LOGIN':
+        return 'Authentication';
+      case 'SETTINGS':
+      case 'SYSTEM_SETTINGS':
+        return 'System Settings';
+      case 'NOTIFICATIONS':
+      case 'NOTIFICATION':
+        return 'Notifications';
+      default:
+        return module
+          .replace(/[_-]+/g, ' ')
+          .replace(/\b\w/g, c => c.toUpperCase())
+          .trim();
+    }
+  }
+
   formatAction(action: string): string {
     if (!action) return '-';
     let cleaned = action.trim();
-    if (cleaned.includes('could not execute statement') || cleaned.includes('Duplicate entry') || cleaned.includes('insert into')) {
+
+    // Mapping known backend codes to concise user-friendly sentences
+    const upper = cleaned.toUpperCase().replace(/[\s_-]+/g, '_');
+    const knownMap: { [key: string]: string } = {
+      'USER_UPDATE': 'Updated user profile',
+      'USER_PROFILE_UPDATE': 'Updated user profile',
+      'UPDATE_USER_PROFILE': 'Updated user profile',
+      'USER_DELETE': 'Deleted user account',
+      'USER_CREATE': 'Created new user',
+      'USER_PASSWORD_RESET': 'Reset user password',
+      'PASSWORD_RESET': 'Reset user password',
+      'USER_DATA_EXPORT': 'Exported user data',
+      'EXPORT_USER_DATA': 'Exported user data',
+      'CONTENT_DELETE': 'Deleted wellness content',
+      'DELETE_WELLNESS_CONTENT': 'Deleted wellness content',
+      'CONTENT_CREATE': 'Created wellness content',
+      'CONTENT_UPDATE': 'Updated wellness content',
+      'DOCTOR_APPROVE': 'Approved doctor registration',
+      'APPROVE_DOCTOR_REGISTRATION': 'Approved doctor registration',
+      'DOCTOR_REGISTRATION_APPROVE': 'Approved doctor registration',
+      'LOGIN_FAILED': 'Failed login attempt',
+      'FAILED_LOGIN_ATTEMPT': 'Failed login attempt',
+      'AUTH_FAILED': 'Failed login attempt',
+      'SETTINGS_UPDATE': 'Updated system settings',
+      'UPDATE_SYSTEM_SETTINGS': 'Updated system settings',
+      'NOTIFICATION_SEND': 'Sent notification to all users',
+      'SEND_NOTIFICATION': 'Sent notification to all users'
+    };
+
+    if (knownMap[upper]) {
+      return knownMap[upper];
+    }
+
+    // Strip long SQL / Hibernate / DB exceptions
+    if (cleaned.includes('could not execute statement') || cleaned.includes('Duplicate entry') || cleaned.includes('insert into') || cleaned.includes('Exception:')) {
       const parts = cleaned.split(':');
-      if (parts.length > 0 && parts[0].trim()) {
-        return parts[0].trim();
-      }
+      cleaned = parts[0].trim();
     }
     if (cleaned.includes('\n')) {
       cleaned = cleaned.split('\n')[0].trim();
     }
+
+    // If snake_case or SCREAMING_SNAKE_CASE, convert to readable sentence
+    if (/^[A-Z0-9_]+$/.test(cleaned)) {
+      cleaned = cleaned
+        .toLowerCase()
+        .replace(/_/g, ' ')
+        .replace(/^\w/, c => c.toUpperCase());
+    }
+
+    // Cap length cleanly if too long
+    if (cleaned.length > 38) {
+      cleaned = cleaned.substring(0, 35) + '...';
+    }
+
     return cleaned;
   }
 

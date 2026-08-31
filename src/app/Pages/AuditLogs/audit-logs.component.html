@@ -48,39 +48,27 @@
 
 <!-- Filter Card -->
 <div class="al-filter-card">
-  <div class="d-flex flex-column" style="gap: 16px;">
-    <!-- Search Bar with Explicit Search Button -->
-    <div class="d-flex align-items-center gap-2">
-      <div class="al-search-wrapper flex-grow-1">
-        <svg class="al-search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="8"></circle>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-        </svg>
-        <input type="text"
-               [(ngModel)]="searchQuery"
-               (keyup.enter)="onSearchClick()"
-               placeholder="Search logs by action, admin, or log ID..."
-               class="al-search-input">
-      </div>
-      <button (click)="onSearchClick()" type="button" class="btn btn-primary d-inline-flex align-items-center gap-2"
-        style="height: 42px; border-radius: 10px; font-family: 'Inter', sans-serif; font-size: 13.5px; font-weight: 600; padding: 0 20px; white-space: nowrap; background: #3B82F6; border: none; box-shadow: 0 2px 6px rgba(59, 130, 246, 0.25);">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="8"></circle>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-        </svg>
-        <span>Search</span>
-      </button>
-      <button *ngIf="searchQuery" (click)="clearSearch()" type="button" class="btn btn-light"
-        style="height: 42px; border-radius: 10px; font-family: 'Inter', sans-serif; font-size: 13.5px; font-weight: 500; padding: 0 16px; border: 1px solid #E2E8F0; color: #64748B; background: #FFFFFF;">
-        Clear
-      </button>
+  <div class="d-flex flex-column" style="gap: 12px;">
+    <!-- Extended 100% Full-Width Compact Search Bar -->
+    <div class="al-search-wrapper w-100">
+      <svg class="al-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input type="text"
+             [(ngModel)]="searchQuery"
+             (keyup.enter)="onSearchClick()"
+             (search)="onSearchClear()"
+             (input)="onSearchInput($event)"
+             placeholder="Search logs by action, admin, or log ID..."
+             class="al-search-input">
     </div>
     <!-- Dropdowns -->
-    <div class="d-flex align-items-center flex-wrap" style="gap: 12px;">
-      <select (change)="onModuleChange($event)" class="al-select-dropdown" style="min-width: 200px;">
+    <div class="d-flex align-items-center flex-wrap" style="gap: 10px;">
+      <select [(ngModel)]="selectedModule" (change)="onModuleChange($event)" class="al-select-dropdown" style="min-width: 140px;">
         <option *ngFor="let mod of modulesList" [value]="mod">{{ mod }}</option>
       </select>
-      <select (change)="onStatusChange($event)" class="al-select-dropdown" style="min-width: 150px;">
+      <select [(ngModel)]="selectedStatus" (change)="onStatusChange($event)" class="al-select-dropdown" style="min-width: 130px;">
         <option *ngFor="let stat of statusesList" [value]="stat">{{ stat }}</option>
       </select>
     </div>
@@ -129,7 +117,7 @@
           <!-- Module Pill -->
           <td>
             <span class="al-module-pill">
-              {{ log.module }}
+              {{ formatModule(log.module) }}
             </span>
           </td>
 
