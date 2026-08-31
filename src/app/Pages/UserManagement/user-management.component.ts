@@ -1,4 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 import { WebapiService } from '../../services/webapi.service';
 
 interface User {
@@ -33,7 +35,7 @@ const AVATAR_GRADIENTS = [
   templateUrl: './user-management.component.html',
   standalone: false
 })
-export class UserManagementComponent implements OnInit {
+export class UserManagementComponent implements OnInit, OnDestroy {
 
   stats: UserStats = { totalUsers: 0, activeUsers: 0, inactiveUsers: 0, blockedUsers: 0 };
 
@@ -55,7 +57,9 @@ export class UserManagementComponent implements OnInit {
 
   openDropdownId: string | null = null;
 
-  private filterTimer: any;
+  private searchSubject = new Subject<string>();
+  private usersSubscription?: Subscription;
+  private destroy$ = new Subject<void>();
 
   constructor(private api: WebapiService) {
     // Close dropdown when clicking outside
@@ -95,19 +99,41 @@ export class UserManagementComponent implements OnInit {
   }
 
   ngOnInit() {
+    // Debounce search query to fire exactly one API request after user stops typing
+    this.searchSubject.pipe(
+      debounceTime(350),
+      distinctUntilChanged(),
+      takeUntil(this.destroy$)
+    ).subscribe(query => {
+      this.searchQuery = query;
+      this.currentPage = 0;
+      this.applyFilters(false);
+    });
+
     this.loadUsers();
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+    this.usersSubscription?.unsubscribe();
   }
 
   loadUsers() {
     this.applyFilters();
   }
 
-  /** Filter/search/paginate call */
+  /** Filter/search/paginate call - cancels any in-flight requests to avoid duplicate calls */
   applyFilters(showLoader = true) {
     if (showLoader) {
       this.isLoading = true;
     }
     this.errorMessage = '';
+
+    // Cancel previous in-flight request if still running
+    if (this.usersSubscription) {
+      this.usersSubscription.unsubscribe();
+    }
 
     const body: any = {
       page: this.currentPage,
@@ -117,9 +143,11 @@ export class UserManagementComponent implements OnInit {
       status: this.activeTab
     };
 
-    if (this.searchQuery.trim()) body['search'] = this.searchQuery.trim();
+    if (this.searchQuery.trim()) {
+      body['search'] = this.searchQuery.trim();
+    }
 
-    this.api.GetUsersFiltered(body).subscribe({
+    this.usersSubscription = this.api.GetUsersFiltered(body).subscribe({
       next: (res: any) => {
         this.handleResponse(res);
       },
@@ -155,20 +183,19 @@ export class UserManagementComponent implements OnInit {
   }
 
   onSearch(event: any) {
-    this.searchQuery = event.target.value;
-    this.currentPage = 0;
-    clearTimeout(this.filterTimer);
-    this.filterTimer = setTimeout(() => this.applyFilters(false), 400);
+    const value = event?.target?.value ?? '';
+    this.searchSubject.next(value);
   }
 
   setTab(tab: 'ALL' | 'ACTIVE' | 'INACTIVE' | 'BLOCKED') {
+    if (this.activeTab === tab) return;
     this.activeTab = tab;
     this.currentPage = 0;
     this.applyFilters(false);
   }
 
   goToPage(page: number) {
-    if (page < 0 || page >= this.totalPages) return;
+    if (page < 0 || page >= this.totalPages || page === this.currentPage) return;
     this.currentPage = page;
     this.applyFilters(false);
   }
