@@ -532,34 +532,31 @@ export class AuditLogsComponent implements OnInit {
 
   statusesList: string[] = ['All Status', 'SUCCESS', 'FAILED'];
 
-  private searchSubject = new Subject<string>();
   private auditLogsSubscription?: Subscription;
-  private destroy$ = new Subject<void>();
 
   constructor(private api: WebapiService) {}
 
   ngOnInit() {
-    this.searchSubject.pipe(
-      debounceTime(350),
-      distinctUntilChanged(),
-      takeUntil(this.destroy$)
-    ).subscribe(query => {
-      this.searchQuery = query;
-      this.currentPage = 0;
-      this.applyFilters(false);
-    });
-
     this.loadAuditLogs();
   }
 
   ngOnDestroy() {
-    this.destroy$.next();
-    this.destroy$.complete();
     this.auditLogsSubscription?.unsubscribe();
   }
 
   /** Initial load — empty body to get all logs + stats */
   loadAuditLogs() {
+    this.applyFilters(true);
+  }
+
+  onSearchClick() {
+    this.currentPage = 0;
+    this.applyFilters(true);
+  }
+
+  clearSearch() {
+    this.searchQuery = '';
+    this.currentPage = 0;
     this.applyFilters(true);
   }
 
@@ -581,7 +578,7 @@ export class AuditLogsComponent implements OnInit {
       sortDirection: this.sortDirection
     };
 
-    if (this.searchQuery.trim()) body['search'] = this.searchQuery.trim();
+    if (this.searchQuery && this.searchQuery.trim()) body['search'] = this.searchQuery.trim();
     if (this.selectedModule && this.selectedModule !== 'All Modules') body['module'] = this.selectedModule;
     if (this.selectedStatus && this.selectedStatus !== 'All Status') body['status'] = this.selectedStatus;
 
@@ -610,17 +607,12 @@ export class AuditLogsComponent implements OnInit {
     });
   }
 
-  onSearch(event: any) {
-    const value = event?.target?.value ?? '';
-    this.searchSubject.next(value);
-  }
-
   onModuleChange(event: any) {
     const value = event?.target?.value ?? 'All Modules';
     if (this.selectedModule === value) return;
     this.selectedModule = value;
     this.currentPage = 0;
-    this.applyFilters(false);
+    this.applyFilters(true);
   }
 
   onStatusChange(event: any) {
@@ -628,13 +620,13 @@ export class AuditLogsComponent implements OnInit {
     if (this.selectedStatus === value) return;
     this.selectedStatus = value;
     this.currentPage = 0;
-    this.applyFilters(false);
+    this.applyFilters(true);
   }
 
   goToPage(page: number) {
     if (page < 0 || page >= this.totalPages || page === this.currentPage) return;
     this.currentPage = page;
-    this.applyFilters(false);
+    this.applyFilters(true);
   }
 
   get pages(): number[] {

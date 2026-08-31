@@ -99,17 +99,6 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    // Debounce search query to fire exactly one API request after user stops typing
-    this.searchSubject.pipe(
-      debounceTime(350),
-      distinctUntilChanged(),
-      takeUntil(this.destroy$)
-    ).subscribe(query => {
-      this.searchQuery = query;
-      this.currentPage = 0;
-      this.applyFilters(false);
-    });
-
     this.loadUsers();
   }
 
@@ -120,10 +109,21 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   }
 
   loadUsers() {
-    this.applyFilters();
+    this.applyFilters(true);
   }
 
-  /** Filter/search/paginate call - cancels any in-flight requests to avoid duplicate calls */
+  onSearchClick() {
+    this.currentPage = 0;
+    this.applyFilters(true);
+  }
+
+  clearSearch() {
+    this.searchQuery = '';
+    this.currentPage = 0;
+    this.applyFilters(true);
+  }
+
+  /** Filter/search/paginate call - cancels any in-flight requests */
   applyFilters(showLoader = true) {
     if (showLoader) {
       this.isLoading = true;
@@ -143,7 +143,7 @@ export class UserManagementComponent implements OnInit, OnDestroy {
       status: this.activeTab
     };
 
-    if (this.searchQuery.trim()) {
+    if (this.searchQuery && this.searchQuery.trim()) {
       body['search'] = this.searchQuery.trim();
     }
 
@@ -182,22 +182,17 @@ export class UserManagementComponent implements OnInit, OnDestroy {
     this.isLoading = false;
   }
 
-  onSearch(event: any) {
-    const value = event?.target?.value ?? '';
-    this.searchSubject.next(value);
-  }
-
   setTab(tab: 'ALL' | 'ACTIVE' | 'INACTIVE' | 'BLOCKED') {
     if (this.activeTab === tab) return;
     this.activeTab = tab;
     this.currentPage = 0;
-    this.applyFilters(false);
+    this.applyFilters(true);
   }
 
   goToPage(page: number) {
     if (page < 0 || page >= this.totalPages || page === this.currentPage) return;
     this.currentPage = page;
-    this.applyFilters(false);
+    this.applyFilters(true);
   }
 
   get pages(): number[] {
