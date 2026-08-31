@@ -478,10 +478,6 @@ export class PreventiveCareComponent implements OnInit {
     });
   }
 
-  setTab(tab: 'Pregnancy Care' | 'Pregnancy Vaccines' | 'Child Vaccines') {
-    this.activeTab = tab;
-  }
-
   openAddStageModal() {
     this.stageWeekRange = '';
     this.stageTrimester = 1;
