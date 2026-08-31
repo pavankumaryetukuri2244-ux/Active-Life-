@@ -44,7 +44,8 @@ interface Vaccine {
       border-radius: 16px !important;
       padding: 22px 24px !important;
       border: none !important;
-      transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+      transition: none !important;
+      transform: none !important;
       display: flex !important;
       align-items: center !important;
       justify-content: space-between !important;
@@ -53,8 +54,8 @@ interface Vaccine {
     }
 
     .pc-stat-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05) !important;
+      transform: none !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
     }
 
     .pc-stat-card-pink {

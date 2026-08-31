@@ -75,12 +75,13 @@ interface AuditStats {
       border: none !important;
       padding: 22px 24px !important;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      transition: none !important;
+      transform: none !important;
       height: 100% !important;
     }
     .al-stat-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05) !important;
+      transform: none !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
     }
 
     .al-stat-card-blue {
