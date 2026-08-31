@@ -1098,23 +1098,31 @@ button {
    ================================================================ */
 
 /* ── Page header ── */
-.db-title {
-  font-family: var(--font-primary) !important;
-  font-size: var(--fs-2xl) !important;
-  font-weight: var(--fw-bold) !important;
-  color: var(--color-text-primary) !important;
-  line-height: var(--lh-tight) !important;
-  letter-spacing: -0.5px !important;
-  margin: 0 !important;
+.db-title,
+.um-page-title,
+.cm-page-title,
+.pc-page-title,
+.al-page-title {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 24px !important;
+  font-weight: 700 !important;
+  color: #111827 !important;
+  letter-spacing: -0.02em !important;
+  margin: 0 0 4px 0 !important;
+  line-height: 1.25 !important;
 }
 
-.db-subtitle {
-  font-family: var(--font-primary) !important;
-  font-size: var(--fs-base) !important;
-  font-weight: var(--fw-normal) !important;
-  color: var(--color-text-muted) !important;
-  line-height: var(--lh-loose) !important;
-  margin-top: var(--space-1) !important;
+.db-subtitle,
+.um-page-subtitle,
+.cm-page-subtitle,
+.pc-page-subtitle,
+.al-page-subtitle {
+  font-family: 'Inter', sans-serif !important;
+  font-size: 13.5px !important;
+  font-weight: 400 !important;
+  color: #6B7280 !important;
+  line-height: 1.4 !important;
+  margin: 0 !important;
 }
 
 /* ── Stat cards ── */
