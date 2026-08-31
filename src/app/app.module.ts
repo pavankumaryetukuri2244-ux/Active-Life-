@@ -32,19 +32,12 @@ import {PagesLayoutComponent} from './Layout/pages-layout/pages-layout.component
 
 // HEADER
 import {HeaderComponent} from './Layout/Components/header/header.component';
-import {SearchBoxComponent} from './Layout/Components/header/elements/search-box/search-box.component';
-import {UserBoxComponent} from './Layout/Components/header/elements/user-box/user-box.component';
-import {NotificationsBoxComponent} from './Layout/Components/header/elements/notifications-box/notifications-box';
-import {MessagesBoxComponent} from './Layout/Components/header/elements/messages-box/messages-box';
 
 // SIDEBAR
 import {SidebarComponent} from './Layout/Components/sidebar/sidebar.component';
-import {LogoComponent} from './Layout/Components/sidebar/elements/logo/logo.component';
 
 // FOOTER
 import {FooterComponent} from './Layout/Components/footer/footer.component';
-
-// All component imports are handled by feature modules
 
 // ThemeOptions
 import {ThemeOptions} from './theme-options';
@@ -58,21 +51,13 @@ import {ThemeOptions} from './theme-options';
 
     // HEADER
     HeaderComponent,
-    SearchBoxComponent,
-    UserBoxComponent,
-    NotificationsBoxComponent,
-    MessagesBoxComponent,
 
     // SIDEBAR
     SidebarComponent,
-    LogoComponent,
 
     // FOOTER
     FooterComponent,
     SpinnerComponent,
-
-
-    // All page components are declared in feature modules
   ],
   imports: [
     BrowserModule,
