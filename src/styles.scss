@@ -563,6 +563,100 @@ button {
   border-left: 4px solid #3B82F6 !important;
 }
 
+/* ================================================================
+   COLLAPSED SIDEBAR ICON-ONLY MODE (NO TEXT OVERFLOW ON DRAG / COLLAPSE)
+   ================================================================ */
+.closed-sidebar:not(.closed-sidebar-open) {
+  .app-sidebar {
+    width: 76px !important;
+    min-width: 76px !important;
+    flex: 0 0 76px !important;
+
+    .app-header__logo {
+      padding: 0 !important;
+      justify-content: center !important;
+      height: 65px !important;
+
+      .logo-brand-wrap {
+        margin: 0 auto !important;
+        justify-content: center !important;
+
+        .logo-icon-box {
+          margin: 0 !important;
+        }
+
+        .logo-text-title {
+          display: none !important;
+        }
+      }
+
+      .sidebar-toggle-btn {
+        display: none !important;
+      }
+    }
+
+    .v-sidebar-menu {
+      padding: 10px 0 !important;
+
+      .vsm-header {
+        display: none !important;
+      }
+
+      .vsm-item {
+        margin: 4px 0 !important;
+        display: flex !important;
+        justify-content: center !important;
+      }
+
+      .vsm-link {
+        width: 44px !important;
+        height: 44px !important;
+        padding: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border-radius: 12px !important;
+        margin: 0 auto !important;
+
+        .vsm-icon-svg {
+          margin: 0 !important;
+          width: 20px !important;
+          height: 20px !important;
+          min-width: 20px !important;
+        }
+
+        .vsm-title {
+          display: none !important;
+        }
+
+        .vsm-icon {
+          margin: 0 !important;
+        }
+      }
+    }
+
+    .sidebar-profile-footer {
+      padding: 12px 0 !important;
+      justify-content: center !important;
+
+      .sidebar-user-avatar {
+        margin: 0 auto !important;
+        width: 38px !important;
+        height: 38px !important;
+      }
+
+      .sidebar-user-info,
+      .sidebar-logout-btn {
+        display: none !important;
+      }
+    }
+  }
+
+  .app-main__outer {
+    padding-left: 76px !important;
+  }
+}
+
 /* Slide page content smoothly when sidebar is hovered and expanded in collapsed mode */
 .closed-sidebar-open.closed-sidebar:not(.closed-sidebar-md) .app-main__outer {
   padding-left: 280px !important;
