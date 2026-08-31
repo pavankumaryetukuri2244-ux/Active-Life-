@@ -123,23 +123,24 @@
   <!-- Sidebar Footer Profile -->
   <div class="sidebar-profile-footer">
     <div class="d-flex align-items-center">
-      <!-- Avatar with letter A and green-to-blue gradient -->
+      <!-- Avatar with dynamic letter and green-to-blue gradient -->
       <div class="sidebar-user-avatar">
-        A
+        {{ adminInitial }}
       </div>
       <!-- User Info -->
       <div class="sidebar-user-info">
-        <span class="sidebar-user-name">Admin User</span>
-        <span class="sidebar-user-email">admin&#64;health.com</span>
+        <span class="sidebar-user-name">{{ adminName }}</span>
+        <span class="sidebar-user-email">{{ adminEmail }}</span>
       </div>
     </div>
     <!-- Logout button with exit arrow icon -->
-    <button (click)="logout()" class="sidebar-logout-btn" title="Sign Out">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <button (click)="logout()" class="sidebar-logout-btn" title="Sign Out" [disabled]="isLoggingOut">
+      <svg *ngIf="!isLoggingOut" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
         <polyline points="16 17 21 12 16 7"></polyline>
         <line x1="21" y1="12" x2="9" y2="12"></line>
       </svg>
+      <div *ngIf="isLoggingOut" class="spinner-border spinner-border-sm text-secondary" role="status" style="width: 16px; height: 16px;"></div>
     </button>
   </div>
 </div>

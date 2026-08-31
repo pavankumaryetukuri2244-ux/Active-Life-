@@ -189,4 +189,13 @@ export class WebapiService {
     const url = `${this.WebApi}/api/v1/admin/auth/verify-otp`;
     return this.Http.post<any>(url, { email, otp });
   }
+
+  public Logout(token: string) {
+    const url = `${this.WebApi}/api/v1/auth/logout`;
+    const headers = new HttpHeaders({
+      'Content-Type': 'text/plain',
+      'Authorization': `Bearer ${token}`
+    });
+    return this.Http.post<any>(url, token, { headers });
+  }
 }

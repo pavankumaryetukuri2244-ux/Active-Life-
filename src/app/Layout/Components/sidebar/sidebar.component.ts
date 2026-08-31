@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { ConfigService } from '../../../ThemeOptions/store/config.service';
 import { ConfigState } from '../../../ThemeOptions/store/config.state';
 import { ActivatedRoute, Router } from '@angular/router';
+import { WebapiService } from '../../../services/webapi.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -228,6 +229,11 @@ export class SidebarComponent implements OnInit {
 
   public config$: Observable<ConfigState>;
 
+  public isLoggingOut: boolean = false;
+  public adminName: string = 'Admin User';
+  public adminEmail: string = 'admin@healthfamily.com';
+  public adminInitial: string = 'A';
+
   public menuStructure: any[] = [
     {
       type: 'link',
@@ -270,7 +276,8 @@ export class SidebarComponent implements OnInit {
     public globals: ThemeOptions,
     private activatedRoute: ActivatedRoute,
     private configService: ConfigService,
-    private router: Router
+    private router: Router,
+    private webApiService: WebapiService
   ) {
     this.config$ = this.configService.config$;
 
@@ -302,12 +309,28 @@ export class SidebarComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.loadAdminProfile();
+
     // Get the extraParameter from the route to determine which menu should be open
     this.extraParameter = this.activatedRoute.snapshot.firstChild?.data['extraParameter'];
 
     // Initialize open menus based on current route
     if (this.extraParameter) {
       this.openMenus = [this.extraParameter];
+    }
+  }
+
+  loadAdminProfile(): void {
+    try {
+      const profileStr = localStorage.getItem('adminProfile');
+      if (profileStr) {
+        const profile = JSON.parse(profileStr);
+        this.adminName = profile.name || profile.username || profile.email || 'Admin User';
+        this.adminEmail = profile.email || 'admin@healthfamily.com';
+        this.adminInitial = (this.adminName.charAt(0) || 'A').toUpperCase();
+      }
+    } catch (e) {
+      // fallback defaults
     }
   }
 
@@ -351,7 +374,34 @@ export class SidebarComponent implements OnInit {
   }
 
   logout(): void {
+    if (this.isLoggingOut) return;
+    this.isLoggingOut = true;
+
+    const token = localStorage.getItem('accessToken') || '';
+
+    if (token) {
+      this.webApiService.Logout(token).subscribe({
+        next: (response: any) => {
+          console.log('Logout response:', response);
+          this.cleanupAndRedirect();
+        },
+        error: (error: any) => {
+          console.warn('Logout error, clearing session anyway:', error);
+          this.cleanupAndRedirect();
+        }
+      });
+    } else {
+      this.cleanupAndRedirect();
+    }
+  }
+
+  private cleanupAndRedirect(): void {
+    this.isLoggingOut = false;
     localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('tokenType');
+    localStorage.removeItem('expiresIn');
+    localStorage.removeItem('adminProfile');
     this.router.navigate(['/pages/login-boxed']);
   }
 }
