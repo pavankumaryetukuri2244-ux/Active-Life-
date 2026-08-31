@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { WebapiService } from '../../services/webapi.service';
 
 interface ContentItem {
@@ -208,6 +209,8 @@ export class ContentManagementComponent implements OnInit {
   filteredContent: ContentItem[] = [];
   searchQuery: string = '';
   activeTab: 'All' | 'Gym' | 'Meditation' | 'Videos' = 'All';
+  selectedLevel: string = 'All Levels';
+  selectedStatus: string = 'All Status';
   showUploadModal = false;
   isLoading = false;
 
@@ -229,15 +232,69 @@ export class ContentManagementComponent implements OnInit {
   uploadErrorMessage: string = '';
   uploadSuccessMessage: string = '';
 
+  private contentSubscription?: Subscription;
+
   constructor(private webApiService: WebapiService) {}
 
   ngOnInit() {
     this.loadAllContent();
   }
 
-  loadAllContent() {
-    this.isLoading = true;
-    this.webApiService.GetAllContent({}).subscribe({
+  ngOnDestroy() {
+    this.contentSubscription?.unsubscribe();
+  }
+
+  onSearchClick() {
+    this.loadAllContent(true);
+  }
+
+  clearSearch() {
+    this.searchQuery = '';
+    this.loadAllContent(true);
+  }
+
+  setTab(tab: 'All' | 'Gym' | 'Meditation' | 'Videos') {
+    if (this.activeTab === tab) return;
+    this.activeTab = tab;
+    this.loadAllContent(true);
+  }
+
+  onLevelChange() {
+    this.loadAllContent(true);
+  }
+
+  onStatusChange() {
+    this.loadAllContent(true);
+  }
+
+  /**
+   * Load content with backend filters:
+   * Body: { title?: string, category?: string, level?: string, status?: boolean }
+   */
+  loadAllContent(showLoader = true) {
+    if (showLoader) {
+      this.isLoading = true;
+    }
+
+    if (this.contentSubscription) {
+      this.contentSubscription.unsubscribe();
+    }
+
+    const payload: any = {};
+    if (this.searchQuery && this.searchQuery.trim()) {
+      payload.title = this.searchQuery.trim();
+    }
+    if (this.activeTab && this.activeTab !== 'All') {
+      payload.category = this.activeTab.toUpperCase();
+    }
+    if (this.selectedLevel && this.selectedLevel !== 'All Levels') {
+      payload.level = this.selectedLevel;
+    }
+    if (this.selectedStatus && this.selectedStatus !== 'All Status') {
+      payload.status = this.selectedStatus === 'Active';
+    }
+
+    this.contentSubscription = this.webApiService.GetAllContent(payload).subscribe({
       next: (res: any) => {
         this.isLoading = false;
         if (res && res.success && res.data) {
@@ -249,46 +306,43 @@ export class ContentManagementComponent implements OnInit {
           this.stats.meditation = apiStats.meditation !== undefined ? apiStats.meditation : 0;
           this.stats.totalViews = apiStats.totalViews !== undefined ? `${apiStats.totalViews}` : '0';
 
-          if (apiContent.length > 0) {
-            this.contentList = apiContent.map((item: any) => {
-              let cat: 'Gym' | 'Meditation' | 'Videos' = 'Videos';
-              const rawCat = (item.category || '').toUpperCase();
-              if (rawCat === 'GYM') cat = 'Gym';
-              else if (rawCat === 'MEDITATION') cat = 'Meditation';
+          this.contentList = apiContent.map((item: any) => {
+            let cat: 'Gym' | 'Meditation' | 'Videos' = 'Videos';
+            const rawCat = (item.category || '').toUpperCase();
+            if (rawCat === 'GYM') cat = 'Gym';
+            else if (rawCat === 'MEDITATION') cat = 'Meditation';
 
-              let tagList: string[] = [];
-              if (item.tags) {
-                if (typeof item.tags === 'string') {
-                  tagList = item.tags.split(',').map((t: string) => t.trim()).filter((t: string) => t);
-                } else if (Array.isArray(item.tags)) {
-                  tagList = item.tags;
-                }
+            let tagList: string[] = [];
+            if (item.tags) {
+              if (typeof item.tags === 'string') {
+                tagList = item.tags.split(',').map((t: string) => t.trim()).filter((t: string) => t);
+              } else if (Array.isArray(item.tags)) {
+                tagList = item.tags;
               }
-              if (tagList.length === 0 && item.level) {
-                tagList = [item.level];
-              }
+            }
+            if (tagList.length === 0 && item.level) {
+              tagList = [item.level];
+            }
 
-              return {
-                id: `C${String(item.id).padStart(3, '0')}`,
-                title: item.title || 'Untitled Content',
-                duration: '20 min',
-                category: cat,
-                status: item.isActive !== false ? 'Active' : 'Disabled',
-                tags: tagList,
-                views: `${item.viewCount || 0} views`,
-                viewsRaw: item.viewCount || 0,
-                created: item.createdAt ? item.createdAt.split('T')[0] : '',
-                path: item.path || ''
-              };
-            });
-          }
-          this.filterContent();
+            return {
+              id: `C${String(item.id).padStart(3, '0')}`,
+              title: item.title || 'Untitled Content',
+              duration: '20 min',
+              category: cat,
+              status: item.isActive !== false ? 'Active' : 'Disabled',
+              tags: tagList,
+              views: `${item.viewCount || 0} views`,
+              viewsRaw: item.viewCount || 0,
+              created: item.createdAt ? item.createdAt.split('T')[0] : '',
+              path: item.path || ''
+            };
+          });
+          this.filteredContent = [...this.contentList];
         }
       },
       error: (err: any) => {
         this.isLoading = false;
         console.error('Error fetching all content:', err);
-        this.filterContent();
       }
     });
   }
@@ -360,28 +414,6 @@ export class ContentManagementComponent implements OnInit {
         console.error('Error uploading content:', err);
         this.uploadErrorMessage = err.error?.message || err.message || 'Error uploading content. Please check authentication/fields and try again.';
       }
-    });
-  }
-
-  setTab(tab: 'All' | 'Gym' | 'Meditation' | 'Videos') {
-    this.activeTab = tab;
-    this.filterContent();
-  }
-
-  onSearch(event: any) {
-    this.searchQuery = event.target.value;
-    this.filterContent();
-  }
-
-  filterContent() {
-    this.filteredContent = this.contentList.filter(item => {
-      const matchesSearch = item.title.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-                            item.category.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-                            item.id.toLowerCase().includes(this.searchQuery.toLowerCase());
-      
-      const matchesTab = this.activeTab === 'All' || item.category === this.activeTab || (this.activeTab === 'Videos' && item.category === 'Videos');
-      
-      return matchesSearch && matchesTab;
     });
   }
 
