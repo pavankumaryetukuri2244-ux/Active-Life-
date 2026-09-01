@@ -566,23 +566,26 @@ button {
 /* ================================================================
    COLLAPSED SIDEBAR ICON-ONLY MODE (NO TEXT OVERFLOW ON DRAG / COLLAPSE)
    ================================================================ */
-.closed-sidebar:not(.closed-sidebar-open) {
+.closed-sidebar {
   .app-sidebar {
     width: 76px !important;
     min-width: 76px !important;
     flex: 0 0 76px !important;
 
     .app-header__logo {
-      padding: 0 !important;
-      justify-content: center !important;
+      padding: 0 12px !important;
+      justify-content: space-between !important;
       height: 65px !important;
 
       .logo-brand-wrap {
-        margin: 0 auto !important;
-        justify-content: center !important;
+        margin: 0 !important;
+        justify-content: flex-start !important;
 
         .logo-icon-box {
           margin: 0 !important;
+          width: 36px !important;
+          height: 36px !important;
+          border-radius: 10px !important;
         }
 
         .logo-text-title {
@@ -591,19 +594,28 @@ button {
       }
 
       .sidebar-toggle-btn {
-        display: none !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        margin: 0 !important;
+
+        svg {
+          width: 18px !important;
+          height: 18px !important;
+          stroke: #0f172a !important;
+        }
       }
     }
 
     .v-sidebar-menu {
-      padding: 10px 0 !important;
+      padding: 12px 0 !important;
 
       .vsm-header {
         display: none !important;
       }
 
       .vsm-item {
-        margin: 4px 0 !important;
+        margin: 6px 0 !important;
         display: flex !important;
         justify-content: center !important;
       }
@@ -623,6 +635,15 @@ button {
           width: 20px !important;
           height: 20px !important;
           min-width: 20px !important;
+          color: #475569 !important;
+          stroke: #475569 !important;
+          display: block !important;
+        }
+
+        .vsm-icon {
+          margin: 0 !important;
+          color: #475569 !important;
+          display: block !important;
         }
 
         .vsm-title {
@@ -631,6 +652,18 @@ button {
 
         .vsm-icon {
           margin: 0 !important;
+        }
+      }
+
+      .vsm-item.vsm-active .vsm-link,
+      .vsm-link.active-item {
+        background: linear-gradient(135deg, #2563eb 0%, #8b5cf6 100%) !important;
+        box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25) !important;
+        color: #ffffff !important;
+
+        .vsm-icon-svg {
+          color: #ffffff !important;
+          stroke-width: 2.2 !important;
         }
       }
     }
@@ -986,74 +1019,117 @@ button {
 /* ================================================================
    STAT CARDS & NUMBERS — Unified Styles
    ================================================================ */
+/* ================================================================
+   STAT CARDS & NUMBERS — Unified Styles Across All Pages
+   ================================================================ */
 .um-stat-card,
-.cm-stat-card {
-  border-radius: 16px !important;
-  padding: 22px 24px !important;
+.cm-stat-card,
+.al-stat-card,
+.pc-stat-card {
+  width: 100% !important;
+  max-width: 388px !important;
+  height: 120px !important;
+  border-radius: 14px !important;
+  padding: 20px !important;
+  gap: 24px !important;
+  transform: rotate(0deg) !important;
+  opacity: 1 !important;
   border: none !important;
   transition: none !important;
-  transform: none !important;
-  height: 100% !important;
   display: flex !important;
   flex-direction: column !important;
   justify-content: space-between !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+  box-sizing: border-box !important;
 }
 
 .um-stat-card:hover,
-.cm-stat-card:hover {
+.cm-stat-card:hover,
+.al-stat-card:hover,
+.pc-stat-card:hover {
   transform: none !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
 }
 
 /* Backgrounds */
 .um-stat-card-blue,
-.cm-stat-card-blue {
+.cm-stat-card-blue,
+.al-stat-card-blue,
+.pc-stat-card-blue {
   background-color: #F0F6FF !important;
 }
 
 .um-stat-card-green,
-.cm-stat-card-green {
+.cm-stat-card-green,
+.al-stat-card-green,
+.pc-stat-card-green {
   background-color: #F0FDF4 !important;
 }
 
 .um-stat-card-purple,
-.cm-stat-card-purple {
+.cm-stat-card-purple,
+.al-stat-card-purple,
+.pc-stat-card-purple {
   background-color: #FAF5FF !important;
 }
 
 .um-stat-card-yellow,
 .um-stat-card-amber,
-.cm-stat-card-amber {
+.cm-stat-card-amber,
+.al-stat-card-yellow,
+.pc-stat-card-yellow {
   background-color: #FFFBEB !important;
 }
 
 .um-stat-card-red,
-.cm-stat-card-red {
+.cm-stat-card-red,
+.al-stat-card-red,
+.pc-stat-card-red {
   background-color: #FEF2F2 !important;
 }
 
-/* Labels */
+/* Labels (Exact Dashboard Metric Label: Inter 400 14px, line-height 20px, letter-spacing -0.15px, color #64748B) */
 .um-stat-label,
-.cm-stat-label {
+.cm-stat-label,
+.al-stat-label,
+.pc-stat-label,
+.metric-label {
+  height: 20px !important;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
-  font-size: 13px !important;
-  font-weight: 500 !important;
+  font-weight: 400 !important;
+  font-style: normal !important;
+  font-size: 14px !important;
+  line-height: 20px !important;
+  letter-spacing: -0.15px !important;
   color: #64748B !important;
-  margin-bottom: 8px !important;
+  margin: 0 !important;
+  padding: 0 !important;
   display: block !important;
-  letter-spacing: 0.01em !important;
+  white-space: nowrap !important;
+  box-sizing: border-box !important;
 }
 
-/* Values (Numbers) */
+/* Values / Numbers (Exact Dashboard Metric Value: Inter 700 30px, line-height 36px, letter-spacing 0.4px) */
 .um-stat-value,
-.cm-stat-value {
+.cm-stat-value,
+.al-stat-value,
+.pc-stat-value,
+.db-metric-number,
+h3.db-metric-number,
+h2.um-stat-value {
+  height: 36px !important;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
-  font-size: 28px !important;
   font-weight: 700 !important;
-  line-height: 1.15 !important;
-  letter-spacing: -0.02em !important;
+  font-style: normal !important;
+  font-size: 30px !important;
+  line-height: 36px !important;
+  letter-spacing: 0.4px !important;
   margin: 0 !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  white-space: nowrap !important;
+  box-sizing: border-box !important;
 }
 
 .um-stat-value-blue,
@@ -1099,59 +1175,50 @@ button {
 
 /* ── Page header container: exact Figma specifications (width: 1600, height: 64) ── */
 .db-header-container {
-  width: 1600px !important;
+  width: auto !important;
   max-width: 100% !important;
-  height: 64px !important;
+  height: auto !important;
+  min-height: 64px !important;
   transform: rotate(0deg) !important;
   opacity: 1 !important;
   display: flex !important;
   flex-direction: column !important;
   justify-content: flex-start !important;
-  gap: 4px !important;
+  gap: 2px !important;
   box-sizing: border-box !important;
+  margin-bottom: 24px !important;
 }
 
-/* ── Page header: exact Figma specifications for Dashboard Overview ── */
-.db-title {
+/* ── Page header: exact Figma specifications for all page titles ── */
+.db-title,
+.um-page-title,
+.cm-page-title,
+.pc-page-title,
+.al-page-title {
   width: auto !important;
-  min-width: 315px !important;
-  height: 36px !important;
-  transform: rotate(0deg) !important;
-  opacity: 1 !important;
+  height: auto !important;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
   font-weight: 700 !important;
   font-style: normal !important;
   font-size: 30px !important;
   line-height: 36px !important;
   letter-spacing: 0.4px !important;
-  color: #111827 !important;
+  color: #0F172A !important;
   margin: 0 !important;
-  display: flex !important;
-  align-items: center !important;
+  padding: 0 !important;
+  display: block !important;
   white-space: nowrap !important;
   box-sizing: border-box !important;
 }
 
-.um-page-title,
-.cm-page-title,
-.pc-page-title,
-.al-page-title {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
-  font-size: 24px !important;
-  font-weight: 700 !important;
-  color: #111827 !important;
-  letter-spacing: -0.02em !important;
-  margin: 0 0 4px 0 !important;
-  line-height: 1.25 !important;
-}
-
-/* ── Dashboard Subtitle: exact Figma specifications ── */
-.db-subtitle {
+/* ── Page header subtitle: exact Figma specifications for all page subtitles ── */
+.db-subtitle,
+.um-page-subtitle,
+.cm-page-subtitle,
+.pc-page-subtitle,
+.al-page-subtitle {
   width: auto !important;
-  min-width: 343px !important;
-  height: 24px !important;
-  transform: rotate(0deg) !important;
-  opacity: 1 !important;
+  height: auto !important;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
   font-weight: 400 !important;
   font-style: normal !important;
@@ -1160,32 +1227,19 @@ button {
   letter-spacing: -0.31px !important;
   color: #62748E !important; /* hsba(215, 31%, 56%, 1) */
   margin: 0 !important;
-  display: flex !important;
-  align-items: center !important;
-  white-space: nowrap !important;
+  padding: 0 !important;
+  display: block !important;
+  white-space: normal !important;
   box-sizing: border-box !important;
-}
-
-.um-page-subtitle,
-.cm-page-subtitle,
-.pc-page-subtitle,
-.al-page-subtitle {
-  font-family: 'Inter', sans-serif !important;
-  font-size: 13.5px !important;
-  font-weight: 400 !important;
-  color: #6B7280 !important;
-  line-height: 1.4 !important;
-  margin: 0 !important;
 }
 
 /* ── Four Stat Cards Row: exact Figma specifications (width: 1600, height: 162, padding-top: 24) ── */
 .db-stats-row {
-  width: 1600px !important;
+  width: 100% !important;
   max-width: 100% !important;
-  min-height: 162px !important;
-  transform: rotate(0deg) !important;
-  opacity: 1 !important;
-  padding-top: 24px !important;
+  margin-top: 16px !important;
+  margin-bottom: 24px !important;
+  padding-top: 0 !important;
   box-sizing: border-box !important;
 }
 

@@ -22,19 +22,30 @@ interface ContentItem {
   styles: [`
     .cm-page-title {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
-      font-size: 24px !important;
       font-weight: 700 !important;
-      color: #111827 !important;
-      letter-spacing: -0.02em !important;
-      margin: 0 0 4px 0 !important;
+      font-style: normal !important;
+      font-size: 30px !important;
+      line-height: 36px !important;
+      letter-spacing: 0.4px !important;
+      color: #0F172A !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      display: block !important;
+      white-space: nowrap !important;
     }
 
     .cm-page-subtitle {
-      font-family: 'Inter', sans-serif !important;
-      font-size: 13.5px !important;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
       font-weight: 400 !important;
-      color: #6B7280 !important;
+      font-style: normal !important;
+      font-size: 16px !important;
+      line-height: 24px !important;
+      letter-spacing: -0.31px !important;
+      color: #62748E !important;
       margin: 0 !important;
+      padding: 0 !important;
+      display: block !important;
+      white-space: normal !important;
     }
 
     /* Upload Content Button */
@@ -94,16 +105,21 @@ interface ContentItem {
 
     /* Stat Cards - Pastel Colored Boxes */
     .cm-stat-card {
-      border-radius: 16px !important;
+      width: 100% !important;
+      max-width: 388px !important;
+      height: 120px !important;
+      border-radius: 14px !important;
+      padding: 20px !important;
+      gap: 24px !important;
+      transform: rotate(0deg) !important;
+      opacity: 1 !important;
       border: none !important;
-      padding: 22px 24px !important;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
       transition: none !important;
-      transform: none !important;
-      height: 100% !important;
       display: flex !important;
       flex-direction: column !important;
       justify-content: space-between !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+      box-sizing: border-box !important;
     }
     .cm-stat-card:hover {
       transform: none !important;
@@ -124,20 +140,35 @@ interface ContentItem {
     }
 
     .cm-stat-label {
-      font-family: 'Inter', sans-serif !important;
-      font-size: 13px !important;
-      font-weight: 500 !important;
+      height: 20px !important;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+      font-weight: 400 !important;
+      font-style: normal !important;
+      font-size: 14px !important;
+      line-height: 20px !important;
+      letter-spacing: -0.15px !important;
       color: #64748B !important;
-      margin-bottom: 8px !important;
+      margin: 0 !important;
+      padding: 0 !important;
       display: block !important;
+      white-space: nowrap !important;
+      box-sizing: border-box !important;
     }
 
     .cm-stat-value {
-      font-family: 'Inter', sans-serif !important;
-      font-size: 28px !important;
+      height: 36px !important;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
       font-weight: 700 !important;
-      letter-spacing: -0.02em !important;
+      font-style: normal !important;
+      font-size: 30px !important;
+      line-height: 36px !important;
+      letter-spacing: 0.4px !important;
       margin: 0 !important;
+      padding: 0 !important;
+      display: flex !important;
+      align-items: center !important;
+      white-space: nowrap !important;
+      box-sizing: border-box !important;
     }
 
     .cm-stat-value-blue {

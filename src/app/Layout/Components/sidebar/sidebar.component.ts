@@ -71,27 +71,23 @@ import { WebapiService } from '../../../services/webapi.service';
       transform: rotate(360deg) !important;  /* Point down */
     }
     
-    /* ---- Sidebar item links: exact Figma specifications ---- */
-    ::ng-deep .vsm-list .vsm-item,
-    ::ng-deep .vsm-item {
-      margin: 3px auto !important;
-      width: 231px !important;
-      height: 40px !important;
+    /* ---- Sidebar item links: Expanded mode ---- */
+    :host-context(.app-container:not(.closed-sidebar)) ::ng-deep .vsm-list .vsm-item,
+    :host-context(.app-container:not(.closed-sidebar)) ::ng-deep .vsm-item {
+      margin: 4px 14px !important;
+      width: calc(100% - 28px) !important;
+      height: 44px !important;
       box-sizing: border-box !important;
     }
     
-    :host ::ng-deep .vsm-list .vsm-link {
-      width: 231px !important;
-      height: 40px !important;
-      border-radius: 10px !important;
+    :host-context(.app-container:not(.closed-sidebar)) ::ng-deep .vsm-list .vsm-link {
+      width: 100% !important;
+      height: 44px !important;
+      border-radius: 12px !important;
       gap: 12px !important;
       transform: rotate(0deg) !important;
       opacity: 1 !important;
-      padding: 10px 12px !important;
-      padding-top: 10px !important;
-      padding-right: 12px !important;
-      padding-bottom: 10px !important;
-      padding-left: 12px !important;
+      padding: 10px 14px !important;
       box-sizing: border-box !important;
       color: #334155 !important;
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
@@ -109,7 +105,7 @@ import { WebapiService } from '../../../services/webapi.service';
       transition: all 0.2s ease !important;
     }
 
-    /* ---- Sidebar titles: exact Figma specifications ---- */
+    /* ---- Sidebar titles ---- */
     :host ::ng-deep .vsm-list .vsm-title {
       color: #334155 !important;
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
@@ -126,16 +122,62 @@ import { WebapiService } from '../../../services/webapi.service';
       transition: all 0.2s ease !important;
     }
 
-    /* Exact Dashboard title dimensions from Figma: 72×20 */
-    :host ::ng-deep .vsm-list .vsm-title.vsm-title-dashboard {
-      width: 72px !important;
-      height: 20px !important;
+    /* ---- Sidebar item links: Collapsed 76px mode ---- */
+    :host-context(.closed-sidebar) ::ng-deep .v-sidebar-menu,
+    :host-context(.closed-sidebar) ::ng-deep .vsm-list {
+      padding: 12px 0 !important;
+      width: 100% !important;
     }
 
-    /* Exact Users title dimensions from Figma: 39×20 */
-    :host ::ng-deep .vsm-list .vsm-title.vsm-title-users {
-      width: 39px !important;
+    :host-context(.closed-sidebar) ::ng-deep .vsm-list .vsm-item,
+    :host-context(.closed-sidebar) ::ng-deep .vsm-item {
+      margin: 6px auto !important;
+      width: 44px !important;
+      height: 44px !important;
+      display: flex !important;
+      justify-content: center !important;
+      align-items: center !important;
+      box-sizing: border-box !important;
+    }
+
+    :host-context(.closed-sidebar) ::ng-deep .vsm-list .vsm-link {
+      width: 44px !important;
+      height: 44px !important;
+      padding: 0 !important;
+      margin: 0 auto !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      border-radius: 12px !important;
+      box-sizing: border-box !important;
+    }
+
+    :host-context(.closed-sidebar) ::ng-deep .vsm-list .vsm-title {
+      display: none !important;
+    }
+
+    :host-context(.closed-sidebar) ::ng-deep .vsm-list .vsm-icon-svg {
+      margin: 0 !important;
+      width: 20px !important;
       height: 20px !important;
+      min-width: 20px !important;
+      color: #475569 !important;
+      stroke: #475569 !important;
+      display: block !important;
+    }
+
+    :host-context(.closed-sidebar) ::ng-deep .vsm-list .vsm-item.vsm-active .vsm-link,
+    :host-context(.closed-sidebar) ::ng-deep .vsm-list .vsm-link.active-item {
+      background: linear-gradient(135deg, #2563eb 0%, #8b5cf6 100%) !important;
+      box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25) !important;
+      color: #ffffff !important;
+    }
+
+    :host-context(.closed-sidebar) ::ng-deep .vsm-list .vsm-item.vsm-active .vsm-link .vsm-icon-svg,
+    :host-context(.closed-sidebar) ::ng-deep .vsm-list .vsm-link.active-item .vsm-icon-svg {
+      color: #ffffff !important;
+      stroke: #ffffff !important;
+      stroke-width: 2.2 !important;
     }
 
     /* Active link item overrides - Gradient Blue-Purple style */
@@ -262,7 +304,7 @@ export class SidebarComponent implements OnInit {
 
   public isLoggingOut: boolean = false;
   public adminName: string = 'Admin User';
-  public adminEmail: string = 'admin@healthfamily.com';
+  public adminEmail: string = 'admin@health.com';
   public adminInitial: string = 'A';
 
   public menuStructure: any[] = [
@@ -332,11 +374,11 @@ export class SidebarComponent implements OnInit {
   }
 
   onSidebarMouseEnter() {
-    // Disable hover-to-expand behavior per user request
+    // Keep clean icon-only mode matching uploaded image
   }
 
   onSidebarMouseLeave() {
-    // Disable hover-to-expand behavior per user request
+    // Keep clean icon-only mode matching uploaded image
   }
 
   ngOnInit() {

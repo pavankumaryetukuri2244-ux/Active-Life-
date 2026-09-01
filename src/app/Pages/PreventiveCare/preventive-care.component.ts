@@ -24,19 +24,30 @@ interface Vaccine {
   styles: [`
     .pc-page-title {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
-      font-size: 26px !important;
       font-weight: 700 !important;
+      font-style: normal !important;
+      font-size: 30px !important;
+      line-height: 36px !important;
+      letter-spacing: 0.4px !important;
       color: #0F172A !important;
-      letter-spacing: -0.02em !important;
-      margin: 0 0 4px 0 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      display: block !important;
+      white-space: nowrap !important;
     }
 
     .pc-page-subtitle {
-      font-family: 'Inter', sans-serif !important;
-      font-size: 13.5px !important;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
       font-weight: 400 !important;
-      color: #64748B !important;
-      margin: 0 0 24px 0 !important;
+      font-style: normal !important;
+      font-size: 16px !important;
+      line-height: 24px !important;
+      letter-spacing: -0.31px !important;
+      color: #62748E !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      display: block !important;
+      white-space: normal !important;
     }
 
     /* Stat Cards */
