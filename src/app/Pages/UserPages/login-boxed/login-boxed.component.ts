@@ -211,15 +211,45 @@ import { WebapiService } from '../../../services/webapi.service';
       user-select: none;
     }
 
-    /* Checkbox: 16×16, radius 4px, #D1D5DB border */
+    /* Checkbox: 16×16, radius 4px, #CBD5E1 border, vibrant blue on check */
     .remember-check {
       width: 16px !important;
       height: 16px !important;
+      min-width: 16px !important;
       border-radius: 4px !important;
-      border: 1.5px solid #D1D5DB !important;
-      cursor: pointer;
+      border: 1.5px solid #CBD5E1 !important;
+      cursor: pointer !important;
       margin: 0 !important;
-      accent-color: #6366F1;
+      background-color: #FFFFFF !important;
+      accent-color: #2563EB !important;
+      appearance: none !important;
+      -webkit-appearance: none !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      transition: all 0.15s ease !important;
+      position: relative !important;
+    }
+
+    .remember-check:hover {
+      border-color: #94A3B8 !important;
+    }
+
+    .remember-check:focus {
+      border-color: #2563EB !important;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15) !important;
+      outline: none !important;
+    }
+
+    .remember-check:checked,
+    .was-validated .remember-check:valid:checked,
+    .was-validated .remember-check:checked {
+      background-color: #2563EB !important;
+      border-color: #2563EB !important;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23ffffff'%3E%3Cpath fill-rule='evenodd' d='M12.416 3.376a.75.75 0 0 1 .208 1.04l-5 7.5a.75.75 0 0 1-1.154.114l-3-3a.75.75 0 0 1 1.06-1.06l2.353 2.353 4.493-6.74a.75.75 0 0 1 1.04-.207Z' clip-rule='evenodd'/%3E%3C/svg%3E") !important;
+      background-position: center !important;
+      background-repeat: no-repeat !important;
+      background-size: 11px 11px !important;
     }
 
     /* "Forgot password?": Inter 600, 13.5px, #3B82F6 */
