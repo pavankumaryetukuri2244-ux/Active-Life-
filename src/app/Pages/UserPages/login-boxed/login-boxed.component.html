@@ -1,22 +1,27 @@
 <div class="login-bg">
+  <!-- Figma Ambient Glass Circle: 384×384, blur(128px) -->
+  <div class="ambient-glow-circle"></div>
+
   <div class="login-scroll-inner">
   <div class="login-wrapper">
 
-    <!-- ─── Brand Section: Logo + Title above card ─── -->
+    <!-- ─── Brand Section: Figma 448×160 Header (Icon & Text) ─── -->
     <div class="brand-section text-center animate-fade-in">
-      <!-- Heart logo in white rounded square -->
-      <div class="logo-box mx-auto">
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none"
-             stroke="#F43F5E" stroke-width="2.2"
-             stroke-linecap="round" stroke-linejoin="round">
-          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06
-                   a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78
-                   1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-        </svg>
+      <!-- Heart logo container: Figma 448×96 -->
+      <div class="logo-container">
+        <div class="logo-box">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none"
+               stroke="#F43F5E" stroke-width="2.2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06
+                     a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78
+                     1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+          </svg>
+        </div>
       </div>
-      <!-- Brand name -->
+      <!-- Brand title: HealthFamily -->
       <h2 class="brand-title">HealthFamily</h2>
-      <!-- Portal subtitle -->
+      <!-- Brand subtitle: Admin Portal -->
       <p class="brand-subtitle">Admin Portal</p>
     </div>
 
@@ -40,7 +45,8 @@
 
       <!-- ─── Login Form ─── -->
       <form [formGroup]="Form" (ngSubmit)="login()" autocomplete="off"
-            [ngClass]="{'was-validated': submitted}">
+            [ngClass]="{'was-validated': submitted}"
+            class="login-form-container">
 
         <!-- Email Address -->
         <div class="field-group">
@@ -68,7 +74,7 @@
               id="passwordInput"
               [type]="showPassword ? 'text' : 'password'"
               class="form-control custom-input-field pe-5"
-              placeholder="••••••••"
+              placeholder="Enter your password"
               formControlName="password"
               autocomplete="current-password"
               required>
@@ -103,7 +109,7 @@
 
         <!-- Remember Me + Forgot Password -->
         <div class="login-bottom-row">
-          <div class="d-flex align-items-center p-0 m-0" style="gap: 8px;">
+          <div class="remember-group">
             <input class="remember-check"
                    type="checkbox"
                    id="rememberMe">
@@ -148,8 +154,8 @@
     </div><!-- /login-card-custom -->
 
     <!-- Demo Credentials Footer -->
-    <div class="demo-credentials text-center animate-fade-in">
-      Demo: admin&#64;healthfamily.com / admin123
+    <div class="demo-credentials-container text-center animate-fade-in">
+      <p class="demo-credentials-text">Demo: admin&#64;healthfamily.com / admin123</p>
     </div>
 
   </div><!-- /login-wrapper -->

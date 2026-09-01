@@ -62,6 +62,8 @@ export class WebapiService {
     module?: string;
     status?: string;
     adminName?: string;
+    fromDate?: string;
+    toDate?: string;
     sortBy?: string;
     sortDirection?: string;
   }) {

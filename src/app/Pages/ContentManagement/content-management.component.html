@@ -72,11 +72,11 @@
                  [(ngModel)]="searchQuery"
                  (input)="onSearchInput($event)"
                  (keyup.enter)="onSearchClick()"
-                 placeholder="Search content by title, tags, or keyword..." 
+                 placeholder="Search content by title or category..." 
                  class="cm-search-input">
         </div>
 
-        <!-- Filter Controls Row (Category Tabs + Level Dropdown + Status Dropdown) -->
+        <!-- Filter Controls Row (Category Tabs) -->
         <div class="d-flex align-items-center justify-content-between flex-wrap" style="gap: 12px;">
           <!-- Category Tabs -->
           <div class="d-flex flex-wrap" style="gap: 8px;">
@@ -100,24 +100,6 @@
                     [class.active]="activeTab === 'Videos'">
               Videos
             </button>
-          </div>
-
-          <!-- Level & Status Dropdowns -->
-          <div class="d-flex align-items-center flex-wrap" style="gap: 10px;">
-            <select [(ngModel)]="selectedLevel" (change)="onLevelChange()" 
-                    style="height: 38px; border-radius: 8px; border: 1px solid #E2E8F0; padding: 0 12px; font-family: 'Inter', sans-serif; font-size: 13px; color: #334155; background: #FFFFFF; outline: none; cursor: pointer;">
-              <option value="All Levels">All Levels</option>
-              <option value="BEGINNER">Beginner</option>
-              <option value="INTERMEDIATE">Intermediate</option>
-              <option value="ADVANCED">Advanced</option>
-            </select>
-
-            <select [(ngModel)]="selectedStatus" (change)="onStatusChange()" 
-                    style="height: 38px; border-radius: 8px; border: 1px solid #E2E8F0; padding: 0 12px; font-family: 'Inter', sans-serif; font-size: 13px; color: #334155; background: #FFFFFF; outline: none; cursor: pointer;">
-              <option value="All Status">All Status</option>
-              <option value="Active">Active</option>
-              <option value="Disabled">Disabled</option>
-            </select>
           </div>
         </div>
       </div>
@@ -292,10 +274,9 @@
         </div>
 
         <!-- Submit Button -->
-        <button type="submit" [disabled]="uploading" class="btn w-100 text-white font-weight-bold d-flex align-items-center justify-content-center gap-2" 
-                style="background: #0A0F1D; border-radius: 10px; height: 40px; font-size: 0.875rem; border: none; font-family: 'Inter', sans-serif; transition: background 0.2s; cursor: pointer;">
-          <span *ngIf="uploading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-          <span>{{ uploading ? 'Uploading...' : 'Upload Content' }}</span>
+        <button type="submit" [disabled]="uploading" class="cm-modal-submit-btn">
+          <span *ngIf="uploading" class="spinner-border spinner-border-sm me-2 text-white" role="status" aria-hidden="true"></span>
+          <span style="color: #FFFFFF !important; font-weight: 600; font-size: 14px;">{{ uploading ? 'Uploading...' : 'Upload Content' }}</span>
         </button>
       </form>
 

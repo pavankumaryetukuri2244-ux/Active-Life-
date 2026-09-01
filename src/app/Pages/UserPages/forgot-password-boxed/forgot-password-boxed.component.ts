@@ -6,14 +6,9 @@ import { WebapiService } from '../../../services/webapi.service';
   templateUrl: './forgot-password-boxed.component.html',
   standalone: false,
   styles: [`
-    /* Background: diagonal gradient */
+    /* Background: diagonal gradient matching Figma */
     .login-bg {
-      background: linear-gradient(135deg,
-        #2563EB  0%,
-        #4F46E5 25%,
-        #7C3AED 50%,
-        #9333EA 75%,
-        #C026D3 100%) !important;
+      background: linear-gradient(135deg, #155DFC 0%, #9810FA 50%, #E60076 100%) !important;
       position: fixed;
       top: 0;
       left: 0;

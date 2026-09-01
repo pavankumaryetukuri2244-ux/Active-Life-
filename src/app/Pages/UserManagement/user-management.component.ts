@@ -39,6 +39,8 @@ export class UserManagementComponent implements OnInit, OnDestroy {
 
   stats: UserStats = { totalUsers: 0, activeUsers: 0, inactiveUsers: 0, blockedUsers: 0 };
 
+  allUsers: User[] = [];
+  filteredUsers: User[] = [];
   usersList: User[] = [];
   isLoading = false;
   errorMessage = '';
@@ -57,7 +59,6 @@ export class UserManagementComponent implements OnInit, OnDestroy {
 
   openDropdownId: string | null = null;
 
-  private searchSubject = new Subject<string>();
   private usersSubscription?: Subscription;
   private destroy$ = new Subject<void>();
 
@@ -83,7 +84,8 @@ export class UserManagementComponent implements OnInit, OnDestroy {
       this.api.UpdateUserStatus(Number(user.id), apiAction).subscribe({
         next: (res: any) => {
           if (res?.success) {
-            this.applyFilters();
+            // Reload all users from backend to refresh master list
+            this.loadUsers();
           } else {
             this.errorMessage = res?.message || 'Failed to update user status.';
             this.isLoading = false;
@@ -108,101 +110,134 @@ export class UserManagementComponent implements OnInit, OnDestroy {
     this.usersSubscription?.unsubscribe();
   }
 
+  /**
+   * Fetch all users from API once on initial load.
+   * Subsequent searching and tab filtering are done purely in the frontend.
+   */
   loadUsers() {
-    this.applyFilters(true);
-  }
-
-  private searchTimer: any;
-
-  onSearchClick() {
-    this.currentPage = 0;
-    this.applyFilters(true);
-  }
-
-  onSearchInput(event: any) {
-    clearTimeout(this.searchTimer);
-    this.searchTimer = setTimeout(() => {
-      this.currentPage = 0;
-      this.applyFilters(true);
-    }, 350);
-  }
-
-  clearSearch() {
-    this.searchQuery = '';
-    this.currentPage = 0;
-    this.applyFilters(true);
-  }
-
-  /** Filter/search/paginate call - cancels any in-flight requests */
-  applyFilters(showLoader = true) {
-    if (showLoader) {
-      this.isLoading = true;
-    }
+    this.isLoading = true;
     this.errorMessage = '';
 
-    // Cancel previous in-flight request if still running
     if (this.usersSubscription) {
       this.usersSubscription.unsubscribe();
     }
 
     const body: any = {
-      page: this.currentPage,
-      size: this.pageSize,
+      page: 0,
+      size: 1000,
       sortBy: this.sortBy,
-      sortDirection: this.sortDirection,
-      status: this.activeTab
+      sortDirection: this.sortDirection
     };
-
-    if (this.searchQuery && this.searchQuery.trim()) {
-      body['search'] = this.searchQuery.trim();
-    }
 
     this.usersSubscription = this.api.GetUsersFiltered(body).subscribe({
       next: (res: any) => {
-        this.handleResponse(res);
+        if (res?.success && res.data) {
+          const d = res.data;
+          this.stats = {
+            totalUsers: d.statistics?.totalUsers ?? 0,
+            activeUsers: d.statistics?.activeUsers ?? 0,
+            inactiveUsers: d.statistics?.inactiveUsers ?? 0,
+            blockedUsers: d.statistics?.blockedUsers ?? 0
+          };
+          const pageData = d.users;
+          const rawContent = pageData?.content ?? [];
+          this.allUsers = [...rawContent].sort((a: any, b: any) => {
+            const idA = Number(a.id) || 0;
+            const idB = Number(b.id) || 0;
+            return idA - idB;
+          });
+
+          // Apply frontend filters to slice and display
+          this.applyFrontendFilters();
+        }
+        this.isLoading = false;
       },
       error: (err: any) => {
-        console.error('Users filter error:', err);
-        this.errorMessage = 'Failed to apply filters. Please try again.';
+        console.error('Users load error:', err);
+        this.errorMessage = 'Failed to load users. Please try again.';
         this.isLoading = false;
       }
     });
   }
 
-  private handleResponse(res: any) {
-    if (res?.success) {
-      const d = res.data;
-      this.stats = {
-        totalUsers: d.statistics?.totalUsers ?? 0,
-        activeUsers: d.statistics?.activeUsers ?? 0,
-        inactiveUsers: d.statistics?.inactiveUsers ?? 0,
-        blockedUsers: d.statistics?.blockedUsers ?? 0
-      };
-      const pageData = d.users;
-      const rawContent = pageData?.content ?? [];
-      this.usersList = [...rawContent].sort((a: any, b: any) => {
-        const idA = Number(a.id) || 0;
-        const idB = Number(b.id) || 0;
-        return idA - idB;
-      });
-      this.totalElements = pageData?.totalElements ?? 0;
-      this.totalPages = pageData?.totalPages ?? 0;
-      this.currentPage = pageData?.pageable?.pageNumber ?? 0;
+  /**
+   * Pure frontend filter — 0 API calls!
+   * Filters by active status tab, then by search query across name, email, contact, and user ID.
+   */
+  applyFrontendFilters() {
+    let list = [...this.allUsers];
+
+    // 1. Status Filter
+    if (this.activeTab !== 'ALL') {
+      list = list.filter(u => (u.status || '').toUpperCase() === this.activeTab);
     }
-    this.isLoading = false;
+
+    // 2. Search Filter: by Name, Email, Contact, or User ID
+    if (this.searchQuery && this.searchQuery.trim()) {
+      const q = this.searchQuery.trim().toLowerCase();
+      const qDigits = q.replace(/[\s+-]/g, '');
+
+      list = list.filter(u => {
+        const nameMatch = (u.fullName || '').toLowerCase().includes(q);
+        const emailMatch = (u.email || '').toLowerCase().includes(q);
+        
+        // Contact match (both raw and normalized digits)
+        const rawContact = (u.contact || '').toLowerCase();
+        const contactDigits = (u.contact || '').replace(/[\s+-]/g, '');
+        const contactMatch = rawContact.includes(q) || (qDigits.length > 0 && contactDigits.includes(qDigits));
+
+        // ID match (e.g. "U001", "1")
+        const idFormatted = ('u' + String(u.id).padStart(3, '0')).toLowerCase();
+        const idMatch = String(u.id).includes(q) || idFormatted.includes(q);
+
+        return nameMatch || emailMatch || contactMatch || idMatch;
+      });
+    }
+
+    this.filteredUsers = list;
+    this.totalElements = list.length;
+    this.totalPages = Math.ceil(this.totalElements / this.pageSize) || 1;
+
+    if (this.currentPage >= this.totalPages) {
+      this.currentPage = 0;
+    }
+
+    this.updatePageSlice();
+  }
+
+  /** Slices the filtered users array for the active page */
+  updatePageSlice() {
+    const start = this.currentPage * this.pageSize;
+    this.usersList = this.filteredUsers.slice(start, start + this.pageSize);
+  }
+
+  onSearchInput(event?: any) {
+    this.currentPage = 0;
+    this.applyFrontendFilters();
+  }
+
+  onSearchClick() {
+    this.currentPage = 0;
+    this.applyFrontendFilters();
+  }
+
+  clearSearch() {
+    this.searchQuery = '';
+    this.currentPage = 0;
+    this.applyFrontendFilters();
   }
 
   setTab(tab: 'ALL' | 'ACTIVE' | 'INACTIVE' | 'BLOCKED') {
     if (this.activeTab === tab) return;
     this.activeTab = tab;
     this.currentPage = 0;
-    this.applyFilters(true);
+    this.applyFrontendFilters();
   }
 
   goToPage(page: number) {
     if (page < 0 || page >= this.totalPages || page === this.currentPage) return;
     this.currentPage = page;
-    this.applyFilters(true);
+    this.updatePageSlice();
   }
 
   get pages(): number[] {

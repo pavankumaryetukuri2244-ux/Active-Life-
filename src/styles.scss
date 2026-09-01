@@ -79,7 +79,7 @@
   --color-border-focus:   #8B5CF6;   /* input focus border            */
 
   /* Gradients */
-  --gradient-login-bg:    linear-gradient(135deg, #2563eb 0%, #4f46e5 22%, #7c3aed 48%, #9333ea 72%, #c026d3 100%);
+  --gradient-login-bg:    linear-gradient(135deg, #155DFC 0%, #9810FA 50%, #E60076 100%);
   --gradient-btn-primary: linear-gradient(90deg, #3B82F6 0%, #6366F1 50%, #8B5CF6 100%);
 
   /* ── Spacing ── */
@@ -1097,8 +1097,41 @@ button {
    DASHBOARD STYLES
    ================================================================ */
 
-/* ── Page header ── */
-.db-title,
+/* ── Page header container: exact Figma specifications (width: 1600, height: 64) ── */
+.db-header-container {
+  width: 1600px !important;
+  max-width: 100% !important;
+  height: 64px !important;
+  transform: rotate(0deg) !important;
+  opacity: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+  gap: 4px !important;
+  box-sizing: border-box !important;
+}
+
+/* ── Page header: exact Figma specifications for Dashboard Overview ── */
+.db-title {
+  width: auto !important;
+  min-width: 315px !important;
+  height: 36px !important;
+  transform: rotate(0deg) !important;
+  opacity: 1 !important;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-weight: 700 !important;
+  font-style: normal !important;
+  font-size: 30px !important;
+  line-height: 36px !important;
+  letter-spacing: 0.4px !important;
+  color: #111827 !important;
+  margin: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  white-space: nowrap !important;
+  box-sizing: border-box !important;
+}
+
 .um-page-title,
 .cm-page-title,
 .pc-page-title,
@@ -1112,7 +1145,27 @@ button {
   line-height: 1.25 !important;
 }
 
-.db-subtitle,
+/* ── Dashboard Subtitle: exact Figma specifications ── */
+.db-subtitle {
+  width: auto !important;
+  min-width: 343px !important;
+  height: 24px !important;
+  transform: rotate(0deg) !important;
+  opacity: 1 !important;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-weight: 400 !important;
+  font-style: normal !important;
+  font-size: 16px !important;
+  line-height: 24px !important;
+  letter-spacing: -0.31px !important;
+  color: #62748E !important; /* hsba(215, 31%, 56%, 1) */
+  margin: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  white-space: nowrap !important;
+  box-sizing: border-box !important;
+}
+
 .um-page-subtitle,
 .cm-page-subtitle,
 .pc-page-subtitle,
@@ -1125,54 +1178,124 @@ button {
   margin: 0 !important;
 }
 
-/* ── Stat cards ── */
+/* ── Four Stat Cards Row: exact Figma specifications (width: 1600, height: 162, padding-top: 24) ── */
+.db-stats-row {
+  width: 1600px !important;
+  max-width: 100% !important;
+  min-height: 162px !important;
+  transform: rotate(0deg) !important;
+  opacity: 1 !important;
+  padding-top: 24px !important;
+  box-sizing: border-box !important;
+}
+
+/* ── Stat cards: exact Figma specifications (width: 382, height: 138, radius: 14, border: 1px solid rgba(0,0,0,0.1), padding: 24, gap: 24) ── */
 .db-stat-card {
-  background: var(--color-bg-card) !important;
-  border: 1px solid var(--color-border) !important;
-  border-radius: var(--radius-2xl) !important;
-  box-shadow: var(--shadow-card) !important;
-  transition: none !important;
-  transform: none !important;
+  width: 100% !important;
+  max-width: 382px !important;
+  height: 138px !important;
+  border-radius: 14px !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important; /* hsba(0, 0%, 0%, 0.1) / #0000001A */
+  border-width: 1px !important;
+  border-style: solid !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+  background: #FFFFFF !important;
+  background-color: #FFFFFF !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+  transform: rotate(0deg) !important;
+  opacity: 1 !important;
+  box-sizing: border-box !important;
   overflow: hidden !important;
+  transition: none !important;
+  margin: 0 auto !important;
 }
 
 .db-stat-card:hover {
   transform: none !important;
-  box-shadow: var(--shadow-card) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02) !important;
 }
 
-/* Metric label: Inter 400, 12px, #6B7280 */
+.db-stat-card .card-body,
+.db-stat-card-body {
+  width: 100% !important;
+  height: 100% !important;
+  padding: 24px !important;
+  gap: 24px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  box-sizing: border-box !important;
+}
+
+/* Stat card left info column (width: 100.125, height: 88) */
+.db-stat-info {
+  width: 100.125px !important;
+  min-width: 100px !important;
+  height: 88px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  transform: rotate(0deg) !important;
+  opacity: 1 !important;
+  box-sizing: border-box !important;
+}
+
+/* Metric label (Total Users): width 74, height 20, Inter 400 14px, line-height 20px, letter-spacing -0.15px */
 .metric-label {
-  font-family: var(--font-primary) !important;
-  font-size: var(--fs-sm) !important;
-  font-weight: var(--fw-normal) !important;
-  color: var(--color-text-muted) !important;
-  line-height: var(--lh-normal) !important;
-  margin: 0 0 var(--space-1) 0 !important;
-  letter-spacing: 0.01em !important;
+  height: 20px !important;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-weight: 400 !important;
+  font-style: normal !important;
+  font-size: 14px !important;
+  line-height: 20px !important;
+  letter-spacing: -0.15px !important;
+  color: #64748B !important;
+  margin: 0 !important;
+  transform: rotate(0deg) !important;
+  opacity: 1 !important;
+  white-space: nowrap !important;
 }
 
-/* Metric number: Inter 700, 32px, #111827, tracking -0.03em */
+/* Metric number (12,459): Inter 700 30px, line-height 36px, letter-spacing 0.4px, hsba(217, 52%, 24%, 1) */
 .db-metric-number,
 h3.db-metric-number {
-  font-family: var(--font-primary) !important;
-  font-size: var(--fs-3xl) !important;
-  font-weight: var(--fw-bold) !important;
-  color: var(--color-text-primary) !important;
-  line-height: 1.1 !important;
-  margin: 0 0 var(--space-2) 0 !important;
-  letter-spacing: -0.03em !important;
+  height: 36px !important;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-weight: 700 !important;
+  font-style: normal !important;
+  font-size: 30px !important;
+  line-height: 36px !important;
+  letter-spacing: 0.4px !important;
+  color: #1E293B !important; /* hsba(217, 52%, 24%, 1) */
+  margin: 0 !important;
+  transform: rotate(0deg) !important;
+  opacity: 1 !important;
+  white-space: nowrap !important;
 }
 
-/* Trend badge: Inter 600, 13px, green */
+/* Trend badge: Inter 500, 13px, green */
 .db-trend-green {
-  font-family: var(--font-primary) !important;
+  height: 20px !important;
+  font-family: 'Inter', sans-serif !important;
   font-size: 13px !important;
-  font-weight: var(--fw-semibold) !important;
-  color: var(--color-success) !important;
+  font-weight: 500 !important;
+  color: #16A34A !important;
   display: inline-flex !important;
   align-items: center !important;
-  gap: 3px !important;
+  gap: 4px !important;
+  margin: 0 !important;
+  white-space: nowrap !important;
+}
+
+/* Stat card icon box: rounded square matching Figma screenshot */
+.db-icon-box {
+  width: 52px !important;
+  height: 52px !important;
+  border-radius: 14px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
 }
 
 /* Icon box: 48×48, radius 12px */
@@ -1191,13 +1314,18 @@ h3.db-metric-number {
   height: 22px !important;
 }
 
-/* ── Chart / section cards ── */
+/* ── Chart / section cards: matching container properties ── */
 .db-chart-card {
-  background: var(--color-bg-card) !important;
-  border: 1px solid var(--color-border) !important;
-  border-radius: var(--radius-2xl) !important;
-  box-shadow: var(--shadow-card) !important;
+  background: #FFFFFF !important;
+  background-color: #FFFFFF !important;
+  border-radius: 14px !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important; /* hsba(0, 0%, 0%, 0.1) / #0000001A */
+  border-width: 1px !important;
+  border-style: solid !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
   overflow: hidden !important;
+  box-sizing: border-box !important;
 }
 
 /* Section title: Inter 700, 16px, #111827, tracking -0.3px */

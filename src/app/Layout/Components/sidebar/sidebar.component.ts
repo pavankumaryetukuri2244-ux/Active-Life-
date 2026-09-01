@@ -71,25 +71,36 @@ import { WebapiService } from '../../../services/webapi.service';
       transform: rotate(360deg) !important;  /* Point down */
     }
     
-    /* Premium style overrides for sidebar links */
+    /* ---- Sidebar item links: exact Figma specifications ---- */
     ::ng-deep .vsm-list .vsm-item,
     ::ng-deep .vsm-item {
-      margin: 2px 8px !important;
-      height: auto !important;
+      margin: 3px auto !important;
+      width: 231px !important;
+      height: 40px !important;
+      box-sizing: border-box !important;
     }
     
     :host ::ng-deep .vsm-list .vsm-link {
+      width: 231px !important;
+      height: 40px !important;
+      border-radius: 10px !important;
+      gap: 12px !important;
+      transform: rotate(0deg) !important;
+      opacity: 1 !important;
+      padding: 10px 12px !important;
+      padding-top: 10px !important;
+      padding-right: 12px !important;
+      padding-bottom: 10px !important;
+      padding-left: 12px !important;
+      box-sizing: border-box !important;
       color: #334155 !important;
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
       font-weight: 500 !important;
-      font-size: 13.5px !important;
+      font-size: 14px !important;
       text-decoration: none !important;
       transition: all 0.2s ease !important;
-      padding: 9px 14px !important;
-      border-radius: 8px !important;
       display: flex !important;
       align-items: center !important;
-      gap: 10px !important;
     }
 
     :host ::ng-deep .vsm-list .vsm-icon {
@@ -98,13 +109,33 @@ import { WebapiService } from '../../../services/webapi.service';
       transition: all 0.2s ease !important;
     }
 
+    /* ---- Sidebar titles: exact Figma specifications ---- */
     :host ::ng-deep .vsm-list .vsm-title {
       color: #334155 !important;
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
       font-weight: 500 !important;
-      font-size: 13.5px !important;
-      letter-spacing: -0.01em !important;
+      font-style: normal !important;
+      font-size: 14px !important;
+      line-height: 20px !important;
+      height: 20px !important;
+      letter-spacing: -0.15px !important;
+      transform: rotate(0deg) !important;
+      opacity: 1 !important;
+      display: inline-flex !important;
+      align-items: center !important;
       transition: all 0.2s ease !important;
+    }
+
+    /* Exact Dashboard title dimensions from Figma: 72×20 */
+    :host ::ng-deep .vsm-list .vsm-title.vsm-title-dashboard {
+      width: 72px !important;
+      height: 20px !important;
+    }
+
+    /* Exact Users title dimensions from Figma: 39×20 */
+    :host ::ng-deep .vsm-list .vsm-title.vsm-title-users {
+      width: 39px !important;
+      height: 20px !important;
     }
 
     /* Active link item overrides - Gradient Blue-Purple style */

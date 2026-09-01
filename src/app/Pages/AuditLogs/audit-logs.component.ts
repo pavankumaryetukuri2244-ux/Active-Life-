@@ -513,6 +513,8 @@ export class AuditLogsComponent implements OnInit {
   };
 
   // Table data
+  allLogs: AuditLog[] = [];
+  filteredLogs: AuditLog[] = [];
   logsList: AuditLog[] = [];
   isLoading = false;
   errorMessage = '';
@@ -527,12 +529,13 @@ export class AuditLogsComponent implements OnInit {
   searchQuery = '';
   selectedModule = 'All Modules';
   selectedStatus = 'All Status';
+  adminName = '';
+  fromDate = '';
+  toDate = '';
   sortBy = 'createdAt';
-  sortDirection = 'DESC';
+  sortDirection = 'ASC';
 
-  private searchSubject = new Subject<string>();
   private destroy$ = new Subject<void>();
-  private lastAppliedQuery = '';
 
   modulesList: string[] = [
     'All Modules',
@@ -560,24 +563,127 @@ export class AuditLogsComponent implements OnInit {
     this.auditLogsSubscription?.unsubscribe();
   }
 
-  /** Initial load — empty body to get all logs + stats */
+  /**
+   * Initial load — calls API once with size: 1000 to fetch all logs.
+   * All subsequent search, module, and status filtering is handled in the frontend with 0 API calls.
+   */
   loadAuditLogs() {
-    this.applyFilters(true);
+    this.isLoading = true;
+    this.errorMessage = '';
+
+    if (this.auditLogsSubscription) {
+      this.auditLogsSubscription.unsubscribe();
+    }
+
+    const body: any = {
+      page: 0,
+      size: 1000,
+      sortBy: this.sortBy,
+      sortDirection: this.sortDirection
+    };
+
+    this.auditLogsSubscription = this.api.GetAuditLogsFiltered(body).subscribe({
+      next: (res: any) => {
+        this.isLoading = false;
+        if (res?.success && res.data) {
+          this.stats = {
+            totalLogs: res.data.totalLogs ?? this.stats.totalLogs,
+            todayActivity: res.data.todayActivity ?? this.stats.todayActivity,
+            failedActions: res.data.failedActions ?? this.stats.failedActions,
+            activeAdmins: res.data.activeAdmins ?? this.stats.activeAdmins
+          };
+          const pageData = res.data.logs;
+          const rawContent = pageData?.content ?? [];
+          this.allLogs = [...rawContent];
+
+          // Immediately apply frontend filters to slice and display
+          this.applyFrontendFilters();
+        }
+      },
+      error: (err: any) => {
+        console.error('Audit logs load error:', err);
+        this.errorMessage = 'Failed to load audit logs. Please try again.';
+        this.isLoading = false;
+      }
+    });
+  }
+
+  /**
+   * Pure frontend filtering — 0 API calls!
+   * Filters the master logs list by:
+   * 1. Module
+   * 2. Status
+   * 3. Search Query (Admin Name, Admin Code, Log ID, Action, IP Address)
+   */
+  applyFrontendFilters() {
+    let list = [...this.allLogs];
+
+    // 1. Filter by Module
+    if (this.selectedModule && this.selectedModule !== 'All Modules') {
+      const modNorm = this.selectedModule.toLowerCase().replace(/[\s_-]+/g, '');
+      list = list.filter(log => {
+        const m = (log.module || '').toLowerCase().replace(/[\s_-]+/g, '');
+        return m.includes(modNorm) || modNorm.includes(m);
+      });
+    }
+
+    // 2. Filter by Status ('SUCCESS' | 'FAILED')
+    if (this.selectedStatus && this.selectedStatus !== 'All Status') {
+      const statUpper = this.selectedStatus.toUpperCase();
+      list = list.filter(log => {
+        const s = (log.status || '').toUpperCase();
+        if (statUpper === 'SUCCESS') {
+          return s === 'SUCCESS' || s === 'COMPLETED' || s === 'OK';
+        } else if (statUpper === 'FAILED') {
+          return s === 'FAILED' || s === 'ERROR';
+        }
+        return s === statUpper;
+      });
+    }
+
+    // 3. Search Query: Admin Name, Admin Code, Log ID, Action, IP Address
+    if (this.searchQuery && this.searchQuery.trim()) {
+      const q = this.searchQuery.trim().toLowerCase();
+      list = list.filter(log => {
+        const adminNameMatch = (log.adminName || '').toLowerCase().includes(q);
+        const adminCodeMatch = this.getAdminCode(log).toLowerCase().includes(q);
+        
+        // Log ID match (e.g. "AL001", "1")
+        const idFormatted = (log.logId || ('AL' + (log.id < 10 ? '00' + log.id : (log.id < 100 ? '0' + log.id : log.id)))).toLowerCase();
+        const logIdMatch = idFormatted.includes(q) || String(log.id).includes(q);
+
+        const actionMatch = (log.action || '').toLowerCase().includes(q);
+        const ipMatch = (log.ipAddress || '').toLowerCase().includes(q);
+
+        return adminNameMatch || adminCodeMatch || logIdMatch || actionMatch || ipMatch;
+      });
+    }
+
+    this.filteredLogs = list;
+    this.totalElements = list.length;
+    this.totalPages = Math.ceil(this.totalElements / this.pageSize) || 1;
+
+    if (this.currentPage >= this.totalPages) {
+      this.currentPage = 0;
+    }
+
+    this.updatePageSlice();
+  }
+
+  /** Slices the filtered logs array for the active page */
+  updatePageSlice() {
+    const start = this.currentPage * this.pageSize;
+    this.logsList = this.filteredLogs.slice(start, start + this.pageSize);
   }
 
   onSearchClick() {
-    const val = (this.searchQuery ?? '').trim();
-    if (val === this.lastAppliedQuery && this.currentPage === 0) return;
-    this.lastAppliedQuery = val;
     this.currentPage = 0;
-    this.applyFilters(true);
+    this.applyFrontendFilters();
   }
 
-  onSearchInput(event: any) {
-    const val = (event?.target?.value ?? this.searchQuery ?? '').trim();
-    if (!val && this.lastAppliedQuery) {
-      this.clearSearch();
-    }
+  onSearchInput(event?: any) {
+    this.currentPage = 0;
+    this.applyFrontendFilters();
   }
 
   onSearchClear() {
@@ -586,72 +692,24 @@ export class AuditLogsComponent implements OnInit {
 
   clearSearch() {
     this.searchQuery = '';
-    this.lastAppliedQuery = '';
     this.currentPage = 0;
-    this.applyFilters(true);
-  }
-
-  /** Filter/search/paginate call - cancels any in-flight request */
-  applyFilters(showLoader = true) {
-    if (showLoader) {
-      this.isLoading = true;
-    }
-    this.errorMessage = '';
-
-    if (this.auditLogsSubscription) {
-      this.auditLogsSubscription.unsubscribe();
-    }
-
-    const body: any = {
-      page: this.currentPage,
-      size: this.pageSize,
-      sortBy: this.sortBy,
-      sortDirection: this.sortDirection
-    };
-
-    if (this.searchQuery && this.searchQuery.trim()) body['search'] = this.searchQuery.trim();
-    if (this.selectedModule && this.selectedModule !== 'All Modules') body['module'] = this.selectedModule;
-    if (this.selectedStatus && this.selectedStatus !== 'All Status') body['status'] = this.selectedStatus;
-
-    this.auditLogsSubscription = this.api.GetAuditLogsFiltered(body).subscribe({
-      next: (res: any) => {
-        if (res?.success) {
-          this.stats = {
-            totalLogs: res.data.totalLogs ?? this.stats.totalLogs,
-            todayActivity: res.data.todayActivity ?? this.stats.todayActivity,
-            failedActions: res.data.failedActions ?? this.stats.failedActions,
-            activeAdmins: res.data.activeAdmins ?? this.stats.activeAdmins
-          };
-          const pageData = res.data.logs;
-          this.logsList = pageData?.content ?? [];
-          this.totalElements = pageData?.totalElements ?? 0;
-          this.totalPages = pageData?.totalPages ?? 0;
-          this.currentPage = pageData?.pageable?.pageNumber ?? 0;
-        }
-        this.isLoading = false;
-      },
-      error: (err: any) => {
-        console.error('Audit logs filter error:', err);
-        this.errorMessage = 'Failed to apply filters. Please try again.';
-        this.isLoading = false;
-      }
-    });
+    this.applyFrontendFilters();
   }
 
   onModuleChange(event?: any) {
     this.currentPage = 0;
-    this.applyFilters(true);
+    this.applyFrontendFilters();
   }
 
   onStatusChange(event?: any) {
     this.currentPage = 0;
-    this.applyFilters(true);
+    this.applyFrontendFilters();
   }
 
   goToPage(page: number) {
     if (page < 0 || page >= this.totalPages || page === this.currentPage) return;
     this.currentPage = page;
-    this.applyFilters(true);
+    this.updatePageSlice();
   }
 
   get pages(): number[] {
@@ -792,13 +850,14 @@ export class AuditLogsComponent implements OnInit {
   }
 
   exportLogs(): void {
-    if (!this.logsList || this.logsList.length === 0) {
+    const logsToExport = (this.filteredLogs && this.filteredLogs.length > 0) ? this.filteredLogs : this.allLogs;
+    if (!logsToExport || logsToExport.length === 0) {
       alert('No logs available to export.');
       return;
     }
 
     const headers = ['Log ID', 'Admin Name', 'Admin Code', 'Action', 'Module', 'Timestamp', 'IP Address', 'Status'];
-    const rows = this.logsList.map(log => [
+    const rows = logsToExport.map(log => [
       log.logId || ('AL' + (log.id < 10 ? '00' + log.id : (log.id < 100 ? '0' + log.id : log.id))),
       `"${(log.adminName || 'Admin User').replace(/"/g, '""')}"`,
       this.getAdminCode(log),

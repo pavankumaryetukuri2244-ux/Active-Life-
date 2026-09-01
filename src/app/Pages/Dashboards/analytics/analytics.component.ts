@@ -9,7 +9,7 @@ import { WebapiService } from '../../../services/webapi.service';
   standalone: false
 })
 export class AnalyticsComponent implements OnInit {
-  totalUsers = 0;
+  totalUsers = 12459;
 
   constructor(
     public userInfo: UserinfoService,

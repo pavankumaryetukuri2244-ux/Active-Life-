@@ -63,6 +63,35 @@ interface ContentItem {
       transform: translateY(0);
     }
 
+    /* Modal Submit Button with pure white text */
+    .cm-modal-submit-btn {
+      background: #0F172A !important;
+      color: #FFFFFF !important;
+      border-radius: 10px !important;
+      height: 42px !important;
+      font-size: 14px !important;
+      font-weight: 600 !important;
+      border: none !important;
+      font-family: 'Inter', sans-serif !important;
+      transition: all 0.2s ease !important;
+      cursor: pointer !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      width: 100% !important;
+
+      span {
+        color: #FFFFFF !important;
+        font-weight: 600 !important;
+        font-size: 14px !important;
+      }
+
+      &:hover:not(:disabled) {
+        background: #1E293B !important;
+        color: #FFFFFF !important;
+      }
+    }
+
     /* Stat Cards - Pastel Colored Boxes */
     .cm-stat-card {
       border-radius: 16px !important;
@@ -254,41 +283,28 @@ export class ContentManagementComponent implements OnInit {
     this.contentSubscription?.unsubscribe();
   }
 
-  private searchTimer: any;
-
   onSearchClick() {
-    this.loadAllContent(true);
+    this.applyFrontendFilters();
   }
 
-  onSearchInput(event: any) {
-    clearTimeout(this.searchTimer);
-    this.searchTimer = setTimeout(() => {
-      this.loadAllContent(true);
-    }, 350);
+  onSearchInput(event?: any) {
+    this.applyFrontendFilters();
   }
 
   clearSearch() {
     this.searchQuery = '';
-    this.loadAllContent(true);
+    this.applyFrontendFilters();
   }
 
   setTab(tab: 'All' | 'Gym' | 'Meditation' | 'Videos') {
     if (this.activeTab === tab) return;
     this.activeTab = tab;
-    this.loadAllContent(true);
-  }
-
-  onLevelChange() {
-    this.loadAllContent(true);
-  }
-
-  onStatusChange() {
-    this.loadAllContent(true);
+    this.applyFrontendFilters();
   }
 
   /**
-   * Load content with backend filters:
-   * Body: { title?: string, category?: string, level?: string, status?: boolean }
+   * Load all content from API once on initial load.
+   * Searching and category tab filtering are done purely in the frontend with 0 API calls.
    */
   loadAllContent(showLoader = true) {
     if (showLoader) {
@@ -299,21 +315,8 @@ export class ContentManagementComponent implements OnInit {
       this.contentSubscription.unsubscribe();
     }
 
-    const payload: any = {};
-    if (this.searchQuery && this.searchQuery.trim()) {
-      payload.title = this.searchQuery.trim();
-    }
-    if (this.activeTab && this.activeTab !== 'All') {
-      payload.category = this.activeTab.toUpperCase();
-    }
-    if (this.selectedLevel && this.selectedLevel !== 'All Levels') {
-      payload.level = this.selectedLevel;
-    }
-    if (this.selectedStatus && this.selectedStatus !== 'All Status') {
-      payload.status = this.selectedStatus === 'Active';
-    }
-
-    this.contentSubscription = this.webApiService.GetAllContent(payload).subscribe({
+    // Fetch all content items from backend once with empty payload
+    this.contentSubscription = this.webApiService.GetAllContent({}).subscribe({
       next: (res: any) => {
         this.isLoading = false;
         if (res && res.success && res.data) {
@@ -356,7 +359,9 @@ export class ContentManagementComponent implements OnInit {
               path: item.path || ''
             };
           });
-          this.filteredContent = [...this.contentList];
+
+          // Apply frontend filters to display
+          this.applyFrontendFilters();
         }
       },
       error: (err: any) => {
@@ -364,6 +369,36 @@ export class ContentManagementComponent implements OnInit {
         console.error('Error fetching all content:', err);
       }
     });
+  }
+
+  /**
+   * Pure frontend filtering — 0 API calls!
+   * Filters the master content list by:
+   * 1. Category Tab ('All', 'Gym', 'Meditation', 'Videos')
+   * 2. Search Query (Title, Category, ID, or Tags)
+   */
+  applyFrontendFilters() {
+    let list = [...this.contentList];
+
+    // 1. Category Tab Filter
+    if (this.activeTab && this.activeTab !== 'All') {
+      const tabLower = this.activeTab.toLowerCase();
+      list = list.filter(item => (item.category || '').toLowerCase() === tabLower);
+    }
+
+    // 2. Search Query Filter: by Title or Category
+    if (this.searchQuery && this.searchQuery.trim()) {
+      const q = this.searchQuery.trim().toLowerCase();
+      list = list.filter(item => {
+        const titleMatch = (item.title || '').toLowerCase().includes(q);
+        const categoryMatch = (item.category || '').toLowerCase().includes(q);
+        const idMatch = (item.id || '').toLowerCase().includes(q);
+        const tagsMatch = Array.isArray(item.tags) && item.tags.some(t => (t || '').toLowerCase().includes(q));
+        return titleMatch || categoryMatch || idMatch || tagsMatch;
+      });
+    }
+
+    this.filteredContent = list;
   }
 
   getThumbnailUrl(path?: string): string | null {

@@ -69,7 +69,7 @@
                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                   </svg>
                 }
-                <span class="vsm-title">{{ item.title }}</span>
+                <span class="vsm-title" [class.vsm-title-dashboard]="item.title === 'Dashboard'" [class.vsm-title-users]="item.title === 'Users'">{{ item.title }}</span>
               </a>
             </div>
             }
