@@ -23,48 +23,62 @@ import { WebapiService } from '../../../services/webapi.service';
         #7C3AED 52%,
         #9333EA 76%,
         #C026D3 100%) !important;
-      /* height:100vh + overflow-y:scroll = own scroll container with permanent scrollbar */
-      height: 100vh;
-      width: 100%;
+      /* position:fixed fills entire browser window — scrollbar aligns with browser right edge */
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
       overflow-y: scroll;
       overflow-x: hidden;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      padding: 48px 16px;
+      justify-content: flex-start;
       box-sizing: border-box;
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
-      /* Custom scrollbar colors matching Figma gutter */
-      scrollbar-color: rgba(255,255,255,0.4) transparent;
-      scrollbar-width: thin;
+      /* Custom scrollbar — translucent on gradient bg */
+      scrollbar-color: rgba(255,255,255,0.4) rgba(0,0,0,0.1);
+      scrollbar-width: auto;
     }
 
-    /* Webkit scrollbar inside login-bg */
+    /* Webkit scrollbar — placed at the browser right edge */
     .login-bg::-webkit-scrollbar {
-      width: 12px;
+      width: 14px;
     }
     .login-bg::-webkit-scrollbar-track {
-      background: rgba(0,0,0,0.10);
+      background: rgba(0,0,0,0.12);
     }
     .login-bg::-webkit-scrollbar-thumb {
-      background: rgba(255,255,255,0.35);
-      border-radius: 6px;
-      border: 2px solid transparent;
+      background: rgba(255,255,255,0.40);
+      border-radius: 7px;
+      border: 3px solid transparent;
       background-clip: padding-box;
     }
     .login-bg::-webkit-scrollbar-thumb:hover {
-      background: rgba(255,255,255,0.55);
-      border-radius: 6px;
-      border: 2px solid transparent;
+      background: rgba(255,255,255,0.65);
+      border-radius: 7px;
+      border: 3px solid transparent;
       background-clip: padding-box;
+    }
+
+    /* Inner scroll wrapper — centers content vertically and allows overflow */
+    .login-scroll-inner {
+      min-height: 100%;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 52px 16px 44px;
+      box-sizing: border-box;
     }
 
     .login-wrapper {
       width: 100%;
-      max-width: 410px;
+      max-width: 480px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -109,15 +123,15 @@ import { WebapiService } from '../../../services/webapi.service';
       margin: 0;
     }
 
-    /* ---- Login card: white, 410px max, radius 20px, shadow ---- */
+    /* ---- Login card: white, 480px max, radius 20px, shadow ---- */
     .login-card-custom {
-      max-width: 410px;
+      max-width: 480px;
       width: 100%;
       border-radius: 20px !important;
       background: #ffffff !important;
       box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.18) !important;
       border: none !important;
-      padding: 34px 34px 26px 34px !important;
+      padding: 40px 40px 32px 40px !important;
     }
 
     /* ---- Card header text ---- */
