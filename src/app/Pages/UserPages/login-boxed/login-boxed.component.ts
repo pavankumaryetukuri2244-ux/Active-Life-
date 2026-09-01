@@ -12,98 +12,88 @@ import { WebapiService } from '../../../services/webapi.service';
   styles: [`
 
     /* ============================================================
-       LOGIN PAGE
+       LOGIN PAGE - MATCHING FIGMA SPEC
        ============================================================ */
 
-    /* Background: diagonal gradient */
+    /* Background: diagonal gradient matching Figma exactly */
     .login-bg {
       background: linear-gradient(135deg,
         #2563EB  0%,
-        #4F46E5 25%,
-        #7C3AED 50%,
-        #9333EA 75%,
+        #4F46E5 26%,
+        #7C3AED 52%,
+        #9333EA 76%,
         #C026D3 100%) !important;
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      overflow-y: scroll !important;
+      min-height: 100vh;
+      width: 100%;
+      overflow-y: auto !important;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-start;
-      padding: 48px 24px;
+      justify-content: center;
+      padding: 32px 16px;
+      box-sizing: border-box;
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
     }
 
-    .login-bg::-webkit-scrollbar {
-      width: 8px !important;
-    }
-
-    .login-bg::-webkit-scrollbar-track {
-      background: rgba(0, 0, 0, 0.1) !important;
-    }
-
-    .login-bg::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.4) !important;
-      border-radius: 4px !important;
-    }
-
-    .login-bg::-webkit-scrollbar-thumb:hover {
-      background: rgba(255, 255, 255, 0.6) !important;
+    .login-wrapper {
+      margin: auto 0;
+      width: 100%;
+      max-width: 410px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
     /* ---- Brand section above card ---- */
     .brand-section {
-      margin-bottom: 28px;
+      margin-bottom: 24px;
     }
 
-    /* Logo white rounded square: 64×64, radius 18px, white bg, soft shadow */
+    /* Logo white rounded square: 60×60, radius 16px, white bg, soft shadow */
     .logo-box {
-      width: 64px;
-      height: 64px;
-      border-radius: 18px;
+      width: 60px;
+      height: 60px;
+      border-radius: 16px;
       background: #ffffff;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.10);
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
     }
 
-    /* "HealthFamily" title: Inter 700, 26px, white, letter-spacing -0.4px */
+    /* "HealthFamily" title: Inter 700, 25px, white, letter-spacing -0.3px */
     .brand-title {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      font-size: 26px;
+      font-size: 25px;
       font-weight: 700;
       color: #ffffff !important;
-      letter-spacing: -0.4px;
+      letter-spacing: -0.3px;
       line-height: 1.2;
-      margin: 0 0 4px 0;
+      margin: 0 0 2px 0;
     }
 
-    /* "Admin Portal" subtitle: Inter 400, 14px, rgba(255,255,255,0.85) */
+    /* "Admin Portal" subtitle: Inter 400, 13.5px, rgba(255,255,255,0.85) */
     .brand-subtitle {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      font-size: 14px;
+      font-size: 13.5px;
       font-weight: 400;
       color: rgba(255, 255, 255, 0.85);
       line-height: 1.4;
       margin: 0;
     }
 
-    /* ---- Login card: white, 440px max, radius 20px, shadow ---- */
+    /* ---- Login card: white, 410px max, radius 20px, shadow ---- */
     .login-card-custom {
-      max-width: 440px;
+      max-width: 410px;
       width: 100%;
       border-radius: 20px !important;
       background: #ffffff !important;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.18) !important;
+      box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.18) !important;
       border: none !important;
-      padding: 36px 36px 28px 36px !important;
+      padding: 34px 34px 26px 34px !important;
     }
 
     /* ---- Card header text ---- */
@@ -118,10 +108,10 @@ import { WebapiService } from '../../../services/webapi.service';
       margin: 0 0 4px 0;
     }
 
-    /* "Sign in to your admin account": Inter 400, 13.5px, #64748B */
+    /* "Sign in to your admin account": Inter 400, 13px, #64748B */
     .login-subheading {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      font-size: 13.5px;
+      font-size: 13px;
       font-weight: 400;
       color: #64748B;
       line-height: 1.4;
@@ -129,7 +119,7 @@ import { WebapiService } from '../../../services/webapi.service';
     }
 
     .login-header-block {
-      margin-bottom: 26px;
+      margin-bottom: 22px;
     }
 
     /* ---- Field labels: Inter 500, 13px, #334155 ---- */
@@ -140,28 +130,28 @@ import { WebapiService } from '../../../services/webapi.service';
       font-weight: 500 !important;
       color: #334155 !important;
       letter-spacing: 0 !important;
-      margin-bottom: 7px !important;
+      margin-bottom: 6px !important;
       line-height: 1.4;
     }
 
-    /* Field spacing: 18px between fields */
+    /* Field spacing: 16px between fields */
     .field-group {
-      margin-bottom: 18px;
+      margin-bottom: 16px;
     }
 
-    /* ---- Input fields: 46px height, #F8FAFC bg, radius 10px, 1px border ---- */
+    /* ---- Input fields: 44px height, #F8FAFC bg, radius 10px, subtle border ---- */
     .custom-input-field,
     .was-validated .custom-input-field:valid,
     .was-validated .custom-input-field:valid:focus,
     .form-control.custom-input-field:valid,
     .form-control.custom-input-field.is-valid {
-      height: 46px !important;
+      height: 44px !important;
       background-color: #F8FAFC !important;
-      border: 1px solid #E2E8F0 !important;
+      border: 1px solid #F1F5F9 !important;
       border-radius: 10px !important;
-      padding: 0 16px !important;
+      padding: 0 14px !important;
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
-      font-size: 14px !important;
+      font-size: 13.5px !important;
       font-weight: 400 !important;
       color: #0F172A !important;
       width: 100% !important;
@@ -172,17 +162,17 @@ import { WebapiService } from '../../../services/webapi.service';
 
     .custom-input-field::placeholder {
       font-family: 'Inter', sans-serif !important;
-      font-size: 13.5px !important;
+      font-size: 13px !important;
       font-weight: 400 !important;
       color: #9CA3AF !important;
     }
 
-    /* Focus state: white bg, purple border, soft purple ring */
+    /* Focus state: white bg, subtle indigo ring */
     .custom-input-field:focus,
     .was-validated .custom-input-field:valid:focus {
       background-color: #ffffff !important;
-      border-color: #8B5CF6 !important;
-      box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.10) !important;
+      border-color: #6366F1 !important;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12) !important;
       outline: none !important;
       background-image: none !important;
     }
@@ -190,21 +180,21 @@ import { WebapiService } from '../../../services/webapi.service';
     /* Padding-right for password field to not overlap toggle icon */
     .custom-input-field.pe-5,
     .was-validated .custom-input-field.pe-5:valid {
-      padding-right: 48px !important;
+      padding-right: 42px !important;
       background-image: none !important;
     }
 
     /* ---- Password toggle button ---- */
     .password-toggle-btn-custom {
       position: absolute;
-      right: 14px;
+      right: 12px;
       top: 50%;
       transform: translateY(-50%);
       border: none;
       background: none;
       z-index: 10;
       padding: 4px;
-      color: #9CA3AF;
+      color: #94A3B8;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -214,7 +204,7 @@ import { WebapiService } from '../../../services/webapi.service';
     }
 
     .password-toggle-btn-custom:hover {
-      color: #6B7280;
+      color: #64748B;
     }
 
     /* ---- Remember Me & Forgot Password row ---- */
@@ -222,26 +212,27 @@ import { WebapiService } from '../../../services/webapi.service';
       display: flex;
       align-items: center;
       justify-content: space-between;
+      margin-top: 18px;
       margin-bottom: 20px;
       font-family: 'Inter', sans-serif;
-      font-size: 13.5px;
+      font-size: 13px;
     }
 
-    /* Checkbox label: Inter 400, 13.5px, #4B5563 */
+    /* Checkbox label: Inter 400, 13px, #475569 */
     .remember-label {
       font-family: 'Inter', sans-serif !important;
-      font-size: 13.5px !important;
+      font-size: 13px !important;
       font-weight: 400 !important;
-      color: #4B5563 !important;
+      color: #475569 !important;
       cursor: pointer;
       user-select: none;
     }
 
-    /* Checkbox: 16×16, radius 4px, #CBD5E1 border, vibrant blue on check */
+    /* Checkbox: 15×15, radius 4px, #CBD5E1 border, vibrant blue on check */
     .remember-check {
-      width: 16px !important;
-      height: 16px !important;
-      min-width: 16px !important;
+      width: 15px !important;
+      height: 15px !important;
+      min-width: 15px !important;
       border-radius: 4px !important;
       border: 1.5px solid #CBD5E1 !important;
       cursor: pointer !important;
@@ -275,15 +266,15 @@ import { WebapiService } from '../../../services/webapi.service';
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23ffffff'%3E%3Cpath fill-rule='evenodd' d='M12.416 3.376a.75.75 0 0 1 .208 1.04l-5 7.5a.75.75 0 0 1-1.154.114l-3-3a.75.75 0 0 1 1.06-1.06l2.353 2.353 4.493-6.74a.75.75 0 0 1 1.04-.207Z' clip-rule='evenodd'/%3E%3C/svg%3E") !important;
       background-position: center !important;
       background-repeat: no-repeat !important;
-      background-size: 11px 11px !important;
+      background-size: 10px 10px !important;
     }
 
-    /* "Forgot password?": Inter 600, 13.5px, #3B82F6 */
+    /* "Forgot password?": Inter 600, 13px, #2563EB */
     .forgot-link-custom {
       font-family: 'Inter', sans-serif !important;
-      font-size: 13.5px !important;
+      font-size: 13px !important;
       font-weight: 600 !important;
-      color: #3B82F6 !important;
+      color: #2563EB !important;
       text-decoration: none !important;
       transition: color 0.15s ease;
       letter-spacing: 0;
@@ -294,17 +285,17 @@ import { WebapiService } from '../../../services/webapi.service';
       text-decoration: none !important;
     }
 
-    /* ---- Sign In button: gradient, 48px, radius 10px, Inter 600, 14.5px ---- */
+    /* ---- Sign In button: vibrant gradient matching Figma, 44px height, radius 10px ---- */
     .btn-login-custom {
-      background: linear-gradient(90deg, #3B82F6 0%, #6366F1 50%, #8B5CF6 100%) !important;
+      background: linear-gradient(90deg, #3B82F6 0%, #6366F1 50%, #7C3AED 100%) !important;
       color: #ffffff !important;
       border: none !important;
       border-radius: 10px !important;
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
-      font-size: 15px !important;
+      font-size: 14.5px !important;
       font-weight: 600 !important;
       letter-spacing: 0.1px;
-      height: 48px !important;
+      height: 44px !important;
       width: 100% !important;
       display: flex !important;
       align-items: center !important;
@@ -312,17 +303,17 @@ import { WebapiService } from '../../../services/webapi.service';
       gap: 8px;
       cursor: pointer;
       transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
-      box-shadow: 0 4px 16px rgba(99, 102, 241, 0.32) !important;
+      box-shadow: 0 4px 14px rgba(59, 130, 246, 0.35) !important;
     }
 
     .btn-login-custom:hover:not(:disabled) {
       transform: translateY(-1px);
-      box-shadow: 0 6px 22px rgba(99, 102, 241, 0.42) !important;
+      box-shadow: 0 6px 20px rgba(59, 130, 246, 0.45) !important;
     }
 
     .btn-login-custom:active:not(:disabled) {
       transform: translateY(0);
-      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.25) !important;
+      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.25) !important;
     }
 
     .btn-login-custom:disabled {
@@ -331,7 +322,7 @@ import { WebapiService } from '../../../services/webapi.service';
     }
 
     .btn-login-custom-wrap {
-      margin-bottom: 20px;
+      margin-bottom: 0;
     }
 
     /* ---- SSL footer text: Inter 400, 11.5px, #94A3B8 ---- */
@@ -348,28 +339,36 @@ import { WebapiService } from '../../../services/webapi.service';
     }
 
     .ssl-footer {
-      margin-top: 20px;
+      margin-top: 18px;
     }
 
-    /* ---- Alert feedback blocks ---- */
-    .alert-danger-custom {
-      background-color: rgba(239, 68, 68, 0.06) !important;
-      color: #ef4444 !important;
-      border: 1px solid rgba(239, 68, 68, 0.12) !important;
-      border-radius: 10px !important;
+    /* ---- Alert feedback blocks matching Figma ---- */
+    .alert-box-error {
+      background-color: #FEF2F2 !important;
+      color: #EF4444 !important;
+      border: 1px solid #FEE2E2 !important;
+      border-radius: 8px !important;
       font-family: 'Inter', sans-serif !important;
-      font-size: 0.82rem !important;
-      margin-bottom: 18px;
+      font-size: 12.5px !important;
+      font-weight: 400 !important;
+      padding: 9px 14px !important;
+      margin-bottom: 18px !important;
+      text-align: center !important;
+      line-height: 1.4 !important;
     }
 
-    .alert-success-custom {
-      background-color: rgba(16, 185, 129, 0.06) !important;
-      color: #10b981 !important;
-      border: 1px solid rgba(16, 185, 129, 0.12) !important;
-      border-radius: 10px !important;
+    .alert-box-success {
+      background-color: #F0FDF4 !important;
+      color: #16A34A !important;
+      border: 1px solid #DCFCE7 !important;
+      border-radius: 8px !important;
       font-family: 'Inter', sans-serif !important;
-      font-size: 0.82rem !important;
-      margin-bottom: 18px;
+      font-size: 12.5px !important;
+      font-weight: 400 !important;
+      padding: 9px 14px !important;
+      margin-bottom: 18px !important;
+      text-align: center !important;
+      line-height: 1.4 !important;
     }
 
     /* ---- Validation feedback text ---- */
