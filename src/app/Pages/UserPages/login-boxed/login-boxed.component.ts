@@ -28,16 +28,28 @@ import { WebapiService } from '../../../services/webapi.service';
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      padding: 48px 16px;
+      /* Don't use justify-content:center — that clips top when overflowing */
+      justify-content: flex-start;
+      padding-top: 56px;
+      padding-bottom: 40px;
+      padding-left: 16px;
+      padding-right: 16px;
       box-sizing: border-box;
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
     }
 
+    /* On tall viewports, vertically center the wrapper */
+    @media (min-height: 680px) {
+      .login-bg {
+        justify-content: center;
+        padding-top: 40px;
+        padding-bottom: 40px;
+      }
+    }
+
     .login-wrapper {
-      margin: auto 0;
       width: 100%;
       max-width: 410px;
       display: flex;
@@ -339,6 +351,16 @@ import { WebapiService } from '../../../services/webapi.service';
 
     .ssl-footer {
       margin-top: 18px;
+    }
+
+    /* ---- Demo credentials footer below card ---- */
+    .demo-credentials {
+      margin-top: 20px;
+      font-family: 'Inter', sans-serif !important;
+      font-size: 12px !important;
+      font-weight: 400 !important;
+      color: rgba(255, 255, 255, 0.65) !important;
+      letter-spacing: 0.1px;
     }
 
     /* ---- Alert feedback blocks matching Figma ---- */
