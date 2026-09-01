@@ -28,15 +28,32 @@ import { WebapiService } from '../../../services/webapi.service';
       left: 0;
       right: 0;
       bottom: 0;
-      overflow-y: auto;
+      overflow-y: scroll !important;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      padding: 24px;
+      justify-content: flex-start;
+      padding: 48px 24px;
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
+    }
+
+    .login-bg::-webkit-scrollbar {
+      width: 8px !important;
+    }
+
+    .login-bg::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .login-bg::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.4) !important;
+      border-radius: 4px !important;
+    }
+
+    .login-bg::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.6) !important;
     }
 
     /* ---- Brand section above card ---- */
@@ -133,7 +150,11 @@ import { WebapiService } from '../../../services/webapi.service';
     }
 
     /* ---- Input fields: 46px height, #F8FAFC bg, radius 10px, 1px border ---- */
-    .custom-input-field {
+    .custom-input-field,
+    .was-validated .custom-input-field:valid,
+    .was-validated .custom-input-field:valid:focus,
+    .form-control.custom-input-field:valid,
+    .form-control.custom-input-field.is-valid {
       height: 46px !important;
       background-color: #F8FAFC !important;
       border: 1px solid #E2E8F0 !important;
@@ -146,6 +167,7 @@ import { WebapiService } from '../../../services/webapi.service';
       width: 100% !important;
       transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
       line-height: 1;
+      background-image: none !important;
     }
 
     .custom-input-field::placeholder {
@@ -156,16 +178,20 @@ import { WebapiService } from '../../../services/webapi.service';
     }
 
     /* Focus state: white bg, purple border, soft purple ring */
-    .custom-input-field:focus {
+    .custom-input-field:focus,
+    .was-validated .custom-input-field:valid:focus {
       background-color: #ffffff !important;
       border-color: #8B5CF6 !important;
       box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.10) !important;
       outline: none !important;
+      background-image: none !important;
     }
 
     /* Padding-right for password field to not overlap toggle icon */
-    .custom-input-field.pe-5 {
+    .custom-input-field.pe-5,
+    .was-validated .custom-input-field.pe-5:valid {
       padding-right: 48px !important;
+      background-image: none !important;
     }
 
     /* ---- Password toggle button ---- */

@@ -1257,3 +1257,16 @@ canvas {
   border-color: #2563EB !important;
   accent-color: #2563EB !important;
 }
+
+/* Remove green checkmark / tick on valid inputs across all forms */
+.was-validated .form-control:valid,
+.was-validated .custom-input-field:valid,
+.form-control.is-valid,
+.custom-input-field.is-valid {
+  background-image: none !important;
+}
+
+/* Ensure clean scrollbar behavior across all pages */
+html, body {
+  overflow-y: auto;
+}
