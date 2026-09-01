@@ -23,30 +23,43 @@ import { WebapiService } from '../../../services/webapi.service';
         #7C3AED 52%,
         #9333EA 76%,
         #C026D3 100%) !important;
-      min-height: 100vh;
+      /* height:100vh + overflow-y:scroll = own scroll container with permanent scrollbar */
+      height: 100vh;
       width: 100%;
+      overflow-y: scroll;
+      overflow-x: hidden;
       display: flex;
       flex-direction: column;
       align-items: center;
-      /* Don't use justify-content:center — that clips top when overflowing */
-      justify-content: flex-start;
-      padding-top: 56px;
-      padding-bottom: 40px;
-      padding-left: 16px;
-      padding-right: 16px;
+      justify-content: center;
+      padding: 48px 16px;
       box-sizing: border-box;
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
+      /* Custom scrollbar colors matching Figma gutter */
+      scrollbar-color: rgba(255,255,255,0.4) transparent;
+      scrollbar-width: thin;
     }
 
-    /* On tall viewports, vertically center the wrapper */
-    @media (min-height: 680px) {
-      .login-bg {
-        justify-content: center;
-        padding-top: 40px;
-        padding-bottom: 40px;
-      }
+    /* Webkit scrollbar inside login-bg */
+    .login-bg::-webkit-scrollbar {
+      width: 12px;
+    }
+    .login-bg::-webkit-scrollbar-track {
+      background: rgba(0,0,0,0.10);
+    }
+    .login-bg::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.35);
+      border-radius: 6px;
+      border: 2px solid transparent;
+      background-clip: padding-box;
+    }
+    .login-bg::-webkit-scrollbar-thumb:hover {
+      background: rgba(255,255,255,0.55);
+      border-radius: 6px;
+      border: 2px solid transparent;
+      background-clip: padding-box;
     }
 
     .login-wrapper {
