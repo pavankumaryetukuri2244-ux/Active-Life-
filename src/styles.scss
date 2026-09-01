@@ -1266,9 +1266,10 @@ canvas {
   background-image: none !important;
 }
 
-/* Always show vertical scrollbar matching Figma prototype */
+/* Always show vertical scrollbar gutter matching Figma prototype */
 html {
   overflow-y: scroll !important;
+  scrollbar-gutter: stable !important;
 }
 
 body {

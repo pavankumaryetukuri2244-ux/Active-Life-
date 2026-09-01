@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CommonService } from '../../../services/common.service';
@@ -427,7 +427,7 @@ import { WebapiService } from '../../../services/webapi.service';
     }
   `]
 })
-export class LoginBoxedComponent implements OnInit {
+export class LoginBoxedComponent implements OnInit, OnDestroy {
   Form!: FormGroup;
   submitted = false;
   success = false;
@@ -448,6 +448,15 @@ export class LoginBoxedComponent implements OnInit {
       loginid: ['', [Validators.required]],
       password: ['', [Validators.required]]
     });
+    // Force permanent scrollbar on login page (matching Figma)
+    document.documentElement.style.setProperty('overflow-y', 'scroll', 'important');
+    document.documentElement.style.setProperty('scrollbar-gutter', 'stable', 'important');
+  }
+
+  ngOnDestroy(): void {
+    // Restore overflow when navigating to other pages
+    document.documentElement.style.removeProperty('overflow-y');
+    document.documentElement.style.removeProperty('scrollbar-gutter');
   }
 
   togglePasswordVisibility(): void {
