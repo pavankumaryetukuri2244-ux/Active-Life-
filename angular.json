@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "priority-pulse": {
+    "active-life": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -17,7 +17,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "outputPath": "dist/priority-pulse",
+            "outputPath": "dist/active-life",
             "index": "src/index.html",
             "browser": "src/main.ts",
             "polyfills": [
@@ -75,10 +75,10 @@
           },
           "configurations": {
             "production": {
-              "buildTarget": "priority-pulse:build:production"
+              "buildTarget": "active-life:build:production"
             },
             "development": {
-              "buildTarget": "priority-pulse:build:development"
+              "buildTarget": "active-life:build:development"
             }
           },
           "defaultConfiguration": "development"
