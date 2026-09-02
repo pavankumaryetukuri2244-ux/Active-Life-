@@ -58,23 +58,32 @@ interface AuditStats {
     .al-btn-export {
       display: inline-flex !important;
       align-items: center !important;
+      justify-content: center !important;
       gap: 8px !important;
-      background: #059669 !important;
+      width: 135px !important;
+      height: 36px !important;
+      background: linear-gradient(90deg, #00C950 0%, #009689 100%) !important;
       color: #FFFFFF !important;
       border: none !important;
-      border-radius: 10px !important;
-      padding: 9px 18px !important;
-      font-family: 'Inter', sans-serif !important;
-      font-size: 13.5px !important;
-      font-weight: 600 !important;
+      border-radius: 8px !important;
+      padding: 8px 12px !important;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+      font-size: 14px !important;
+      font-weight: 500 !important;
+      font-style: normal !important;
+      line-height: 20px !important;
+      letter-spacing: -0.15px !important;
+      transform: rotate(0deg) !important;
+      opacity: 1 !important;
       cursor: pointer !important;
-      box-shadow: 0 2px 6px rgba(5, 150, 105, 0.25) !important;
+      box-shadow: 0 2px 6px rgba(0, 201, 80, 0.25) !important;
       transition: all 0.2s ease !important;
+      box-sizing: border-box !important;
     }
     .al-btn-export:hover {
-      background: #047857 !important;
+      opacity: 0.95 !important;
       transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(5, 150, 105, 0.35) !important;
+      box-shadow: 0 4px 12px rgba(0, 201, 80, 0.35) !important;
     }
     .al-btn-export:active {
       transform: translateY(0);
@@ -336,25 +345,34 @@ interface AuditStats {
     /* Specific Columns */
     .al-table td.col-log-id {
       padding-left: 28px !important;
-      font-size: 13.5px !important;
-      font-weight: 600 !important;
-      color: #111827 !important;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+      font-size: 14px !important;
+      font-weight: 500 !important;
+      line-height: 20px !important;
+      letter-spacing: -0.15px !important;
+      color: #374151 !important;
       white-space: nowrap !important;
     }
 
     .al-admin-name {
-      font-size: 13.5px !important;
-      font-weight: 600 !important;
-      color: #111827 !important;
-      line-height: 1.3 !important;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+      font-size: 14px !important;
+      font-weight: 500 !important;
+      font-style: normal !important;
+      line-height: 20px !important;
+      letter-spacing: -0.15px !important;
+      color: #0F172A !important;
       white-space: nowrap !important;
     }
 
     .al-admin-code {
-      font-size: 11.5px !important;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+      font-size: 12px !important;
       font-weight: 400 !important;
-      color: #9CA3AF !important;
-      line-height: 1.2 !important;
+      font-style: normal !important;
+      line-height: 16px !important;
+      letter-spacing: 0px !important;
+      color: #64748B !important;
       margin-top: 2px !important;
       white-space: nowrap !important;
     }
@@ -365,10 +383,13 @@ interface AuditStats {
     }
 
     .al-action-text {
-      font-size: 13.5px !important;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+      font-size: 14px !important;
       font-weight: 400 !important;
+      font-style: normal !important;
+      line-height: 20px !important;
+      letter-spacing: -0.15px !important;
       color: #334155 !important;
-      line-height: 1.4 !important;
       display: block !important;
       max-width: 240px !important;
       white-space: nowrap !important;
@@ -387,23 +408,34 @@ interface AuditStats {
       border-radius: 20px !important;
       padding: 4px 14px !important;
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
-      font-size: 12.5px !important;
-      font-weight: 600 !important;
+      font-size: 12px !important;
+      font-weight: 500 !important;
+      font-style: normal !important;
+      line-height: 16px !important;
+      letter-spacing: 0px !important;
       color: #0F172A !important;
       white-space: nowrap !important;
       box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03) !important;
     }
 
     .al-timestamp-text {
-      font-size: 13px !important;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+      font-size: 14px !important;
       font-weight: 400 !important;
-      color: #475569 !important;
+      font-style: normal !important;
+      line-height: 20px !important;
+      letter-spacing: -0.15px !important;
+      color: #64748B !important;
       white-space: nowrap !important;
     }
 
     .al-ip-text {
-      font-size: 13px !important;
+      font-family: 'Menlo', Monaco, Consolas, 'Courier New', monospace !important;
+      font-size: 14px !important;
       font-weight: 400 !important;
+      font-style: normal !important;
+      line-height: 20px !important;
+      letter-spacing: 0px !important;
       color: #475569 !important;
       white-space: nowrap !important;
     }
@@ -415,10 +447,12 @@ interface AuditStats {
       justify-content: center !important;
       border-radius: 12px !important;
       padding: 3px 12px !important;
-      font-family: 'Inter', sans-serif !important;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
       font-size: 12px !important;
       font-weight: 500 !important;
-      letter-spacing: 0.1px !important;
+      font-style: normal !important;
+      line-height: 16px !important;
+      letter-spacing: 0px !important;
       white-space: nowrap !important;
     }
 

@@ -157,7 +157,7 @@ interface Vaccine {
     .pc-tab-btn.active {
       background: #FFFFFF !important;
       color: #0F172A !important;
-      font-weight: 600 !important;
+      font-weight: 500 !important;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04) !important;
     }
 

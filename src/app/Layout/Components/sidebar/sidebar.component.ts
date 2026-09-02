@@ -26,7 +26,7 @@ import { WebapiService } from '../../../services/webapi.service';
 
     :host ::ng-deep .v-sidebar-menu,
     :host ::ng-deep .vsm-list {
-      padding: 15px 0 0 0 !important;
+      padding: 6px 0 0 0 !important;
       margin: 0 !important;
       width: 100% !important;
       overflow-x: hidden !important;
@@ -74,20 +74,20 @@ import { WebapiService } from '../../../services/webapi.service';
     /* ---- Sidebar item links: Expanded mode ---- */
     :host-context(.app-container:not(.closed-sidebar)) ::ng-deep .vsm-list .vsm-item,
     :host-context(.app-container:not(.closed-sidebar)) ::ng-deep .vsm-item {
-      margin: 4px 14px !important;
+      margin: 2px 14px !important;
       width: calc(100% - 28px) !important;
-      height: 44px !important;
+      height: 40px !important;
       box-sizing: border-box !important;
     }
     
     :host-context(.app-container:not(.closed-sidebar)) ::ng-deep .vsm-list .vsm-link {
       width: 100% !important;
-      height: 44px !important;
+      height: 40px !important;
       border-radius: 12px !important;
       gap: 12px !important;
       transform: rotate(0deg) !important;
       opacity: 1 !important;
-      padding: 10px 14px !important;
+      padding: 8px 14px !important;
       box-sizing: border-box !important;
       color: #334155 !important;
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;

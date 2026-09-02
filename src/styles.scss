@@ -48,7 +48,7 @@
   --color-text-light:     #94A3B8;   /* SSL text, chart ticks         */
 
   /* Background layers */
-  --color-bg-page:        #EEF2F7;   /* main content area bg          */
+  --color-bg-page:        #F8FAFC;   /* main content area bg (#F8FAFC) */
   --color-bg-card:        #FFFFFF;   /* all cards                     */
   --color-bg-input:       #F8FAFC;   /* input default background      */
   --color-bg-input-focus: #FFFFFF;   /* input focus background        */
@@ -808,7 +808,7 @@ button {
   background: #090D16 !important;
   color: #FFFFFF !important;
   border-color: #090D16 !important;
-  font-weight: 600 !important;
+  font-weight: 500 !important;
 }
 
 .um-table-card {
@@ -897,8 +897,26 @@ button {
 .um-table tbody td.col-text {
   font-size: 14px !important;
   font-weight: 400 !important;
+  line-height: 20px !important;
+  letter-spacing: -0.15px !important;
   color: #374151 !important;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+}
+
+.um-table tbody td.col-contact {
+  text-align: left !important;
+  vertical-align: middle !important;
+}
+
+.um-contact-text {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  line-height: 20px !important;
+  letter-spacing: -0.15px !important;
+  color: #374151 !important;
+  display: inline-block !important;
+  white-space: nowrap !important;
 }
 
 .um-table tbody td.col-family {
@@ -932,19 +950,21 @@ button {
 }
 
 .um-user-name {
-  font-size: 14px !important;
-  font-weight: 600 !important;
-  color: #111827 !important;
-  line-height: 1.3 !important;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  line-height: 20px !important;
+  letter-spacing: -0.15px !important;
+  color: #111827 !important;
 }
 
 .um-user-email {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
   font-size: 12px !important;
   font-weight: 400 !important;
+  line-height: 16px !important;
+  letter-spacing: 0px !important;
   color: #6B7280 !important;
-  line-height: 1.3 !important;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
 }
 
 .um-status-badge {
@@ -1159,21 +1179,22 @@ h2.um-stat-value {
 }
 
 /* ================================================================
-   APP LAYOUT BACKGROUNDS — #EEF2F7 page bg
+   APP LAYOUT BACKGROUNDS — Clean #F8FAFC Page Background
    ================================================================ */
-.app-main__outer {
-  background-color: var(--color-bg-page) !important;
-}
-
+body,
+.app-container,
+.app-main,
+.app-main__outer,
 .app-main__inner {
   background-color: var(--color-bg-page) !important;
+  background: var(--color-bg-page) !important;
 }
 
 /* ================================================================
    DASHBOARD STYLES
    ================================================================ */
 
-/* ── Page header container: exact Figma specifications (width: 1600, height: 64) ── */
+/* ── Page header container: (width: 1600, height: 64) ── */
 .db-header-container {
   width: auto !important;
   max-width: 100% !important;
@@ -1189,7 +1210,7 @@ h2.um-stat-value {
   margin-bottom: 24px !important;
 }
 
-/* ── Page header: exact Figma specifications for all page titles ── */
+/* ── Page header: specifications for all page titles ── */
 .db-title,
 .um-page-title,
 .cm-page-title,
@@ -1211,7 +1232,7 @@ h2.um-stat-value {
   box-sizing: border-box !important;
 }
 
-/* ── Page header subtitle: exact Figma specifications for all page subtitles ── */
+/* ── Page header subtitle: specifications for all page subtitles ── */
 .db-subtitle,
 .um-page-subtitle,
 .cm-page-subtitle,
@@ -1233,7 +1254,7 @@ h2.um-stat-value {
   box-sizing: border-box !important;
 }
 
-/* ── Four Stat Cards Row: exact Figma specifications (width: 1600, height: 162, padding-top: 24) ── */
+/* ── Four Stat Cards Row: (width: 1600, height: 162, padding-top: 24) ── */
 .db-stats-row {
   width: 100% !important;
   max-width: 100% !important;
@@ -1243,7 +1264,7 @@ h2.um-stat-value {
   box-sizing: border-box !important;
 }
 
-/* ── Stat cards: exact Figma specifications (width: 382, height: 138, radius: 14, border: 1px solid rgba(0,0,0,0.1), padding: 24, gap: 24) ── */
+/* ── Stat cards: (width: 382, height: 138, radius: 14, border: 1px solid rgba(0,0,0,0.1), padding: 24, gap: 24) ── */
 .db-stat-card {
   width: 100% !important;
   max-width: 382px !important;
@@ -1341,7 +1362,7 @@ h3.db-metric-number {
   white-space: nowrap !important;
 }
 
-/* Stat card icon box: rounded square matching Figma screenshot */
+/* Stat card icon box: rounded square */
 .db-icon-box {
   width: 52px !important;
   height: 52px !important;
@@ -1382,16 +1403,16 @@ h3.db-metric-number {
   box-sizing: border-box !important;
 }
 
-/* Section title: Inter 700, 16px, #111827, tracking -0.3px */
+/* Section title: Inter 600, 18px, line-height 28px, letter-spacing -0.44px, color hsla(217, 36%, 18%, 1) */
 .db-section-title,
 .db-chart-card .card-header h3 {
-  font-family: var(--font-primary) !important;
-  font-size: var(--fs-md) !important;
-  font-weight: var(--fw-bold) !important;
-  color: var(--color-text-primary) !important;
-  margin: 0 0 var(--space-5) 0 !important;
-  letter-spacing: -0.3px !important;
-  line-height: var(--lh-tight) !important;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 18px !important;
+  font-weight: 600 !important;
+  line-height: 28px !important;
+  letter-spacing: -0.44px !important;
+  color: hsla(217, 36%, 18%, 1) !important;
+  margin: 0 !important;
 }
 
 canvas {
@@ -1448,7 +1469,7 @@ canvas {
   background-image: none !important;
 }
 
-/* Always show vertical scrollbar gutter matching Figma prototype */
+/* Always show vertical scrollbar gutter */
 html {
   overflow-y: scroll !important;
   scrollbar-gutter: stable !important;

@@ -12,10 +12,10 @@ import { WebapiService } from '../../../services/webapi.service';
   styles: [`
 
     /* ============================================================
-       LOGIN PAGE - MATCHING FIGMA SPEC
+       LOGIN PAGE
        ============================================================ */
 
-    /* Background: diagonal gradient matching Figma exactly */
+    /* Background: diagonal gradient */
     .login-bg {
       background: linear-gradient(135deg, #155DFC 0%, #9810FA 50%, #E60076 100%) !important;
       opacity: 1 !important;
@@ -55,7 +55,7 @@ import { WebapiService } from '../../../services/webapi.service';
       background: rgba(255, 255, 255, 0.75);
     }
 
-    /* ---- Figma Ambient Glass / Glow Circle: exact specifications ---- */
+    /* Ambient Glass / Glow Circle */
     .ambient-glow-circle {
       position: fixed;
       width: 384px !important;
@@ -90,7 +90,7 @@ import { WebapiService } from '../../../services/webapi.service';
       z-index: 1;
     }
 
-    /* ---- Figma Container: Vertical Flow, Fixed 448px ---- */
+    /* Login Container: Vertical Flow */
     .login-wrapper {
       width: 448px !important;
       max-width: 448px !important;
@@ -128,7 +128,7 @@ import { WebapiService } from '../../../services/webapi.service';
       padding: 0 !important;
     }
 
-    /* Logo white rounded square: exact Figma specifications */
+    /* Logo white rounded square */
     .logo-box {
       width: 80px !important;
       height: 80px !important;
@@ -143,7 +143,7 @@ import { WebapiService } from '../../../services/webapi.service';
       margin: 0 auto !important;
     }
 
-    /* "HealthFamily" title: exact Figma specifications */
+    /* "HealthFamily" title */
     .brand-title {
       width: 198px !important;
       height: 36px !important;
@@ -165,7 +165,7 @@ import { WebapiService } from '../../../services/webapi.service';
       box-sizing: border-box !important;
     }
 
-    /* "Admin Portal" subtitle: exact Figma specifications */
+    /* "Admin Portal" subtitle */
     .brand-subtitle {
       width: 94px !important;
       height: 24px !important;
@@ -187,7 +187,7 @@ import { WebapiService } from '../../../services/webapi.service';
       box-sizing: border-box !important;
     }
 
-    /* ---- Login card container: exact Figma specifications ---- */
+    /* Login card container */
     .login-card-custom {
       width: 448px !important;
       max-width: 448px !important;
@@ -208,8 +208,7 @@ import { WebapiService } from '../../../services/webapi.service';
       -webkit-backdrop-filter: blur(12px) !important;
     }
 
-    /* ---- Card header text ---- */
-    /* "Welcome back": exact Figma specifications (straight single line) */
+    /* "Welcome back" heading */
     .login-heading {
       width: auto !important;
       min-width: 173px !important;
@@ -230,7 +229,7 @@ import { WebapiService } from '../../../services/webapi.service';
       align-items: center !important;
     }
 
-    /* "Sign in to your admin account": exact Figma specifications */
+    /* "Sign in to your admin account" subtitle */
     .login-subheading {
       width: auto !important;
       min-width: 193px !important;
@@ -251,7 +250,7 @@ import { WebapiService } from '../../../services/webapi.service';
       align-items: center !important;
     }
 
-    /* ---- Welcome back container: exact Figma specifications ---- */
+    /* Welcome back header block */
     .login-header-block {
       width: 384px !important;
       max-width: 100% !important;
@@ -283,7 +282,7 @@ import { WebapiService } from '../../../services/webapi.service';
       padding: 0 !important;
     }
 
-    /* ---- Email / Form container: exact Figma specifications ---- */
+    /* Email / Form container */
     .login-form-container {
       width: 384px !important;
       max-width: 100% !important;
@@ -407,7 +406,7 @@ import { WebapiService } from '../../../services/webapi.service';
       color: #64748B;
     }
 
-    /* ---- Remember Me & Forgot Password row: exact Figma specifications ---- */
+    /* Remember Me & Forgot Password row */
     .login-bottom-row {
       width: 384px !important;
       max-width: 100% !important;
@@ -424,7 +423,7 @@ import { WebapiService } from '../../../services/webapi.service';
       font-size: 14px;
     }
 
-    /* Remember Me wrapper: exact Figma specifications */
+    /* Remember Me wrapper */
     .remember-group {
       width: 129px !important;
       height: 24px !important;
@@ -438,7 +437,7 @@ import { WebapiService } from '../../../services/webapi.service';
       margin: 0 !important;
     }
 
-    /* "Remember me" label: exact Figma specifications */
+    /* "Remember me" label */
     .remember-label {
       width: 108px !important;
       height: 24px !important;
@@ -514,7 +513,7 @@ import { WebapiService } from '../../../services/webapi.service';
       background-size: 9px 9px !important;
     }
 
-    /* "Forgot password?": exact Figma specifications */
+    /* "Forgot password?" link */
     .forgot-link-custom {
       width: 133px !important;
       height: 24px !important;
@@ -542,7 +541,7 @@ import { WebapiService } from '../../../services/webapi.service';
       opacity: 0.9 !important;
     }
 
-    /* ---- Sign In button: vibrant gradient matching Figma, 44px height, radius 10px ---- */
+    /* Sign In button */
     .btn-login-custom {
       background: linear-gradient(90deg, #3B82F6 0%, #6366F1 50%, #7C3AED 100%) !important;
       color: #ffffff !important;
@@ -601,7 +600,7 @@ import { WebapiService } from '../../../services/webapi.service';
       border-top: 1px solid #F1F5F9;
     }
 
-    /* ---- Demo credentials container: exact Figma specifications ---- */
+    /* Demo credentials container */
     .demo-credentials-container {
       width: 448px !important;
       max-width: 448px !important;
@@ -616,7 +615,7 @@ import { WebapiService } from '../../../services/webapi.service';
       margin: 20px auto 0 auto !important;
     }
 
-    /* ---- Demo credentials text: exact Figma specifications ---- */
+    /* Demo credentials text */
     .demo-credentials-text {
       width: 248px !important;
       height: 16px !important;
@@ -639,7 +638,7 @@ import { WebapiService } from '../../../services/webapi.service';
       box-sizing: border-box !important;
     }
 
-    /* ---- Alert feedback blocks matching Figma ---- */
+    /* Alert feedback blocks */
     .alert-box-error {
       background-color: #FEF2F2 !important;
       color: #EF4444 !important;
@@ -724,7 +723,7 @@ export class LoginBoxedComponent implements OnInit, OnDestroy {
       loginid: ['', [Validators.required]],
       password: ['', [Validators.required]]
     });
-    // Force permanent scrollbar on login page (matching Figma)
+    // Force permanent scrollbar on login page
     document.documentElement.style.setProperty('overflow-y', 'scroll', 'important');
     document.documentElement.style.setProperty('scrollbar-gutter', 'stable', 'important');
   }

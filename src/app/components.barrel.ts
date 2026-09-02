@@ -4,7 +4,7 @@
 // Dashboard components
 export { AnalyticsComponent } from './Pages/Dashboards/analytics/analytics.component';
 export { UserManagementComponent } from './Pages/UserManagement/user-management.component';
-export { ContentManagementComponent } from './Pages/ContentManagement/content-management.component';
+export { ContentManagementComponent } from './Pages/ContentManagement/content.component';
 export { PreventiveCareComponent } from './Pages/PreventiveCare/preventive-care.component';
 export { AuditLogsComponent } from './Pages/AuditLogs/audit-logs.component';
 

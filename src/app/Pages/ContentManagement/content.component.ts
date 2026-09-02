@@ -17,7 +17,7 @@ interface ContentItem {
 
 @Component({
   selector: 'app-content-management',
-  templateUrl: './content-management.component.html',
+  templateUrl: './content.component.html',
   standalone: false,
   styles: [`
     .cm-page-title {
@@ -48,27 +48,38 @@ interface ContentItem {
       white-space: normal !important;
     }
 
-    /* Upload Content Button */
+    /* Upload Content Button (Exact Specs: 145 x 36, gradient #00C950 -> #009689, radius 8px, gap 8px, padding 8px 12px) */
     .cm-btn-upload {
       display: inline-flex !important;
       align-items: center !important;
+      justify-content: center !important;
       gap: 8px !important;
-      background: #059669 !important;
+      width: auto !important;
+      min-width: 148px !important;
+      height: 36px !important;
+      background: linear-gradient(90deg, #00C950 0%, #009689 100%) !important;
       color: #FFFFFF !important;
       border: none !important;
-      border-radius: 10px !important;
-      padding: 9px 18px !important;
-      font-family: 'Inter', sans-serif !important;
-      font-size: 13.5px !important;
-      font-weight: 600 !important;
+      border-radius: 8px !important;
+      padding: 8px 14px !important;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+      font-size: 14px !important;
+      font-weight: 500 !important;
+      font-style: normal !important;
+      line-height: 20px !important;
+      letter-spacing: -0.15px !important;
+      white-space: nowrap !important;
+      transform: rotate(0deg) !important;
+      opacity: 1 !important;
       cursor: pointer !important;
-      box-shadow: 0 2px 6px rgba(5, 150, 105, 0.25) !important;
+      box-shadow: 0 2px 6px rgba(0, 201, 80, 0.25) !important;
       transition: all 0.2s ease !important;
+      box-sizing: border-box !important;
     }
     .cm-btn-upload:hover {
-      background: #047857 !important;
+      opacity: 0.95 !important;
       transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(5, 150, 105, 0.35) !important;
+      box-shadow: 0 4px 12px rgba(0, 201, 80, 0.35) !important;
     }
     .cm-btn-upload:active {
       transform: translateY(0);
@@ -261,8 +272,26 @@ interface ContentItem {
     .cm-tab-btn.active {
       background: #090D16 !important;
       color: #FFFFFF !important;
-      border-color: #090D16 !important;
-      font-weight: 600 !important;
+      font-weight: 500 !important;
+    }
+
+    .cm-media-card {
+      width: 100% !important;
+      max-width: 517px !important;
+      height: auto !important;
+      background: #FFFFFF !important;
+      border: 1px solid rgba(0, 0, 0, 0.1) !important;
+      border-radius: 14px !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+      overflow: visible !important;
+      transform: rotate(0deg) !important;
+      opacity: 1 !important;
+      transition: all 0.2s ease !important;
+      box-sizing: border-box !important;
+    }
+
+    .cm-media-card:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
     }
   `]
 })
@@ -302,9 +331,13 @@ export class ContentManagementComponent implements OnInit {
   uploadErrorMessage: string = '';
   uploadSuccessMessage: string = '';
 
+  openDropdownId: string | null = null;
+
   private contentSubscription?: Subscription;
 
-  constructor(private webApiService: WebapiService) {}
+  constructor(private webApiService: WebapiService) {
+    document.addEventListener('click', () => this.closeDropdown());
+  }
 
   ngOnInit() {
     this.loadAllContent();
@@ -312,6 +345,39 @@ export class ContentManagementComponent implements OnInit {
 
   ngOnDestroy() {
     this.contentSubscription?.unsubscribe();
+  }
+
+  toggleDropdown(id: string, event: Event) {
+    event.stopPropagation();
+    this.openDropdownId = this.openDropdownId === id ? null : id;
+  }
+
+  closeDropdown() {
+    this.openDropdownId = null;
+  }
+
+  onAction(action: 'preview' | 'update' | 'disable' | 'delete', item: ContentItem) {
+    this.closeDropdown();
+    if (action === 'preview') {
+      if (item.path) {
+        window.open(item.path, '_blank');
+      } else {
+        alert(`Previewing "${item.title}"`);
+      }
+    } else if (action === 'update') {
+      this.openUploadModal();
+      this.uploadTitle = item.title;
+      this.uploadCategory = item.category;
+      this.uploadTags = item.tags.join(', ');
+      this.uploadPath = item.path || '';
+    } else if (action === 'disable') {
+      item.status = item.status === 'Active' ? 'Disabled' : 'Active';
+    } else if (action === 'delete') {
+      if (confirm(`Are you sure you want to delete "${item.title}"?`)) {
+        this.contentList = this.contentList.filter(c => c.id !== item.id);
+        this.applyFrontendFilters();
+      }
+    }
   }
 
   onSearchClick() {

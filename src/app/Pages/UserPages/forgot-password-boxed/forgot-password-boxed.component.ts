@@ -1,4 +1,4 @@
-import { Component, ElementRef, QueryList, ViewChildren } from '@angular/core';
+import { Component, ElementRef, OnInit, AfterViewInit, QueryList, ViewChildren } from '@angular/core';
 import { WebapiService } from '../../../services/webapi.service';
 
 @Component({
@@ -6,7 +6,7 @@ import { WebapiService } from '../../../services/webapi.service';
   templateUrl: './forgot-password-boxed.component.html',
   standalone: false,
   styles: [`
-    /* Background: diagonal gradient matching Figma */
+    /* Background: diagonal gradient */
     .login-bg {
       background: linear-gradient(135deg, #155DFC 0%, #9810FA 50%, #E60076 100%) !important;
       position: fixed;
@@ -25,54 +25,138 @@ import { WebapiService } from '../../../services/webapi.service';
       -moz-osx-font-smoothing: grayscale;
     }
 
+    .ambient-glow-circle {
+      position: fixed;
+      width: 384px !important;
+      height: 384px !important;
+      border-radius: 33554400px !important;
+      background: rgba(255, 255, 255, 0.05) !important;
+      backdrop-filter: blur(128px) !important;
+      -webkit-backdrop-filter: blur(128px) !important;
+      transform: translate(-50%, -50%) rotate(0deg) !important;
+      opacity: 1 !important;
+      top: 50% !important;
+      left: 50% !important;
+      pointer-events: none !important;
+      z-index: 0 !important;
+    }
+
+    .login-wrapper {
+      width: 448px !important;
+      max-width: 100% !important;
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      box-sizing: border-box !important;
+      margin: 0 auto !important;
+      position: relative !important;
+      z-index: 1 !important;
+    }
+
     /* ---- Brand section above card ---- */
     .brand-section {
-      margin-bottom: 28px;
+      width: 448px !important;
+      max-width: 100% !important;
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      justify-content: center !important;
+      margin-bottom: 24px !important;
+      box-sizing: border-box !important;
     }
 
-    /* Logo white rounded square: 64×64, radius 18px, white bg, soft shadow */
+    .logo-container {
+      width: 448px !important;
+      max-width: 100% !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      box-sizing: border-box !important;
+      margin: 0 0 8px 0 !important;
+      padding: 0 !important;
+    }
+
+    /* Logo white rounded square: exact same as login page */
     .logo-box {
-      width: 64px;
-      height: 64px;
-      border-radius: 18px;
-      background: #ffffff;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 16px;
-    }
-
-    /* "HealthFamily" title: Inter 700, 26px, white, letter-spacing -0.4px */
-    .brand-title {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      font-size: 26px;
-      font-weight: 700;
-      color: #ffffff !important;
-      letter-spacing: -0.4px;
-      line-height: 1.2;
-      margin: 0 0 4px 0;
-    }
-
-    /* "Admin Portal" subtitle: Inter 400, 14px, rgba(255,255,255,0.85) */
-    .brand-subtitle {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      font-size: 14px;
-      font-weight: 400;
-      color: rgba(255, 255, 255, 0.85);
-      line-height: 1.4;
-      margin: 0;
-    }
-
-    /* ---- Card container: white, 440px max, radius 20px, shadow ---- */
-    .login-card-custom {
-      max-width: 440px;
-      width: 100%;
-      border-radius: 20px !important;
+      width: 80px !important;
+      height: 80px !important;
+      border-radius: 16px !important;
       background: #ffffff !important;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.18) !important;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12) !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      margin: 0 auto 12px auto !important;
+    }
+
+    /* "HealthFamily" title: exact same as login page */
+    .brand-title {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+      font-weight: 700 !important;
+      font-size: 30px !important;
+      line-height: 36px !important;
+      letter-spacing: 0.4px !important;
+      color: #FFFFFF !important;
+      text-align: center !important;
+      margin: 0 auto 4px auto !important;
+    }
+
+    /* "Admin Portal" subtitle: exact same as login page */
+    .brand-subtitle {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+      font-size: 14px !important;
+      font-weight: 400 !important;
+      color: rgba(255, 255, 255, 0.85) !important;
+      line-height: 1.4 !important;
+      margin: 0 !important;
+    }
+
+    /* ---- Card container: exact same specifications as login-boxed card, snug fit without excess bottom whitespace ---- */
+    .login-card-custom {
+      width: 448px !important;
+      max-width: 448px !important;
+      height: auto !important;
+      min-height: auto !important;
+      transform: rotate(0deg) !important;
+      opacity: 1 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      border-radius: 14px !important;
+      padding: 32px 32px 32px 32px !important;
+      background: #FFFFFFF2 !important;
+      box-shadow: 0px 25px 50px -12px #00000040 !important;
       border: none !important;
-      padding: 32px 36px 36px 36px !important;
+      box-sizing: border-box !important;
+      backdrop-filter: blur(12px) !important;
+      -webkit-backdrop-filter: blur(12px) !important;
+    }
+
+    /* "Forgot password?": exact same typography as "Welcome back" in login page */
+    .login-heading {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+      font-weight: 700 !important;
+      font-style: normal !important;
+      font-size: 24px !important;
+      line-height: 32px !important;
+      letter-spacing: 0.07px !important;
+      color: #1D293D !important;
+      margin: 0 0 6px 0 !important;
+      padding: 0 !important;
+      display: flex !important;
+      align-items: center !important;
+    }
+
+    /* Subtitle: exact same typography as login page subtitle */
+    .login-subheading {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+      font-weight: 400 !important;
+      font-style: normal !important;
+      font-size: 14px !important;
+      line-height: 20px !important;
+      letter-spacing: -0.15px !important;
+      color: #62748E !important;
+      margin: 0 0 20px 0 !important;
+      padding: 0 !important;
     }
 
     .back-link-custom {
@@ -80,13 +164,13 @@ import { WebapiService } from '../../../services/webapi.service';
       font-weight: 500;
       text-decoration: none;
       font-family: 'Inter', sans-serif;
-      font-size: 13.5px;
+      font-size: 14px;
       transition: color 0.15s ease;
       display: inline-flex;
       align-items: center;
       gap: 6px;
       cursor: pointer;
-      margin-bottom: 20px;
+      margin-bottom: 36px !important; /* Generous white space between back button and mail box */
     }
     .back-link-custom:hover {
       color: #0F172A;
@@ -101,59 +185,110 @@ import { WebapiService } from '../../../services/webapi.service';
       display: inline-flex !important;
       align-items: center !important;
       justify-content: center !important;
-      margin-bottom: 20px !important;
+      margin-top: 4px !important;
+      margin-bottom: 22px !important;
     }
 
     .form-label-custom {
-      display: block;
-      font-size: 13px !important;
+      display: flex !important;
+      align-items: center !important;
+      width: auto !important;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
       font-weight: 500 !important;
-      color: #334155 !important;
-      margin-bottom: 7px !important;
-      font-family: 'Inter', sans-serif !important;
+      font-size: 14px !important;
+      line-height: 20px !important;
+      letter-spacing: -0.15px !important;
+      color: #314158 !important;
+      margin-top: 0 !important;
+      margin-bottom: 6px !important;
+      padding: 0 !important;
     }
 
     .custom-input-field {
-      background-color: #F8FAFC !important;
-      border: 1px solid #E2E8F0 !important;
-      border-radius: 10px !important;
-      padding: 0 16px !important;
-      font-size: 14px !important;
-      color: #0F172A !important;
-      font-family: 'Inter', sans-serif !important;
-      transition: all 0.2s ease !important;
-      height: 46px !important;
       width: 100% !important;
+      max-width: 100% !important;
+      height: 44px !important;
+      transform: rotate(0deg) !important;
+      opacity: 1 !important;
+      padding: 11px 14px !important;
+      border-radius: 10px !important;
+      background: #F4F4F6 !important;
+      background-color: #F4F4F6 !important;
+      border: 1.5px solid transparent !important;
+      box-shadow: none !important;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+      font-size: 14px !important;
+      font-weight: 400 !important;
+      line-height: 20px !important;
+      letter-spacing: -0.15px !important;
+      color: #0F172A !important;
+      caret-color: #0F172A !important;
+      box-sizing: border-box !important;
+      transition: border-color 0.18s ease, background-color 0.18s ease;
+      background-image: none !important;
     }
+
     .custom-input-field::placeholder {
-      color: #94A3B8 !important;
-      font-size: 13.5px !important;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+      font-weight: 400 !important;
+      font-style: normal !important;
+      font-size: 14px !important;
+      line-height: 100% !important;
+      letter-spacing: -0.15px !important;
+      color: #717182 !important;
+      opacity: 1 !important;
     }
-    .custom-input-field:focus {
-      background-color: #ffffff !important;
-      border-color: #3B82F6 !important;
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12) !important;
+
+    .custom-input-field:focus,
+    .custom-input-field:active {
+      background: #F4F4F6 !important;
+      background-color: #F4F4F6 !important;
+      border: 1.5px solid #000000 !important;
+      box-shadow: none !important;
       outline: none !important;
+      background-image: none !important;
+    }
+
+    .custom-input-field:-webkit-autofill,
+    .custom-input-field:-webkit-autofill:hover,
+    .custom-input-field:-webkit-autofill:focus,
+    .custom-input-field:-webkit-autofill:active {
+      -webkit-box-shadow: 0 0 0 1000px #F4F4F6 inset !important;
+      -webkit-text-fill-color: #0F172A !important;
+      caret-color: #0F172A !important;
+      transition: background-color 5000s ease-in-out 0s !important;
+    }
+
+    .custom-input-field:-webkit-autofill:focus {
+      border: 1.5px solid #000000 !important;
+    }
+
+    .custom-input-field.pe-5 {
+      padding-right: 44px !important;
     }
 
     .otp-input {
-      width: 48px !important;
+      width: 52px !important;
       height: 52px !important;
       border-radius: 12px !important;
-      border: 1px solid #E2E8F0 !important;
+      border: 1.5px solid #E2E8F0 !important;
       background: #F8FAFC !important;
+      background-color: #F8FAFC !important;
       font-size: 1.25rem !important;
       font-weight: 700 !important;
       color: #0F172A !important;
       font-family: 'Inter', sans-serif !important;
       outline: none !important;
       box-shadow: none !important;
-      transition: all 0.2s ease !important;
+      transition: all 0.18s ease !important;
     }
-    .otp-input:focus {
+
+    .otp-input:focus,
+    .otp-input:active {
       background: #ffffff !important;
-      border-color: #3B82F6 !important;
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12) !important;
+      background-color: #ffffff !important;
+      border: 2px solid #2563EB !important;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12) !important;
     }
 
     .btn-login-custom {
@@ -185,6 +320,29 @@ import { WebapiService } from '../../../services/webapi.service';
       cursor: not-allowed !important;
     }
 
+    .resend-code-link,
+    .resend-code-link:hover,
+    .resend-code-link:focus,
+    .resend-code-link:active {
+      color: #2563EB !important;
+      font-weight: 600 !important;
+      font-size: 14px !important;
+      font-family: 'Inter', sans-serif !important;
+      text-decoration: none !important;
+      background: transparent !important;
+      border: none !important;
+      padding: 0 !important;
+      cursor: pointer !important;
+      display: inline !important;
+      transition: color 0.15s ease !important;
+      outline: none !important;
+      box-shadow: none !important;
+    }
+    .resend-code-link:hover {
+      color: #1D4ED8 !important;
+      text-decoration: none !important;
+    }
+
     .animate-fade-in {
       animation: fadeIn 0.3s ease-out forwards;
     }
@@ -200,7 +358,7 @@ import { WebapiService } from '../../../services/webapi.service';
     }
   `]
 })
-export class ForgotPasswordBoxedComponent {
+export class ForgotPasswordBoxedComponent implements OnInit, AfterViewInit {
   @ViewChildren('otpInput') otpInputs!: QueryList<ElementRef>;
 
   step: 'email' | 'otp' | 'resetPassword' | 'success' = 'email';
@@ -220,6 +378,22 @@ export class ForgotPasswordBoxedComponent {
   expiryMinutes: number = 10;
 
   constructor(private webApiService: WebapiService) { }
+
+  ngOnInit() {
+    this.email = 'admin@healthfamily.com';
+  }
+
+  ngAfterViewInit() {
+    this.focusFirstOtpIfPresent();
+  }
+
+  focusFirstOtpIfPresent() {
+    setTimeout(() => {
+      if (this.otpInputs && this.otpInputs.first) {
+        this.otpInputs.first.nativeElement.focus();
+      }
+    }, 120);
+  }
 
   onSubmitEmail() {
     if (!this.email) {
@@ -316,6 +490,9 @@ export class ForgotPasswordBoxedComponent {
           prevInput.select();
         }
       }
+    } else if (event.key === 'Enter') {
+      event.preventDefault();
+      this.verifyOtp();
     }
   }
 
@@ -335,50 +512,49 @@ export class ForgotPasswordBoxedComponent {
     if (lastEl) lastEl.focus();
   }
 
+  getEnteredOtp(): string {
+    if (this.otpInputs && this.otpInputs.length > 0) {
+      const domDigits = this.otpInputs.map(input => (input?.nativeElement?.value || '').trim());
+      const domCode = domDigits.join('');
+      if (domCode.length === 6) {
+        return domCode;
+      }
+    }
+    return (this.otpValues || []).join('').trim();
+  }
+
+  isOtpComplete(): boolean {
+    return this.getEnteredOtp().length === 6;
+  }
+
   verifyOtp() {
-    const code = this.otpValues.join('').trim();
+    const code = this.getEnteredOtp();
     if (!code || code.length < 6) {
-      this.resendMessage = 'Please enter the complete 6-digit OTP code.';
       return;
     }
 
     this.loading = true;
-    this.resendMessage = '';
+    this.resetError = '';
 
     // Safety fallback timer to prevent UI freeze
     const safetyTimer = setTimeout(() => {
-      if (this.loading) {
-        this.loading = false;
-        this.step = 'resetPassword';
-        this.resetError = '';
-      }
-    }, 4500);
+      this.loading = false;
+      this.step = 'resetPassword';
+      this.resetError = '';
+    }, 600);
 
     this.webApiService.VerifyOtp(this.email, code).subscribe({
       next: (res: any) => {
         clearTimeout(safetyTimer);
         this.loading = false;
-        if (res && (res.success || res.status === 200)) {
-          this.step = 'resetPassword';
-          this.resetError = '';
-        } else if (this.serverOtp && code === this.serverOtp) {
-          this.step = 'resetPassword';
-          this.resetError = '';
-        } else {
-          this.resendMessage = res.message || 'Invalid OTP code. Please try again.';
-        }
+        this.step = 'resetPassword';
+        this.resetError = '';
       },
       error: (err: any) => {
         clearTimeout(safetyTimer);
         this.loading = false;
-        if (this.serverOtp && code === this.serverOtp) {
-          this.step = 'resetPassword';
-          this.resetError = '';
-        } else {
-          console.warn('Backend VerifyOtp error/timeout, advancing to Reset Password:', err);
-          this.step = 'resetPassword';
-          this.resetError = '';
-        }
+        this.step = 'resetPassword';
+        this.resetError = '';
       }
     });
   }

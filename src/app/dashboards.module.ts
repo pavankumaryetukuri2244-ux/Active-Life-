@@ -5,7 +5,7 @@ import { BaseChartDirective } from 'ng2-charts';
 // Dashboard Components
 import { AnalyticsComponent } from './Pages/Dashboards/analytics/analytics.component';
 import { UserManagementComponent } from './Pages/UserManagement/user-management.component';
-import { ContentManagementComponent } from './Pages/ContentManagement/content-management.component';
+import { ContentManagementComponent } from './Pages/ContentManagement/content.component';
 import { PreventiveCareComponent } from './Pages/PreventiveCare/preventive-care.component';
 import { AuditLogsComponent } from './Pages/AuditLogs/audit-logs.component';
 

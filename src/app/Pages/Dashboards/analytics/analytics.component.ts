@@ -87,6 +87,9 @@ export class AnalyticsComponent implements OnInit {
     plugins: {
       legend: {
         display: false
+      },
+      tooltip: {
+        enabled: false
       }
     },
     scales: {
@@ -126,11 +129,13 @@ export class AnalyticsComponent implements OnInit {
     datasets: [
       {
         label: 'Appointments',
-        data: [60, 68, 55, 82, 79, 65, 48],
-        backgroundColor: '#8b5cf6',
-        hoverBackgroundColor: '#7c3aed',
-        borderRadius: 8,
-        barThickness: 20
+        data: [70, 82, 58, 105.2, 86, 68, 46],
+        backgroundColor: 'hsla(258, 90%, 66%, 1)',
+        hoverBackgroundColor: 'hsla(258, 90%, 58%, 1)',
+        borderRadius: 6,
+        borderSkipped: false,
+        barThickness: 32.68,
+        maxBarThickness: 33
       }
     ]
   };
@@ -141,6 +146,9 @@ export class AnalyticsComponent implements OnInit {
     plugins: {
       legend: {
         display: false
+      },
+      tooltip: {
+        enabled: false
       }
     },
     scales: {
@@ -148,24 +156,30 @@ export class AnalyticsComponent implements OnInit {
         grid: {
           display: false
         },
+        border: {
+          display: false
+        },
         ticks: {
-          color: '#9ca3af',
+          color: '#64748B',
           font: {
-            family: 'Outfit, sans-serif',
-            size: 11
+            family: 'Inter, sans-serif',
+            size: 12
           }
         }
       },
       y: {
-        grid: {
-          color: '#f3f4f6'
-        },
+        min: 0,
+        max: 115,
         ticks: {
-          color: '#9ca3af',
-          font: {
-            family: 'Outfit, sans-serif',
-            size: 11
-          }
+          stepSize: 25,
+          display: false
+        },
+        grid: {
+          color: '#E8EDF5',
+          drawTicks: false
+        },
+        border: {
+          display: false
         }
       }
     }
