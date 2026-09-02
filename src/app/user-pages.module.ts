@@ -4,21 +4,18 @@ import { SharedModule } from './shared.module';
 // User Pages Components
 import { ForgotPasswordBoxedComponent } from './Pages/UserPages/forgot-password-boxed/forgot-password-boxed.component';
 import { LoginBoxedComponent } from './Pages/UserPages/login-boxed/login-boxed.component';
-import { RegisterBoxedComponent } from './Pages/UserPages/register-boxed/register-boxed.component';
 
 @NgModule({
   declarations: [
     ForgotPasswordBoxedComponent,
-    LoginBoxedComponent,
-    RegisterBoxedComponent
+    LoginBoxedComponent
   ],
   imports: [
     SharedModule
   ],
   exports: [
     ForgotPasswordBoxedComponent,
-    LoginBoxedComponent,
-    RegisterBoxedComponent
+    LoginBoxedComponent
   ]
 })
 export class UserPagesModule { }

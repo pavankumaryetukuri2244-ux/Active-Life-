@@ -1,17 +1,5 @@
 // User Pages
 
-.app-logo {
-  height: $logo-height;
-  width: $logo-width;
-  background-image: url('../../assets/images/logo-inverse.png');
-}
-
-.app-logo-inverse {
-  height: $logo-height;
-  width: $logo-width;
-  background-image: url('../../assets/images/logo.png');
-}
-
 .app-login-box {
   .app-logo {
     margin-bottom: $layout-spacer-lg;

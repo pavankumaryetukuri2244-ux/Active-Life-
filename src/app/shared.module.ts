@@ -5,13 +5,8 @@ import { RouterModule } from '@angular/router';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 
-// Shared Components
-import { PageTitleComponent } from './Layout/Components/page-title/page-title.component';
-
 @NgModule({
-  declarations: [
-    PageTitleComponent
-  ],
+  declarations: [],
   imports: [
     CommonModule,
     FormsModule,
@@ -21,7 +16,6 @@ import { PageTitleComponent } from './Layout/Components/page-title/page-title.co
     FontAwesomeModule
   ],
   exports: [
-    PageTitleComponent,
     // Re-export commonly used modules for convenience
     CommonModule,
     FormsModule,

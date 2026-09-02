@@ -12,8 +12,7 @@ import {
   PreventiveCareComponent,
   AuditLogsComponent,
   ForgotPasswordBoxedComponent,
-  LoginBoxedComponent,
-  RegisterBoxedComponent
+  LoginBoxedComponent
 } from './components.barrel';
 import { AuthGuard } from './auth.guard';
 
@@ -38,7 +37,6 @@ const routes: Routes = [
     children: [
       // User Pages
       { path: 'pages/login-boxed', component: LoginBoxedComponent, data: { extraParameter: '' } },
-      { path: 'pages/register-boxed', component: RegisterBoxedComponent, data: { extraParameter: '' } },
       { path: 'pages/forgot-password-boxed', component: ForgotPasswordBoxedComponent, data: { extraParameter: '' } },
     ]
   },

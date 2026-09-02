@@ -11,4 +11,3 @@ export { AuditLogsComponent } from './Pages/AuditLogs/audit-logs.component';
 // User pages components
 export { ForgotPasswordBoxedComponent } from './Pages/UserPages/forgot-password-boxed/forgot-password-boxed.component';
 export { LoginBoxedComponent } from './Pages/UserPages/login-boxed/login-boxed.component';
-export { RegisterBoxedComponent } from './Pages/UserPages/register-boxed/register-boxed.component';
