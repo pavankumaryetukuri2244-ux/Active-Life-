@@ -767,11 +767,10 @@ export class LoginBoxedComponent implements OnInit, OnDestroy {
           }
 
           this.CF.showAuth = false;
-          this.CF.ToastSuccess('Logged in successfully', 'Welcome');
 
           setTimeout(() => {
             this.router.navigate(['/dashboards/analytics']);
-          }, 300);
+          }, 150);
         } else {
           this.errorMessage = response.message || 'Login failed. Please check your credentials.';
         }

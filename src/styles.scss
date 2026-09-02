@@ -12,112 +12,141 @@
    ================================================================ */
 :root {
   /* ── Typography ── */
-  --font-primary:   'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-display:   'Outfit', 'Inter', sans-serif;
+  --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Outfit', 'Inter', sans-serif;
 
   /* Font sizes */
-  --fs-xs:    11.5px;   /* SSL text, badges             */
-  --fs-sm:    12px;     /* avatar initials, small labels */
-  --fs-body:  13.5px;   /* input text, field labels body */
-  --fs-label: 13px;     /* form field labels             */
-  --fs-base:  14px;     /* table cells, body text        */
-  --fs-md:    16px;     /* section/card titles           */
-  --fs-lg:    21px;     /* "Welcome back" heading        */
-  --fs-xl:    22px;     /* page/card headings            */
-  --fs-2xl:   24px;     /* page titles                  */
-  --fs-3xl:   32px;     /* metric numbers               */
+  --fs-xs: 11.5px;
+  /* SSL text, badges             */
+  --fs-sm: 12px;
+  /* avatar initials, small labels */
+  --fs-body: 13.5px;
+  /* input text, field labels body */
+  --fs-label: 13px;
+  /* form field labels             */
+  --fs-base: 14px;
+  /* table cells, body text        */
+  --fs-md: 16px;
+  /* section/card titles           */
+  --fs-lg: 21px;
+  /* "Welcome back" heading        */
+  --fs-xl: 22px;
+  /* page/card headings            */
+  --fs-2xl: 24px;
+  /* page titles                  */
+  --fs-3xl: 32px;
+  /* metric numbers               */
 
   /* Font weights */
-  --fw-normal:  400;
-  --fw-medium:  500;
+  --fw-normal: 400;
+  --fw-medium: 500;
   --fw-semibold: 600;
-  --fw-bold:    700;
+  --fw-bold: 700;
 
   /* Line heights */
-  --lh-tight:  1.2;
+  --lh-tight: 1.2;
   --lh-normal: 1.4;
-  --lh-loose:  1.5;
+  --lh-loose: 1.5;
 
   /* ── Color Palette ── */
   /* Grays */
-  --color-text-primary:   #111827;   /* headings, metric numbers     */
-  --color-text-secondary: #374151;   /* field values, card text       */
-  --color-text-muted:     #6B7280;   /* subtitles, labels, meta       */
-  --color-text-placeholder: #9CA3AF; /* input placeholders            */
-  --color-text-disabled:  #D1D5DB;   /* disabled states               */
-  --color-text-light:     #94A3B8;   /* SSL text, chart ticks         */
+  --color-text-primary: #111827;
+  /* headings, metric numbers     */
+  --color-text-secondary: #374151;
+  /* field values, card text       */
+  --color-text-muted: #6B7280;
+  /* subtitles, labels, meta       */
+  --color-text-placeholder: #9CA3AF;
+  /* input placeholders            */
+  --color-text-disabled: #D1D5DB;
+  /* disabled states               */
+  --color-text-light: #94A3B8;
+  /* SSL text, chart ticks         */
 
   /* Background layers */
-  --color-bg-page:        #F8FAFC;   /* main content area bg (#F8FAFC) */
-  --color-bg-card:        #FFFFFF;   /* all cards                     */
-  --color-bg-input:       #F8FAFC;   /* input default background      */
-  --color-bg-input-focus: #FFFFFF;   /* input focus background        */
-  --color-bg-subtle:      #F3F4F6;   /* chip/badge/subtle bg          */
+  --color-bg-page: #F8FAFC;
+  /* main content area bg (#F8FAFC) */
+  --color-bg-card: #FFFFFF;
+  /* all cards                     */
+  --color-bg-input: #F8FAFC;
+  /* input default background      */
+  --color-bg-input-focus: #FFFFFF;
+  /* input focus background        */
+  --color-bg-subtle: #F3F4F6;
+  /* chip/badge/subtle bg          */
 
   /* Brand / accent */
-  --color-brand-blue:     #3B82F6;   /* links, primary actions        */
-  --color-brand-indigo:   #6366F1;   /* button mid gradient           */
-  --color-brand-purple:   #8B5CF6;   /* button end gradient, focus    */
-  --color-brand-violet:   #7C3AED;   /* appointments icon             */
+  --color-brand-blue: #3B82F6;
+  /* links, primary actions        */
+  --color-brand-indigo: #6366F1;
+  /* button mid gradient           */
+  --color-brand-purple: #8B5CF6;
+  /* button end gradient, focus    */
+  --color-brand-violet: #7C3AED;
+  /* appointments icon             */
 
   /* Status colors */
-  --color-success:        #22C55E;
-  --color-success-dark:   #16A34A;
-  --color-success-bg:     #DCFCE7;
-  --color-warning:        #F59E0B;
-  --color-warning-dark:   #D97706;
-  --color-warning-bg:     #FEF3C7;
-  --color-danger:         #EF4444;
-  --color-danger-dark:    #DC2626;
-  --color-danger-bg:      #FEE2E2;
-  --color-info:           #3B82F6;
-  --color-info-bg:        rgba(59, 130, 246, 0.08);
+  --color-success: #22C55E;
+  --color-success-dark: #16A34A;
+  --color-success-bg: #DCFCE7;
+  --color-warning: #F59E0B;
+  --color-warning-dark: #D97706;
+  --color-warning-bg: #FEF3C7;
+  --color-danger: #EF4444;
+  --color-danger-dark: #DC2626;
+  --color-danger-bg: #FEE2E2;
+  --color-info: #3B82F6;
+  --color-info-bg: rgba(59, 130, 246, 0.08);
 
   /* Borders */
-  --color-border:         #E2E8F0;   /* card, input default borders   */
-  --color-border-light:   #F1F5F9;   /* table row dividers            */
-  --color-border-focus:   #8B5CF6;   /* input focus border            */
+  --color-border: #E2E8F0;
+  /* card, input default borders   */
+  --color-border-light: #F1F5F9;
+  /* table row dividers            */
+  --color-border-focus: #8B5CF6;
+  /* input focus border            */
 
   /* Gradients */
-  --gradient-login-bg:    linear-gradient(135deg, #155DFC 0%, #9810FA 50%, #E60076 100%);
+  --gradient-login-bg: linear-gradient(135deg, #155DFC 0%, #9810FA 50%, #E60076 100%);
   --gradient-btn-primary: linear-gradient(90deg, #3B82F6 0%, #6366F1 50%, #8B5CF6 100%);
 
   /* ── Spacing ── */
-  --space-1:   4px;
-  --space-2:   6px;
-  --space-3:   8px;
-  --space-4:  12px;
-  --space-5:  16px;
-  --space-6:  20px;
-  --space-7:  24px;
-  --space-8:  28px;
-  --space-9:  32px;
+  --space-1: 4px;
+  --space-2: 6px;
+  --space-3: 8px;
+  --space-4: 12px;
+  --space-5: 16px;
+  --space-6: 20px;
+  --space-7: 24px;
+  --space-8: 28px;
+  --space-9: 32px;
   --space-10: 36px;
   --space-11: 40px;
   --space-12: 48px;
 
   /* ── Border Radii ── */
-  --radius-sm:   6px;
-  --radius-md:   8px;
-  --radius-lg:  10px;
-  --radius-xl:  12px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 12px;
   --radius-2xl: 16px;
   --radius-3xl: 18px;
   --radius-pill: 9999px;
 
   /* ── Shadows ── */
-  --shadow-card:   0 1px 3px rgba(0,0,0,0.04);
-  --shadow-card-hover: 0 6px 20px rgba(0,0,0,0.07);
-  --shadow-modal:  0 20px 60px -12px rgba(0,0,0,0.25), 0 8px 20px -6px rgba(0,0,0,0.10);
-  --shadow-btn:    0 4px 16px rgba(99,102,241,0.32);
-  --shadow-icon:   0 4px 14px rgba(26,115,232,0.35);
-  --shadow-logo:   0 8px 24px rgba(0,0,0,0.12);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.04);
+  --shadow-card-hover: 0 6px 20px rgba(0, 0, 0, 0.07);
+  --shadow-modal: 0 20px 60px -12px rgba(0, 0, 0, 0.25), 0 8px 20px -6px rgba(0, 0, 0, 0.10);
+  --shadow-btn: 0 4px 16px rgba(99, 102, 241, 0.32);
+  --shadow-icon: 0 4px 14px rgba(26, 115, 232, 0.35);
+  --shadow-logo: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
 /* ================================================================
    BASE TYPOGRAPHY — Inter everywhere, antialiased
    ================================================================ */
-html, body {
+html,
+body {
   font-family: var(--font-primary) !important;
   font-size: 14px !important;
   font-weight: 400 !important;
@@ -128,7 +157,9 @@ html, body {
   text-rendering: optimizeLegibility !important;
 }
 
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   -webkit-font-smoothing: antialiased !important;
   -moz-osx-font-smoothing: grayscale !important;
 }
@@ -468,12 +499,18 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-h1, .h1,
-h2, .h2,
-h3, .h3,
-h4, .h4,
-h5, .h5,
-h6, .h6,
+h1,
+.h1,
+h2,
+.h2,
+h3,
+.h3,
+h4,
+.h4,
+h5,
+.h5,
+h6,
+.h6,
 .card-title,
 .font-outfit,
 .font-weight-bold {
@@ -488,8 +525,16 @@ h6, .h6,
   color: #ffffff !important;
 }
 
-span, div, p, td, th, a, li,
-input, select, button {
+span,
+div,
+p,
+td,
+th,
+a,
+li,
+input,
+select,
+button {
   font-family: var(--font-primary) !important;
 }
 
@@ -1246,7 +1291,8 @@ body,
   font-size: 16px !important;
   line-height: 24px !important;
   letter-spacing: -0.31px !important;
-  color: #62748E !important; /* hsba(215, 31%, 56%, 1) */
+  color: #62748E !important;
+  /* hsba(215, 31%, 56%, 1) */
   margin: 0 !important;
   padding: 0 !important;
   display: block !important;
@@ -1270,7 +1316,8 @@ body,
   max-width: 382px !important;
   height: 138px !important;
   border-radius: 14px !important;
-  border: 1px solid rgba(0, 0, 0, 0.1) !important; /* hsba(0, 0%, 0%, 0.1) / #0000001A */
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  /* hsba(0, 0%, 0%, 0.1) / #0000001A */
   border-width: 1px !important;
   border-style: solid !important;
   border-color: rgba(0, 0, 0, 0.1) !important;
@@ -1382,7 +1429,8 @@ h3.db-metric-number {
   background: #FFFFFF !important;
   background-color: #FFFFFF !important;
   border-radius: 14px !important;
-  border: 1px solid rgba(0, 0, 0, 0.1) !important; /* hsba(0, 0%, 0%, 0.1) / #0000001A */
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  /* hsba(0, 0%, 0%, 0.1) / #0000001A */
   border-width: 1px !important;
   border-style: solid !important;
   border-color: rgba(0, 0, 0, 0.1) !important;
@@ -1441,7 +1489,7 @@ canvas {
 
 /* Ensure all checkboxes across the application use brand blue and never validation green */
 .form-check-input:checked,
-.custom-control-input:checked ~ .custom-control-label::before,
+.custom-control-input:checked~.custom-control-label::before,
 .was-validated .form-check-input:valid:checked,
 .form-check-input.is-valid:checked {
   background-color: #2563EB !important;
