@@ -10,7 +10,9 @@ interface User {
   contact: string;
   status: 'ACTIVE' | 'INACTIVE' | 'BLOCKED';
   familyMembersCount: number;
-  created: string;
+  familyMembers?: number;
+  created?: string;
+  createdAt?: string;
 }
 
 interface UserStats {
@@ -57,6 +59,9 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   sortBy = 'id';
   sortDirection = 'ASC';
 
+  showViewModal = false;
+  selectedUser: User | null = null;
+
   openDropdownId: string | null = null;
 
   private usersSubscription?: Subscription;
@@ -77,14 +82,24 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   }
 
   onAction(action: string, user: User) {
-    console.log(`Action: ${action} on User ID: ${user.id}`);
-    if (action === 'inactive' || action === 'block' || action === 'blocked') {
-      const apiAction = action === 'block' ? 'blocked' : action;
+    this.closeDropdown();
+    this.selectedUser = user;
+
+    if (action === 'view') {
+      this.showViewModal = true;
+      return;
+    }
+
+    if (action === 'inactive' || action === 'block' || action === 'blocked' || action === 'unblock' || action === 'active') {
+      let apiAction = action.toUpperCase();
+      if (apiAction === 'BLOCKED') {
+        apiAction = 'BLOCK';
+      }
       this.isLoading = true;
       this.api.UpdateUserStatus(Number(user.id), apiAction).subscribe({
         next: (res: any) => {
-          if (res?.success) {
-            // Reload all users from backend to refresh master list
+          if (res?.success || res?.status === 200) {
+            // Reload all users from backend to refresh master list and stats
             this.loadUsers();
           } else {
             this.errorMessage = res?.message || 'Failed to update user status.';
@@ -98,6 +113,11 @@ export class UserManagementComponent implements OnInit, OnDestroy {
         }
       });
     }
+  }
+
+  closeViewModal() {
+    this.showViewModal = false;
+    this.selectedUser = null;
   }
 
   ngOnInit() {
@@ -255,11 +275,12 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   }
 
   /** Cycle avatar gradient by user index */
-  getAvatarGradient(index: number): string {
-    return AVATAR_GRADIENTS[index % AVATAR_GRADIENTS.length];
+  getAvatarGradient(index: number | string): string {
+    const num = Number(index) || 0;
+    return AVATAR_GRADIENTS[num % AVATAR_GRADIENTS.length];
   }
 
-  formatDate(dateStr: string): string {
+  formatDate(dateStr?: string | null): string {
     if (!dateStr) return '-';
     return dateStr.split('T')[0];
   }

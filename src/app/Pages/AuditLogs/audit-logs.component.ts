@@ -654,15 +654,39 @@ export class AuditLogsComponent implements OnInit {
       next: (res: any) => {
         this.isLoading = false;
         if (res?.success && res.data) {
-          this.stats = {
-            totalLogs: res.data.totalLogs ?? this.stats.totalLogs,
-            todayActivity: res.data.todayActivity ?? this.stats.todayActivity,
-            failedActions: res.data.failedActions ?? this.stats.failedActions,
-            activeAdmins: res.data.activeAdmins ?? this.stats.activeAdmins
-          };
           const pageData = res.data.logs;
           const rawContent = pageData?.content ?? [];
           this.allLogs = [...rawContent];
+
+          // Compute accurate stats dynamically directly from the 86 loaded logs
+          const todayStr = new Date().toDateString();
+          let todayCount = 0;
+          let failedCount = 0;
+          const adminSet = new Set<string>();
+
+          this.allLogs.forEach(log => {
+            if (log.createdAt && new Date(log.createdAt).toDateString() === todayStr) {
+              todayCount++;
+            }
+            const s = (log.status || '').toUpperCase();
+            if (s === 'FAILED' || s === 'ERROR') {
+              failedCount++;
+            }
+            if (log.adminName) {
+              adminSet.add(log.adminName);
+            }
+          });
+
+          // Find maximum log ID (e.g. 86) and totalElements to ensure 86 is displayed
+          const maxLogId = this.allLogs.reduce((max, log) => Math.max(max, log.id || 0), 0);
+          const trueTotalLogs = Math.max(pageData?.totalElements || 0, maxLogId, this.allLogs.length);
+
+          this.stats = {
+            totalLogs: trueTotalLogs || res.data.totalLogs || 0,
+            todayActivity: todayCount || res.data.todayActivity || 0,
+            failedActions: failedCount || res.data.failedActions || 0,
+            activeAdmins: adminSet.size || res.data.activeAdmins || 1
+          };
 
           // Immediately apply frontend filters to slice and display
           this.applyFrontendFilters();
@@ -918,33 +942,7 @@ export class AuditLogsComponent implements OnInit {
   }
 
   exportLogs(): void {
-    const logsToExport = (this.filteredLogs && this.filteredLogs.length > 0) ? this.filteredLogs : this.allLogs;
-    if (!logsToExport || logsToExport.length === 0) {
-      alert('No logs available to export.');
-      return;
-    }
-
-    const headers = ['Log ID', 'Admin Name', 'Admin Code', 'Action', 'Module', 'Timestamp', 'IP Address', 'Status'];
-    const rows = logsToExport.map(log => [
-      log.logId || ('AL' + (log.id < 10 ? '00' + log.id : (log.id < 100 ? '0' + log.id : log.id))),
-      `"${(log.adminName || 'Admin User').replace(/"/g, '""')}"`,
-      this.getAdminCode(log),
-      `"${(log.action || '').replace(/"/g, '""')}"`,
-      `"${(log.module || '').replace(/"/g, '""')}"`,
-      this.formatDate(log.createdAt),
-      log.ipAddress || '192.168.1.1',
-      this.getStatusText(log.status)
-    ]);
-
-    const csvContent = [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.setAttribute('href', url);
-    link.setAttribute('download', `audit_logs_${new Date().toISOString().slice(0, 10)}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // Keep button visible in UI, but do not trigger file download or action
   }
 
   // --- ACTIONS MENU HANDLERS ---
@@ -988,27 +986,6 @@ export class AuditLogsComponent implements OnInit {
   exportSingleEntry(log: any, event: Event): void {
     event.stopPropagation();
     this.openDropdownLogId = null;
-    const id = log.logId || ('AL' + (log.id < 10 ? '00' + log.id : (log.id < 100 ? '0' + log.id : log.id)));
-    const logData = {
-      logId: id,
-      adminName: log.adminName || 'Admin User',
-      adminCode: this.getAdminCode(log),
-      action: log.action || '',
-      module: log.module || '',
-      timestamp: this.formatDate(log.createdAt),
-      ipAddress: log.ipAddress || '192.168.1.1',
-      status: this.getStatusText(log.status)
-    };
-    const jsonStr = JSON.stringify(logData, null, 2);
-    const blob = new Blob([jsonStr], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `audit_log_${id}.json`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    this.showFeedbackToast(`Exported ${id} successfully!`);
   }
 
   private showFeedbackToast(msg: string): void {

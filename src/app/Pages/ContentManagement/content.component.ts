@@ -323,10 +323,10 @@ export class ContentManagementComponent implements OnInit {
   // Form inputs for Upload Content API
   uploadTitle: string = '';
   uploadCategory: string = '';
-  uploadDescription: string = '';
-  uploadLevel: string = '';
-  uploadTags: string = '';
   uploadPath: string = '';
+  uploadLevel: string = 'Beginner';
+  uploadStatus: boolean = true;
+  uploadTags: string = '';
   uploading: boolean = false;
   uploadErrorMessage: string = '';
   uploadSuccessMessage: string = '';
@@ -356,28 +356,26 @@ export class ContentManagementComponent implements OnInit {
     this.openDropdownId = null;
   }
 
+  showPreviewModal = false;
+  selectedContent: ContentItem | null = null;
+
   onAction(action: 'preview' | 'update' | 'disable' | 'delete', item: ContentItem) {
     this.closeDropdown();
+    this.selectedContent = item;
     if (action === 'preview') {
-      if (item.path) {
-        window.open(item.path, '_blank');
-      } else {
-        alert(`Previewing "${item.title}"`);
-      }
+      // Keep button visible in UI, but do not trigger preview modal or open tab
     } else if (action === 'update') {
-      this.openUploadModal();
-      this.uploadTitle = item.title;
-      this.uploadCategory = item.category;
-      this.uploadTags = item.tags.join(', ');
-      this.uploadPath = item.path || '';
+      // Keep button visible in UI, but do not trigger request or open modal
     } else if (action === 'disable') {
       item.status = item.status === 'Active' ? 'Disabled' : 'Active';
     } else if (action === 'delete') {
-      if (confirm(`Are you sure you want to delete "${item.title}"?`)) {
-        this.contentList = this.contentList.filter(c => c.id !== item.id);
-        this.applyFrontendFilters();
-      }
+      // Keep button visible in UI, but do not trigger request or delete content
     }
+  }
+
+  closePreviewModal() {
+    this.showPreviewModal = false;
+    this.selectedContent = null;
   }
 
   onSearchClick() {
@@ -420,11 +418,6 @@ export class ContentManagementComponent implements OnInit {
           const apiContent = res.data.content || [];
           const apiStats = res.data.statistics || {};
 
-          this.stats.totalContent = apiStats.totalContent !== undefined ? apiStats.totalContent : apiContent.length;
-          this.stats.gymVideos = apiStats.gymVideos !== undefined ? apiStats.gymVideos : 0;
-          this.stats.meditation = apiStats.meditation !== undefined ? apiStats.meditation : 0;
-          this.stats.totalViews = apiStats.totalViews !== undefined ? `${apiStats.totalViews}` : '0';
-
           this.contentList = apiContent.map((item: any) => {
             let cat: 'Gym' | 'Meditation' | 'Videos' = 'Videos';
             const rawCat = (item.category || '').toUpperCase();
@@ -456,6 +449,16 @@ export class ContentManagementComponent implements OnInit {
               path: item.path || ''
             };
           });
+
+          // Dynamically compute stats from actual loaded items
+          const gymCount = this.contentList.filter(c => c.category === 'Gym').length;
+          const meditationCount = this.contentList.filter(c => c.category === 'Meditation').length;
+          const sumViews = this.contentList.reduce((acc, c) => acc + (c.viewsRaw || 0), 0);
+
+          this.stats.totalContent = apiStats.totalContent !== undefined ? Math.max(apiStats.totalContent, this.contentList.length) : this.contentList.length;
+          this.stats.gymVideos = gymCount || (apiStats.gymVideos !== undefined ? apiStats.gymVideos : 0);
+          this.stats.meditation = meditationCount || (apiStats.meditation !== undefined ? apiStats.meditation : 0);
+          this.stats.totalViews = (apiStats.totalViews !== undefined && apiStats.totalViews > 0) ? `${apiStats.totalViews}` : (sumViews ? `${sumViews}` : '0');
 
           // Apply frontend filters to display
           this.applyFrontendFilters();
@@ -520,16 +523,24 @@ export class ContentManagementComponent implements OnInit {
   resetUploadForm() {
     this.uploadTitle = '';
     this.uploadCategory = '';
-    this.uploadDescription = '';
-    this.uploadLevel = '';
-    this.uploadTags = '';
     this.uploadPath = '';
+    this.uploadLevel = 'Beginner';
+    this.uploadStatus = true;
+    this.uploadTags = '';
     this.uploadErrorMessage = '';
     this.uploadSuccessMessage = '';
   }
 
+  setLevel(level: string) {
+    this.uploadLevel = level;
+  }
+
+  toggleStatus() {
+    this.uploadStatus = !this.uploadStatus;
+  }
+
   submitUploadContent() {
-    if (!this.uploadTitle || !this.uploadCategory || !this.uploadPath || !this.uploadLevel || !this.uploadTags) {
+    if (!this.uploadTitle || !this.uploadCategory || !this.uploadPath) {
       this.uploadErrorMessage = 'Please fill in all required fields';
       return;
     }
@@ -542,7 +553,7 @@ export class ContentManagementComponent implements OnInit {
       title: this.uploadTitle,
       category: this.uploadCategory.toUpperCase(),
       path: this.uploadPath,
-      level: this.uploadLevel.toUpperCase().replace(/\s+/g, '_'),
+      level: (this.uploadLevel || 'BEGINNER').toUpperCase(),
       tags: this.uploadTags
     };
 

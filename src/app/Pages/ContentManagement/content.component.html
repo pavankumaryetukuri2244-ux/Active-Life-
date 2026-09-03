@@ -258,64 +258,65 @@
                  style="border-radius: 10px; border: none !important; height: 38px; font-size: 0.85rem; padding: 8px 12px; font-family: 'Inter', sans-serif; outline: none; background: #F4F5F7; color: #0F172A;">
         </div>
 
-        <!-- Category Dropdown -->
+        <!-- Choose Category Dropdown -->
         <div style="margin-bottom: 12px;">
-          <label class="form-label font-weight-bold d-block" style="font-size: 0.8rem; color: #0F172A; font-family: 'Inter', sans-serif; margin-bottom: 5px;">Category</label>
+          <label class="form-label font-weight-bold d-block" style="font-size: 0.8rem; color: #0F172A; font-family: 'Inter', sans-serif; margin-bottom: 5px;">Choose Category</label>
           <div class="position-relative">
             <select [(ngModel)]="uploadCategory" name="uploadCategory" class="form-select w-100" 
                     style="border-radius: 10px; border: none !important; height: 38px; font-size: 0.85rem; padding: 8px 12px; font-family: 'Inter', sans-serif; color: #0F172A; appearance: none; outline: none; background: #F4F5F7; cursor: pointer;">
               <option value="" disabled selected>Select category</option>
-              <option value="MEDITATION">MEDITATION</option>
-              <option value="GYM">GYM</option>
-              <option value="VIDEOS">VIDEOS</option>
+              <option value="Gym">Gym</option>
+              <option value="Meditation">Meditation</option>
+              <option value="Videos">Videos</option>
             </select>
             <i class="fa fa-chevron-down position-absolute" style="right: 12px; top: 13px; font-size: 0.7rem; color: #94A3B8; pointer-events: none;"></i>
           </div>
         </div>
 
-        <!-- Description Textarea -->
+        <!-- Choose Path Input -->
         <div style="margin-bottom: 12px;">
-          <label class="form-label font-weight-bold d-block" style="font-size: 0.8rem; color: #0F172A; font-family: 'Inter', sans-serif; margin-bottom: 5px;">Description</label>
-          <textarea [(ngModel)]="uploadDescription" name="uploadDescription" rows="2" placeholder="Enter content description" class="form-control" 
-                    style="border-radius: 10px; border: none !important; font-size: 0.85rem; padding: 8px 12px; font-family: 'Inter', sans-serif; resize: none; background: #F4F5F7; color: #0F172A; outline: none;"></textarea>
-        </div>
-
-        <!-- Level & Tags side-by-side -->
-        <div class="row" style="margin-bottom: 12px;">
-          <!-- Level Dropdown -->
-          <div class="col-6 pr-1">
-            <label class="form-label font-weight-bold d-block" style="font-size: 0.8rem; color: #0F172A; font-family: 'Inter', sans-serif; margin-bottom: 5px;">Level</label>
-            <div class="position-relative">
-              <select [(ngModel)]="uploadLevel" name="uploadLevel" class="form-select w-100" 
-                      style="border-radius: 10px; border: none !important; height: 38px; font-size: 0.85rem; padding: 8px 12px; font-family: 'Inter', sans-serif; color: #0F172A; appearance: none; outline: none; background: #F4F5F7; cursor: pointer;">
-                <option value="" disabled selected>Select level</option>
-                <option value="BEGINNER">BEGINNER</option>
-                <option value="INTERMEDIATE">INTERMEDIATE</option>
-                <option value="ADVANCED">ADVANCED</option>
-                <option value="ALL_LEVELS">ALL_LEVELS</option>
-              </select>
-              <i class="fa fa-chevron-down position-absolute" style="right: 12px; top: 13px; font-size: 0.7rem; color: #94A3B8; pointer-events: none;"></i>
-            </div>
-          </div>
-          <!-- Tags Input -->
-          <div class="col-6 pl-1">
-            <label class="form-label font-weight-bold d-block" style="font-size: 0.8rem; color: #0F172A; font-family: 'Inter', sans-serif; margin-bottom: 5px;">Tags</label>
-            <input type="text" [(ngModel)]="uploadTags" name="uploadTags" placeholder="yoga, morning, stretching" class="form-control" 
-                   style="border-radius: 10px; border: none !important; height: 38px; font-size: 0.85rem; padding: 8px 12px; font-family: 'Inter', sans-serif; background: #F4F5F7; color: #0F172A; outline: none;">
-          </div>
-        </div>
-
-        <!-- Path Input -->
-        <div style="margin-bottom: 16px;">
-          <label class="form-label font-weight-bold d-block" style="font-size: 0.8rem; color: #0F172A; font-family: 'Inter', sans-serif; margin-bottom: 5px;">Path</label>
+          <label class="form-label font-weight-bold d-block" style="font-size: 0.8rem; color: #0F172A; font-family: 'Inter', sans-serif; margin-bottom: 5px;">Choose Path</label>
           <div class="position-relative">
-            <!-- folder/link icon inside input -->
-            <i class="pe-7s-folder position-absolute" style="left: 12px; top: 10px; font-size: 1.1rem; color: #94A3B8;"></i>
-            <input type="text" [(ngModel)]="uploadPath" name="uploadPath" placeholder="/content/meditation/morning-yoga.mp4" class="form-control" 
-                   style="border-radius: 10px; border: none !important; height: 38px; font-size: 0.825rem; padding: 8px 12px 8px 38px !important; font-family: 'Inter', sans-serif; background: #F4F5F7; color: #0F172A; outline: none;">
+            <input type="text" [(ngModel)]="uploadPath" name="uploadPath" placeholder="Select path" class="form-control" 
+                   style="border-radius: 10px; border: none !important; height: 38px; font-size: 0.85rem; padding: 8px 30px 8px 12px; font-family: 'Inter', sans-serif; background: #F4F5F7; color: #0F172A; outline: none;">
+            <i class="fa fa-chevron-down position-absolute" style="right: 12px; top: 13px; font-size: 0.7rem; color: #94A3B8; pointer-events: none;"></i>
           </div>
-          <div class="mt-1" style="font-size: 0.725rem; font-family: 'Inter', sans-serif; color: #94A3B8;">
-            Supports relative or absolute content file path
+        </div>
+
+        <!-- Level Pills -->
+        <div style="margin-bottom: 12px;">
+          <label class="form-label font-weight-bold d-block" style="font-size: 0.8rem; color: #0F172A; font-family: 'Inter', sans-serif; margin-bottom: 6px;">Level</label>
+          <div class="d-flex align-items-center" style="gap: 8px;">
+            <button type="button" (click)="setLevel('Beginner')"
+              [style.background]="uploadLevel === 'Beginner' ? '#0F172A' : '#F1F5F9'"
+              [style.color]="uploadLevel === 'Beginner' ? '#FFFFFF' : '#334155'"
+              style="border: none; padding: 6px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 500; cursor: pointer; transition: all 0.15s;">
+              Beginner
+            </button>
+            <button type="button" (click)="setLevel('Intermediate')"
+              [style.background]="uploadLevel === 'Intermediate' ? '#0F172A' : '#F1F5F9'"
+              [style.color]="uploadLevel === 'Intermediate' ? '#FFFFFF' : '#334155'"
+              style="border: none; padding: 6px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 500; cursor: pointer; transition: all 0.15s;">
+              Intermediate
+            </button>
+            <button type="button" (click)="setLevel('Advanced')"
+              [style.background]="uploadLevel === 'Advanced' ? '#0F172A' : '#F1F5F9'"
+              [style.color]="uploadLevel === 'Advanced' ? '#FFFFFF' : '#334155'"
+              style="border: none; padding: 6px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 500; cursor: pointer; transition: all 0.15s;">
+              Advanced
+            </button>
+          </div>
+        </div>
+
+
+
+        <!-- Tags Input with Enter Badge -->
+        <div style="margin-bottom: 18px;">
+          <label class="form-label font-weight-bold d-block" style="font-size: 0.8rem; color: #0F172A; font-family: 'Inter', sans-serif; margin-bottom: 5px;">Tags</label>
+          <div class="position-relative">
+            <input type="text" [(ngModel)]="uploadTags" name="uploadTags" placeholder="Add tags" class="form-control" 
+                   style="border-radius: 10px; border: none !important; height: 38px; font-size: 0.85rem; padding: 8px 65px 8px 12px; font-family: 'Inter', sans-serif; background: #F4F5F7; color: #0F172A; outline: none;">
+            <span class="position-absolute" style="right: 8px; top: 6px; background: #E2E8F0; color: #475569; font-size: 0.75rem; padding: 3px 10px; border-radius: 6px; font-family: 'Inter', sans-serif; pointer-events: none;">Enter</span>
           </div>
         </div>
 
@@ -330,3 +331,74 @@
   </div>
 </div>
 }
+
+<!-- Preview Content Details Modal -->
+<div *ngIf="showPreviewModal && selectedContent"
+  class="position-fixed d-flex align-items-center justify-content-center"
+  style="top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.45); z-index: 10000; font-family: 'Inter', -apple-system, sans-serif;">
+  <div class="card border-0 p-4"
+    style="width: 100%; max-width: 500px; border-radius: 16px; background: #ffffff; position: relative; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);">
+    <!-- Close button -->
+    <button (click)="closePreviewModal()" class="position-absolute border-0 bg-transparent text-muted"
+      style="top: 18px; right: 18px; font-size: 1.3rem; outline: none; cursor: pointer;">
+      &times;
+    </button>
+
+    <!-- Thumbnail Header -->
+    <div class="mb-3 rounded overflow-hidden position-relative" style="height: 180px; background: #0F172A; display: flex; align-items: center; justify-content: center;">
+      <img *ngIf="getThumbnailUrl(selectedContent.path)" [src]="getThumbnailUrl(selectedContent.path)" style="width: 100%; height: 100%; object-fit: cover;" />
+      <div *ngIf="!getThumbnailUrl(selectedContent.path)" class="text-white text-center p-3">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="mb-2">
+          <polygon points="5 3 19 12 5 21 5 3"></polygon>
+        </svg>
+        <div style="font-weight: 500; font-size: 14px;">{{ selectedContent.title }}</div>
+      </div>
+      <span class="badge position-absolute" style="top: 12px; left: 12px; background: rgba(15, 23, 42, 0.85); color: #ffffff; padding: 4px 10px; border-radius: 12px; font-size: 11px;">
+        {{ selectedContent.category }}
+      </span>
+    </div>
+
+    <!-- Title & Status -->
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <h5 class="m-0 font-weight-bold text-dark" style="font-size: 1.1rem;">{{ selectedContent.title }}</h5>
+      <span class="badge" [style.background]="selectedContent.status === 'Active' ? '#DCFCE7' : '#FEE2E2'" [style.color]="selectedContent.status === 'Active' ? '#16A34A' : '#DC2626'" style="font-size: 0.75rem; font-weight: 600; padding: 4px 10px; border-radius: 12px;">
+        {{ selectedContent.status }}
+      </span>
+    </div>
+
+    <!-- Content Details Grid -->
+    <div class="d-flex flex-column" style="gap: 12px; font-size: 0.9rem;">
+      <div class="d-flex justify-content-between pb-2" style="border-bottom: 1px solid #f1f5f9;">
+        <span class="text-muted">Content ID</span>
+        <span class="font-weight-600 text-dark">{{ selectedContent.id }}</span>
+      </div>
+      <div class="d-flex justify-content-between pb-2" style="border-bottom: 1px solid #f1f5f9;">
+        <span class="text-muted">Category</span>
+        <span class="font-weight-600 text-dark">{{ selectedContent.category }}</span>
+      </div>
+      <div class="d-flex justify-content-between pb-2" style="border-bottom: 1px solid #f1f5f9;">
+        <span class="text-muted">Total Views</span>
+        <span class="font-weight-600 text-dark">{{ selectedContent.views }}</span>
+      </div>
+      <div class="d-flex justify-content-between pb-2" style="border-bottom: 1px solid #f1f5f9;">
+        <span class="text-muted">Tags / Level</span>
+        <div class="d-flex gap-1 flex-wrap">
+          <span *ngFor="let tag of selectedContent.tags" class="badge" style="background: #F1F5F9; color: #334155; font-size: 11px; padding: 3px 8px; border-radius: 10px;">
+            {{ tag }}
+          </span>
+        </div>
+      </div>
+      <div *ngIf="selectedContent.created" class="d-flex justify-content-between pb-2" style="border-bottom: 1px solid #f1f5f9;">
+        <span class="text-muted">Upload Date</span>
+        <span class="font-weight-600 text-dark">{{ selectedContent.created }}</span>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="mt-4 pt-2 text-right">
+      <button (click)="closePreviewModal()" class="btn btn-secondary border-0 px-4" style="border-radius: 8px; font-size: 0.875rem; background: #0F172A; color: #ffffff;">
+        Close
+      </button>
+    </div>
+  </div>
+</div>
