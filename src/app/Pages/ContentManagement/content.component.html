@@ -142,15 +142,6 @@
                    (click)="$event.stopPropagation()"
                    style="position: absolute; right: 0; top: 26px; z-index: 9999; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1); min-width: 145px; padding: 6px 0; font-family: 'Inter', sans-serif;">
                 
-                <!-- Preview -->
-                <button (click)="onAction('preview', item)" style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 16px; background: none; border: none; cursor: pointer; font-size: 14px; font-weight: 500; color: #1E293B; transition: background 0.15s;" (mouseenter)="$any($event.currentTarget).style.background='#F8FAFC'" (mouseleave)="$any($event.currentTarget).style.background='none'">
-                  <svg width="16" height="16" fill="none" stroke="#475569" stroke-width="1.8" viewBox="0 0 24 24">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                    <circle cx="12" cy="12" r="3" />
-                  </svg>
-                  Preview
-                </button>
-
                 <!-- Update -->
                 <button (click)="onAction('update', item)" style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 16px; background: none; border: none; cursor: pointer; font-size: 14px; font-weight: 500; color: #1E293B; transition: background 0.15s;" (mouseenter)="$any($event.currentTarget).style.background='#F8FAFC'" (mouseleave)="$any($event.currentTarget).style.background='none'">
                   <svg width="16" height="16" fill="none" stroke="#475569" stroke-width="1.8" viewBox="0 0 24 24">
@@ -168,15 +159,6 @@
                     <circle cx="16" cy="12" r="3"></circle>
                   </svg>
                   {{ item.status === 'Active' ? 'Disable' : 'Enable' }}
-                </button>
-
-                <!-- Delete -->
-                <button (click)="onAction('delete', item)" style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 16px; background: none; border: none; cursor: pointer; font-size: 14px; font-weight: 500; color: #DC2626; transition: background 0.15s;" (mouseenter)="$any($event.currentTarget).style.background='#FEE2E2'" (mouseleave)="$any($event.currentTarget).style.background='none'">
-                  <svg width="16" height="16" fill="none" stroke="#DC2626" stroke-width="1.8" viewBox="0 0 24 24">
-                    <polyline points="3 6 5 6 21 6"></polyline>
-                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                  </svg>
-                  Delete
                 </button>
 
               </div>
@@ -324,6 +306,102 @@
         <button type="submit" [disabled]="uploading" class="cm-modal-submit-btn">
           <span *ngIf="uploading" class="spinner-border spinner-border-sm me-2 text-white" role="status" aria-hidden="true"></span>
           <span style="color: #FFFFFF !important; font-weight: 600; font-size: 14px;">{{ uploading ? 'Uploading...' : 'Upload Content' }}</span>
+        </button>
+      </form>
+
+    </div>
+</div>
+</div>
+}
+
+<!-- Update Content Modal -->
+@if (showUpdateModal) {
+<div class="modal-backdrop fade show animate-fade-in" style="background-color: rgba(0, 0, 0, 0.45); z-index: 1040; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;"></div>
+<div class="modal d-block" tabindex="-1" style="z-index: 1050; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; overflow-y: auto; display: flex; align-items: center; justify-content: center;">
+  <div class="modal-dialog modal-dialog-centered w-100 border-0" style="max-width: 390px; margin: 15px auto; transform: none; box-shadow: none !important; background: transparent !important; border: none !important;">
+    <div class="modal-content border-0" style="border-radius: 14px; background: #ffffff; padding: 20px 24px; position: relative; box-shadow: none !important; border: none !important;">
+      
+      <!-- Modal Header -->
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h4 class="modal-title font-weight-bold m-0" style="font-family: 'Inter', -apple-system, sans-serif; font-size: 1.1rem; color: #0F172A; letter-spacing: -0.01em;">Update Content</h4>
+        <button (click)="closeUpdateModal()" type="button" class="btn-close border-0 bg-transparent p-0 text-muted" style="font-size: 1.2rem; outline: none; cursor: pointer; line-height: 1;">&times;</button>
+      </div>
+
+      <!-- Modal Body Form -->
+      <form (submit)="saveUpdateContent(); $event.preventDefault();">
+        <div *ngIf="updateErrorMessage" class="alert alert-danger py-2 px-3 mb-3" style="border-radius: 8px; font-size: 0.8rem; font-family: 'Inter', sans-serif;">
+          {{ updateErrorMessage }}
+        </div>
+
+        <!-- Title Input -->
+        <div style="margin-bottom: 12px;">
+          <label class="form-label font-weight-bold d-block" style="font-size: 0.8rem; color: #0F172A; font-family: 'Inter', sans-serif; margin-bottom: 5px;">Title</label>
+          <input type="text" [(ngModel)]="updateTitle" name="updateTitle" placeholder="Enter content title" class="form-control" 
+                 style="border-radius: 10px; border: none !important; height: 38px; font-size: 0.85rem; padding: 8px 12px; font-family: 'Inter', sans-serif; outline: none; background: #F4F5F7; color: #0F172A;">
+        </div>
+
+        <!-- Choose Category Dropdown -->
+        <div style="margin-bottom: 12px;">
+          <label class="form-label font-weight-bold d-block" style="font-size: 0.8rem; color: #0F172A; font-family: 'Inter', sans-serif; margin-bottom: 5px;">Choose Category</label>
+          <div class="position-relative">
+            <select [(ngModel)]="updateCategory" name="updateCategory" class="form-select w-100" 
+                    style="border-radius: 10px; border: none !important; height: 38px; font-size: 0.85rem; padding: 8px 12px; font-family: 'Inter', sans-serif; color: #0F172A; appearance: none; outline: none; background: #F4F5F7; cursor: pointer;">
+              <option value="Gym">Gym</option>
+              <option value="Meditation">Meditation</option>
+              <option value="Videos">Videos</option>
+            </select>
+            <i class="fa fa-chevron-down position-absolute" style="right: 12px; top: 13px; font-size: 0.7rem; color: #94A3B8; pointer-events: none;"></i>
+          </div>
+        </div>
+
+        <!-- Choose Path Input -->
+        <div style="margin-bottom: 12px;">
+          <label class="form-label font-weight-bold d-block" style="font-size: 0.8rem; color: #0F172A; font-family: 'Inter', sans-serif; margin-bottom: 5px;">Choose Path</label>
+          <div class="position-relative">
+            <input type="text" [(ngModel)]="updatePath" name="updatePath" placeholder="Select path" class="form-control" 
+                   style="border-radius: 10px; border: none !important; height: 38px; font-size: 0.85rem; padding: 8px 30px 8px 12px; font-family: 'Inter', sans-serif; background: #F4F5F7; color: #0F172A; outline: none;">
+            <i class="fa fa-chevron-down position-absolute" style="right: 12px; top: 13px; font-size: 0.7rem; color: #94A3B8; pointer-events: none;"></i>
+          </div>
+        </div>
+
+        <!-- Level Pills -->
+        <div style="margin-bottom: 12px;">
+          <label class="form-label font-weight-bold d-block" style="font-size: 0.8rem; color: #0F172A; font-family: 'Inter', sans-serif; margin-bottom: 6px;">Level</label>
+          <div class="d-flex align-items-center" style="gap: 8px;">
+            <button type="button" (click)="setUpdateLevel('Beginner')"
+              [style.background]="updateLevel === 'Beginner' ? '#0F172A' : '#F1F5F9'"
+              [style.color]="updateLevel === 'Beginner' ? '#FFFFFF' : '#334155'"
+              style="border: none; padding: 6px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 500; cursor: pointer; transition: all 0.15s;">
+              Beginner
+            </button>
+            <button type="button" (click)="setUpdateLevel('Intermediate')"
+              [style.background]="updateLevel === 'Intermediate' ? '#0F172A' : '#F1F5F9'"
+              [style.color]="updateLevel === 'Intermediate' ? '#FFFFFF' : '#334155'"
+              style="border: none; padding: 6px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 500; cursor: pointer; transition: all 0.15s;">
+              Intermediate
+            </button>
+            <button type="button" (click)="setUpdateLevel('Advanced')"
+              [style.background]="updateLevel === 'Advanced' ? '#0F172A' : '#F1F5F9'"
+              [style.color]="updateLevel === 'Advanced' ? '#FFFFFF' : '#334155'"
+              style="border: none; padding: 6px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 500; cursor: pointer; transition: all 0.15s;">
+              Advanced
+            </button>
+          </div>
+        </div>
+
+        <!-- Tags Input -->
+        <div style="margin-bottom: 18px;">
+          <label class="form-label font-weight-bold d-block" style="font-size: 0.8rem; color: #0F172A; font-family: 'Inter', sans-serif; margin-bottom: 5px;">Tags</label>
+          <div class="position-relative">
+            <input type="text" [(ngModel)]="updateTags" name="updateTags" placeholder="Add tags" class="form-control" 
+                   style="border-radius: 10px; border: none !important; height: 38px; font-size: 0.85rem; padding: 8px 65px 8px 12px; font-family: 'Inter', sans-serif; background: #F4F5F7; color: #0F172A; outline: none;">
+            <span class="position-absolute" style="right: 8px; top: 6px; background: #E2E8F0; color: #475569; font-size: 0.75rem; padding: 3px 10px; border-radius: 6px; font-family: 'Inter', sans-serif; pointer-events: none;">Enter</span>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="cm-modal-submit-btn">
+          <span style="color: #FFFFFF !important; font-weight: 600; font-size: 14px;">Save Changes</span>
         </button>
       </form>
 

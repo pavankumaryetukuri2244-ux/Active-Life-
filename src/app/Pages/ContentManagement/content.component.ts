@@ -4,6 +4,7 @@ import { WebapiService } from '../../services/webapi.service';
 
 interface ContentItem {
   id: string;
+  rawId?: number;
   title: string;
   duration: string;
   category: 'Gym' | 'Meditation' | 'Videos';
@@ -13,6 +14,7 @@ interface ContentItem {
   viewsRaw: number;
   created: string;
   path?: string;
+  isActive?: boolean;
 }
 
 @Component({
@@ -296,7 +298,7 @@ interface ContentItem {
   `]
 })
 export class ContentManagementComponent implements OnInit {
-  
+
   contentList: ContentItem[] = [
     { id: 'C001', title: 'Morning Yoga Flow', duration: '20 min', category: 'Meditation', status: 'Active', tags: ['Beginner', 'Morning'], views: '1,234 views', viewsRaw: 1234, created: '2026-03-15', path: '/content/meditation/morning-yoga.mp4' },
     { id: 'C002', title: 'HIIT Cardio Workout', duration: '30 min', category: 'Gym', status: 'Active', tags: ['Advanced', 'Cardio'], views: '2,156 views', viewsRaw: 2156, created: '2026-03-20', path: 'https://www.youtube.com/watch?v=q6z_UCBM5Ek' },
@@ -359,18 +361,104 @@ export class ContentManagementComponent implements OnInit {
   showPreviewModal = false;
   selectedContent: ContentItem | null = null;
 
+  // Update Content Modal State
+  showUpdateModal = false;
+  editingContentRef: ContentItem | null = null;
+  updateTitle: string = '';
+  updateCategory: string = '';
+  updatePath: string = '';
+  updateLevel: string = 'Beginner';
+  updateTags: string = '';
+  updateErrorMessage: string = '';
+
   onAction(action: 'preview' | 'update' | 'disable' | 'delete', item: ContentItem) {
     this.closeDropdown();
     this.selectedContent = item;
     if (action === 'preview') {
-      // Keep button visible in UI, but do not trigger preview modal or open tab
+      // Keep button visible in UI
     } else if (action === 'update') {
-      // Keep button visible in UI, but do not trigger request or open modal
+      this.openUpdateModal(item);
     } else if (action === 'disable') {
-      item.status = item.status === 'Active' ? 'Disabled' : 'Active';
+      const numericId = item.rawId || parseInt(String(item.id).replace(/\D/g, ''), 10);
+      if (numericId) {
+        this.webApiService.ToggleContentStatus(numericId).subscribe({
+          next: (res: any) => {
+            if (res && res.success && res.data) {
+              const newIsActive = res.data.isActive;
+              item.isActive = newIsActive;
+              item.status = newIsActive ? 'Active' : 'Disabled';
+            } else {
+              item.status = item.status === 'Active' ? 'Disabled' : 'Active';
+              item.isActive = item.status === 'Active';
+            }
+            this.applyFrontendFilters();
+          },
+          error: (err: any) => {
+            console.error('Error toggling content status:', err);
+            item.status = item.status === 'Active' ? 'Disabled' : 'Active';
+            item.isActive = item.status === 'Active';
+            this.applyFrontendFilters();
+          }
+        });
+      } else {
+        item.status = item.status === 'Active' ? 'Disabled' : 'Active';
+        item.isActive = item.status === 'Active';
+        this.applyFrontendFilters();
+      }
     } else if (action === 'delete') {
-      // Keep button visible in UI, but do not trigger request or delete content
+      // Keep button visible in UI
     }
+  }
+
+  openUpdateModal(item: ContentItem) {
+    this.editingContentRef = item;
+    this.updateTitle = item.title || '';
+    this.updateCategory = item.category || 'Gym';
+    this.updatePath = item.path || '';
+    
+    const firstTag = item.tags && item.tags.length > 0 ? item.tags[0] : 'Beginner';
+    if (['Beginner', 'Intermediate', 'Advanced'].includes(firstTag)) {
+      this.updateLevel = firstTag;
+    } else {
+      this.updateLevel = 'Beginner';
+    }
+
+    this.updateTags = item.tags ? item.tags.join(', ') : '';
+    this.updateErrorMessage = '';
+    this.showUpdateModal = true;
+  }
+
+  closeUpdateModal() {
+    this.showUpdateModal = false;
+    this.editingContentRef = null;
+    this.updateErrorMessage = '';
+  }
+
+  setUpdateLevel(level: string) {
+    this.updateLevel = level;
+  }
+
+  saveUpdateContent() {
+    if (!this.editingContentRef) return;
+    if (!this.updateTitle || !this.updateCategory) {
+      this.updateErrorMessage = 'Please fill in all required fields';
+      return;
+    }
+
+    this.editingContentRef.title = this.updateTitle.trim();
+    this.editingContentRef.category = this.updateCategory as 'Gym' | 'Meditation' | 'Videos';
+    if (this.updatePath) {
+      this.editingContentRef.path = this.updatePath.trim();
+    }
+    
+    const tagArray = this.updateTags
+      ? this.updateTags.split(',').map(t => t.trim()).filter(t => t)
+      : [this.updateLevel];
+
+    this.editingContentRef.tags = tagArray;
+
+    this.applyFrontendFilters();
+    this.closeUpdateModal();
   }
 
   closePreviewModal() {
@@ -397,10 +485,7 @@ export class ContentManagementComponent implements OnInit {
     this.applyFrontendFilters();
   }
 
-  /**
-   * Load all content from API once on initial load.
-   * Searching and category tab filtering are done purely in the frontend with 0 API calls.
-   */
+  // Load content items from backend API
   loadAllContent(showLoader = true) {
     if (showLoader) {
       this.isLoading = true;
@@ -436,8 +521,11 @@ export class ContentManagementComponent implements OnInit {
               tagList = [item.level];
             }
 
+            const rawIdNum = typeof item.id === 'number' ? item.id : parseInt(String(item.id).replace(/\D/g, ''), 10);
+
             return {
               id: `C${String(item.id).padStart(3, '0')}`,
+              rawId: rawIdNum,
               title: item.title || 'Untitled Content',
               duration: '20 min',
               category: cat,
@@ -446,7 +534,8 @@ export class ContentManagementComponent implements OnInit {
               views: `${item.viewCount || 0} views`,
               viewsRaw: item.viewCount || 0,
               created: item.createdAt ? item.createdAt.split('T')[0] : '',
-              path: item.path || ''
+              path: item.path || '',
+              isActive: item.isActive !== false
             };
           });
 
@@ -471,12 +560,7 @@ export class ContentManagementComponent implements OnInit {
     });
   }
 
-  /**
-   * Pure frontend filtering — 0 API calls!
-   * Filters the master content list by:
-   * 1. Category Tab ('All', 'Gym', 'Meditation', 'Videos')
-   * 2. Search Query (Title, Category, ID, or Tags)
-   */
+  // Apply frontend search and category tab filters
   applyFrontendFilters() {
     let list = [...this.contentList];
 

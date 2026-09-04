@@ -162,6 +162,15 @@ export class WebapiService {
     return this.Http.post<any>(url, filters, { headers });
   }
 
+  public ToggleContentStatus(id: number) {
+    const token = localStorage.getItem('accessToken');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+    const url = `${this.WebApi}/api/v1/content/${id}/toggle-status`;
+    return this.Http.post<any>(url, { contentId: id }, { headers });
+  }
+
   public SendOtp(email: string, resendOtp: boolean = false) {
     const url = `${this.WebApi}/api/v1/admin/auth/send-otp`;
     return this.Http.post<any>(url, { email, resendOtp });

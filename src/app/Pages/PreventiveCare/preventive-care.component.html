@@ -54,7 +54,7 @@
 
       <!-- Stage Cards List -->
       <div class="d-flex flex-column">
-        <div *ngFor="let stage of stagesList" 
+        <div *ngFor="let stage of stagesList; let i = index" 
              class="pc-list-item"
              [class.selected]="selectedItem === stage"
              (click)="selectItem(stage)">
@@ -80,25 +80,62 @@
             </div>
           </div>
 
-          <!-- Right section with Status Badge and Edit/Delete controls -->
+          <!-- Right section with Status Badge & Three-Dots Dropdown Menu -->
           <div class="d-flex align-items-center" style="gap: 12px;" (click)="$event.stopPropagation()">
-            <span class="pc-status-badge">
-              {{ stage.status }}
+            <!-- Row Status Badge Pill -->
+            <span class="badge" 
+                  [style.background]="stage.status === 'Active' ? '#DCFCE7' : '#F1F5F9'" 
+                  [style.color]="stage.status === 'Active' ? '#16A34A' : '#64748B'" 
+                  style="font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 20px; font-family: 'Inter', sans-serif;">
+              {{ stage.status || 'Active' }}
             </span>
-            <button class="pc-icon-btn" title="Edit Stage">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-              </svg>
-            </button>
-            <button class="pc-icon-btn danger" title="Delete Stage">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="3 6 5 6 21 6"></polyline>
-                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-              </svg>
-            </button>
-          </div>
 
+            <div style="position: relative;">
+              <button (click)="toggleDropdown('ps_' + i, $event)" class="btn btn-link text-muted p-0 border-0 bg-transparent" style="font-size: 20px; outline: none; line-height: 1; color: #64748B; cursor: pointer; padding: 4px 8px !important;">
+                ⋮
+              </button>
+
+              <!-- Action Dropdown Menu -->
+              <div *ngIf="openDropdownId === 'ps_' + i" 
+                   (click)="$event.stopPropagation()"
+                   style="position: absolute; right: 0; top: 32px; z-index: 9999; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1); min-width: 165px; padding: 6px 0; font-family: 'Inter', sans-serif;">
+                
+                <!-- Edit option -->
+                <button (click)="openEditModal(stage, 'stage', $event)" style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 16px; background: none; border: none; cursor: pointer; font-size: 13.5px; font-weight: 500; color: #334155; transition: background 0.15s;" (mouseenter)="$any($event.currentTarget).style.background='#F8FAFC'" (mouseleave)="$any($event.currentTarget).style.background='none'">
+                  <svg width="15" height="15" fill="none" stroke="#64748B" stroke-width="1.8" viewBox="0 0 24 24">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                  </svg>
+                  Edit
+                </button>
+
+                <div style="border-top: 1px solid #F1F5F9; margin: 4px 0;"></div>
+
+                <!-- Mark as Inactive option (when status is Active) -->
+                <button *ngIf="stage.status === 'Active'" (click)="toggleStatus(stage, $event)" style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 16px; background: none; border: none; cursor: pointer; font-size: 13.5px; font-weight: 500; color: #D97706; transition: background 0.15s;" (mouseenter)="$any($event.currentTarget).style.background='#FEF3C7'" (mouseleave)="$any($event.currentTarget).style.background='none'">
+                  <svg width="15" height="15" fill="none" stroke="#D97706" stroke-width="1.8" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="15" y1="9" x2="9" y2="15" />
+                    <line x1="9" y1="9" x2="15" y2="15" />
+                  </svg>
+                  Mark as Inactive
+                </button>
+
+                <!-- Mark as Active option (when status is Inactive) -->
+                <button *ngIf="stage.status !== 'Active'" (click)="toggleStatus(stage, $event)" style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 16px; background: none; border: none; cursor: pointer; font-size: 13.5px; font-weight: 500; color: #16A34A; transition: background 0.15s;" (mouseenter)="$any($event.currentTarget).style.background='#DCFCE7'" (mouseleave)="$any($event.currentTarget).style.background='none'">
+                  <svg width="15" height="15" fill="none" stroke="#16A34A" stroke-width="1.8" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="m9 12 2 2 4-4" />
+                  </svg>
+                  Mark as Active
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="stagesList.length === 0" class="text-center text-muted py-4" style="font-family: 'Inter', sans-serif; font-size: 14px;">
+          No pregnancy stages found.
         </div>
       </div>
 
@@ -129,7 +166,7 @@
 
       <!-- Vaccine Cards List -->
       <div class="d-flex flex-column">
-        <div *ngFor="let vaccine of pregnancyVaccines" 
+        <div *ngFor="let vaccine of pregnancyVaccines; let i = index" 
              class="pc-list-item"
              [class.selected]="selectedItem === vaccine"
              (click)="selectItem(vaccine)">
@@ -159,28 +196,62 @@
             </div>
           </div>
 
-          <!-- Right section with Priority Badge and Edit/Delete controls -->
-          <div class="d-flex align-items-center" style="gap: 14px;" (click)="$event.stopPropagation()">
-            <span class="badge font-weight-bold" 
-                  [style.background]="vaccine.priority === 'High' ? '#FFF1F2' : '#FEF9C3'"
-                  [style.color]="vaccine.priority === 'High' ? '#E11D48' : '#CA8A04'"
-                  style="border-radius: 20px; font-size: 12px; font-weight: 600; padding: 4px 14px; font-family: 'Inter', sans-serif;">
-              {{ vaccine.priority }}
+          <!-- Right section with Status Badge & Three-Dots Dropdown Menu -->
+          <div class="d-flex align-items-center" style="gap: 12px;" (click)="$event.stopPropagation()">
+            <!-- Row Status Badge Pill -->
+            <span class="badge" 
+                  [style.background]="vaccine.status === 'Active' ? '#DCFCE7' : '#F1F5F9'" 
+                  [style.color]="vaccine.status === 'Active' ? '#16A34A' : '#64748B'" 
+                  style="font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 20px; font-family: 'Inter', sans-serif;">
+              {{ vaccine.status || 'Active' }}
             </span>
-            <button class="pc-icon-btn" title="Edit Vaccine">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-              </svg>
-            </button>
-            <button class="pc-icon-btn danger" title="Delete Vaccine">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="3 6 5 6 21 6"></polyline>
-                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-              </svg>
-            </button>
-          </div>
 
+            <div style="position: relative;">
+              <button (click)="toggleDropdown('pv_' + i, $event)" class="btn btn-link text-muted p-0 border-0 bg-transparent" style="font-size: 20px; outline: none; line-height: 1; color: #64748B; cursor: pointer; padding: 4px 8px !important;">
+                ⋮
+              </button>
+
+              <!-- Action Dropdown Menu -->
+              <div *ngIf="openDropdownId === 'pv_' + i" 
+                   (click)="$event.stopPropagation()"
+                   style="position: absolute; right: 0; top: 32px; z-index: 9999; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1); min-width: 165px; padding: 6px 0; font-family: 'Inter', sans-serif;">
+                
+                <!-- Edit option -->
+                <button (click)="openEditModal(vaccine, 'pregnancyVaccine', $event)" style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 16px; background: none; border: none; cursor: pointer; font-size: 13.5px; font-weight: 500; color: #334155; transition: background 0.15s;" (mouseenter)="$any($event.currentTarget).style.background='#F8FAFC'" (mouseleave)="$any($event.currentTarget).style.background='none'">
+                  <svg width="15" height="15" fill="none" stroke="#64748B" stroke-width="1.8" viewBox="0 0 24 24">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                  </svg>
+                  Edit
+                </button>
+
+                <div style="border-top: 1px solid #F1F5F9; margin: 4px 0;"></div>
+
+                <!-- Mark as Inactive option (when status is Active) -->
+                <button *ngIf="vaccine.status === 'Active'" (click)="toggleStatus(vaccine, $event)" style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 16px; background: none; border: none; cursor: pointer; font-size: 13.5px; font-weight: 500; color: #D97706; transition: background 0.15s;" (mouseenter)="$any($event.currentTarget).style.background='#FEF3C7'" (mouseleave)="$any($event.currentTarget).style.background='none'">
+                  <svg width="15" height="15" fill="none" stroke="#D97706" stroke-width="1.8" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="15" y1="9" x2="9" y2="15" />
+                    <line x1="9" y1="9" x2="15" y2="15" />
+                  </svg>
+                  Mark as Inactive
+                </button>
+
+                <!-- Mark as Active option (when status is Inactive) -->
+                <button *ngIf="vaccine.status !== 'Active'" (click)="toggleStatus(vaccine, $event)" style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 16px; background: none; border: none; cursor: pointer; font-size: 13.5px; font-weight: 500; color: #16A34A; transition: background 0.15s;" (mouseenter)="$any($event.currentTarget).style.background='#DCFCE7'" (mouseleave)="$any($event.currentTarget).style.background='none'">
+                  <svg width="15" height="15" fill="none" stroke="#16A34A" stroke-width="1.8" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="m9 12 2 2 4-4" />
+                  </svg>
+                  Mark as Active
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="pregnancyVaccines.length === 0" class="text-center text-muted py-4" style="font-family: 'Inter', sans-serif; font-size: 14px;">
+          No pregnancy vaccines found.
         </div>
       </div>
 
@@ -211,7 +282,7 @@
 
       <!-- Vaccine Cards List -->
       <div class="d-flex flex-column">
-        <div *ngFor="let vaccine of childVaccines" 
+        <div *ngFor="let vaccine of childVaccines; let i = index" 
              class="pc-list-item"
              [class.selected]="selectedItem === vaccine"
              (click)="selectItem(vaccine)">
@@ -240,22 +311,62 @@
             </div>
           </div>
 
-          <!-- Right section with Edit/Delete controls -->
-          <div class="d-flex align-items-center" style="gap: 14px;" (click)="$event.stopPropagation()">
-            <button class="pc-icon-btn" title="Edit Vaccine">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-              </svg>
-            </button>
-            <button class="pc-icon-btn danger" title="Delete Vaccine">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="3 6 5 6 21 6"></polyline>
-                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-              </svg>
-            </button>
-          </div>
+          <!-- Right section with Status Badge & Three-Dots Dropdown Menu -->
+          <div class="d-flex align-items-center" style="gap: 12px;" (click)="$event.stopPropagation()">
+            <!-- Row Status Badge Pill -->
+            <span class="badge" 
+                  [style.background]="vaccine.status === 'Active' ? '#DCFCE7' : '#F1F5F9'" 
+                  [style.color]="vaccine.status === 'Active' ? '#16A34A' : '#64748B'" 
+                  style="font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 20px; font-family: 'Inter', sans-serif;">
+              {{ vaccine.status || 'Active' }}
+            </span>
 
+            <div style="position: relative;">
+              <button (click)="toggleDropdown('cv_' + i, $event)" class="btn btn-link text-muted p-0 border-0 bg-transparent" style="font-size: 20px; outline: none; line-height: 1; color: #64748B; cursor: pointer; padding: 4px 8px !important;">
+                ⋮
+              </button>
+
+              <!-- Action Dropdown Menu -->
+              <div *ngIf="openDropdownId === 'cv_' + i" 
+                   (click)="$event.stopPropagation()"
+                   style="position: absolute; right: 0; top: 32px; z-index: 9999; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1); min-width: 165px; padding: 6px 0; font-family: 'Inter', sans-serif;">
+                
+                <!-- Edit option -->
+                <button (click)="openEditModal(vaccine, 'childVaccine', $event)" style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 16px; background: none; border: none; cursor: pointer; font-size: 13.5px; font-weight: 500; color: #334155; transition: background 0.15s;" (mouseenter)="$any($event.currentTarget).style.background='#F8FAFC'" (mouseleave)="$any($event.currentTarget).style.background='none'">
+                  <svg width="15" height="15" fill="none" stroke="#64748B" stroke-width="1.8" viewBox="0 0 24 24">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                  </svg>
+                  Edit
+                </button>
+
+                <div style="border-top: 1px solid #F1F5F9; margin: 4px 0;"></div>
+
+                <!-- Mark as Inactive option (when status is Active) -->
+                <button *ngIf="vaccine.status === 'Active'" (click)="toggleStatus(vaccine, $event)" style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 16px; background: none; border: none; cursor: pointer; font-size: 13.5px; font-weight: 500; color: #D97706; transition: background 0.15s;" (mouseenter)="$any($event.currentTarget).style.background='#FEF3C7'" (mouseleave)="$any($event.currentTarget).style.background='none'">
+                  <svg width="15" height="15" fill="none" stroke="#D97706" stroke-width="1.8" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="15" y1="9" x2="9" y2="15" />
+                    <line x1="9" y1="9" x2="15" y2="15" />
+                  </svg>
+                  Mark as Inactive
+                </button>
+
+                <!-- Mark as Active option (when status is Inactive) -->
+                <button *ngIf="vaccine.status !== 'Active'" (click)="toggleStatus(vaccine, $event)" style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 16px; background: none; border: none; cursor: pointer; font-size: 13.5px; font-weight: 500; color: #16A34A; transition: background 0.15s;" (mouseenter)="$any($event.currentTarget).style.background='#DCFCE7'" (mouseleave)="$any($event.currentTarget).style.background='none'">
+                  <svg width="15" height="15" fill="none" stroke="#16A34A" stroke-width="1.8" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="m9 12 2 2 4-4" />
+                  </svg>
+                  Mark as Active
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="childVaccines.length === 0" class="text-center text-muted py-4" style="font-family: 'Inter', sans-serif; font-size: 14px;">
+          No child vaccines found.
         </div>
       </div>
 
@@ -405,5 +516,64 @@
         Add Vaccine
       </button>
     </div>
+  </div>
+</div>
+
+<!-- Edit Item Modal Overlay -->
+<div *ngIf="showEditModal" class="position-fixed d-flex align-items-center justify-content-center" style="top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.45); z-index: 10000; font-family: 'Inter', -apple-system, sans-serif;">
+  <div class="card border-0 p-4" style="width: 100%; max-width: 420px; border-radius: 14px; background: #ffffff; position: relative; padding: 22px 24px !important;">
+    
+    <!-- Close Button -->
+    <button (click)="closeEditModal()" class="position-absolute border-0 bg-transparent text-muted" style="top: 16px; right: 16px; font-size: 1.2rem; outline: none; cursor: pointer;">
+      &times;
+    </button>
+
+    <!-- Modal Title -->
+    <h4 class="font-weight-bold mb-3" style="font-family: 'Inter', -apple-system, sans-serif; font-size: 1.1rem; color: #0F172A; margin: 0 0 16px 0;">
+      Edit {{ editItemType === 'stage' ? 'Pregnancy Stage' : (editItemType === 'pregnancyVaccine' ? 'Pregnancy Vaccine' : 'Child Vaccine') }}
+    </h4>
+
+    <!-- Stage Form Fields -->
+    <div *ngIf="editItemType === 'stage'" class="d-flex flex-column" style="gap: 12px;">
+      <div class="d-flex flex-column" style="gap: 5px;">
+        <label style="font-size: 0.8rem; font-weight: 600; color: #0F172A;">Week Range</label>
+        <input type="text" [(ngModel)]="editWeekRange" class="form-control px-3" style="height: 38px; border-radius: 10px; background: #F4F5F7; border: none !important; font-size: 0.85rem; color: #0F172A;">
+      </div>
+      <div class="d-flex flex-column" style="gap: 5px;">
+        <label style="font-size: 0.8rem; font-weight: 600; color: #0F172A;">Milestones</label>
+        <input type="text" [(ngModel)]="editMilestones" class="form-control px-3" style="height: 38px; border-radius: 10px; background: #F4F5F7; border: none !important; font-size: 0.85rem; color: #0F172A;">
+      </div>
+      <div class="d-flex flex-column" style="gap: 5px;">
+        <label style="font-size: 0.8rem; font-weight: 600; color: #0F172A;">Scans</label>
+        <input type="text" [(ngModel)]="editScans" class="form-control px-3" style="height: 38px; border-radius: 10px; background: #F4F5F7; border: none !important; font-size: 0.85rem; color: #0F172A;">
+      </div>
+    </div>
+
+    <!-- Vaccine Form Fields -->
+    <div *ngIf="editItemType !== 'stage'" class="d-flex flex-column" style="gap: 12px;">
+      <div class="d-flex flex-column" style="gap: 5px;">
+        <label style="font-size: 0.8rem; font-weight: 600; color: #0F172A;">Title / Vaccine Name</label>
+        <input type="text" [(ngModel)]="editTitle" class="form-control px-3" style="height: 38px; border-radius: 10px; background: #F4F5F7; border: none !important; font-size: 0.85rem; color: #0F172A;">
+      </div>
+      <div class="d-flex flex-column" style="gap: 5px;">
+        <label style="font-size: 0.8rem; font-weight: 600; color: #0F172A;">Recommended Timing / Age</label>
+        <input type="text" [(ngModel)]="editTiming" class="form-control px-3" style="height: 38px; border-radius: 10px; background: #F4F5F7; border: none !important; font-size: 0.85rem; color: #0F172A;">
+      </div>
+      <div class="d-flex flex-column" style="gap: 5px;">
+        <label style="font-size: 0.8rem; font-weight: 600; color: #0F172A;">Description</label>
+        <textarea [(ngModel)]="editDescription" class="form-control p-3" style="height: 75px; border-radius: 10px; background: #F4F5F7; border: none !important; font-size: 0.85rem; resize: none; color: #0F172A;"></textarea>
+      </div>
+    </div>
+
+    <!-- Actions Footer -->
+    <div class="d-flex align-items-center justify-content-end mt-4" style="gap: 10px;">
+      <button (click)="closeEditModal()" class="btn border px-3" style="height: 38px; border-radius: 8px; border-color: #E2E8F0 !important; color: #0F172A; background: #ffffff; font-size: 0.85rem; font-weight: 600; cursor: pointer; outline: none;">
+        Cancel
+      </button>
+      <button (click)="saveEditChanges()" class="btn px-3" style="height: 38px; border-radius: 8px; background: #0F172A; color: #ffffff; font-size: 0.85rem; font-weight: 600; border: none; cursor: pointer; outline: none;">
+        Save Changes
+      </button>
+    </div>
+
   </div>
 </div>

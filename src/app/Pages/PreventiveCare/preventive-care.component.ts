@@ -115,7 +115,7 @@ interface Vaccine {
 
     /* Segmented Tab Switcher (Sleek Compact Full Pill) */
     .pc-tab-container {
-      background: #F1F3F5 !important;
+      background: #EAECEE !important;
       border-radius: 9999px !important;
       padding: 4px !important;
       display: flex !important;
@@ -134,7 +134,7 @@ interface Vaccine {
       border: none !important;
       color: #334155 !important;
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
-      font-size: 13px !important;
+      font-size: 13.5px !important;
       font-weight: 500 !important;
       letter-spacing: -0.01em !important;
       display: flex !important;
@@ -148,17 +148,18 @@ interface Vaccine {
       padding: 0 16px !important;
       line-height: 1 !important;
       margin: 0 !important;
+      white-space: nowrap !important;
     }
 
-    .pc-tab-btn:hover {
+    .pc-tab-btn:hover:not(.active) {
       color: #0F172A !important;
     }
 
     .pc-tab-btn.active {
       background: #FFFFFF !important;
       color: #0F172A !important;
-      font-weight: 500 !important;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+      font-weight: 600 !important;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08) !important;
     }
 
     /* Main Section Card */
@@ -287,96 +288,14 @@ interface Vaccine {
 })
 export class PreventiveCareComponent implements OnInit {
   
-  pregnancyProgramsCount = 342;
-  childCareProgramsCount = 1234;
-  vaccinesTrackedCount = 8945;
-  milestonesLoggedCount = 12456;
+  pregnancyProgramsCount = 0;
+  childCareProgramsCount = 0;
+  vaccinesTrackedCount = 0;
+  milestonesLoggedCount = 0;
 
-  stagesList: Stage[] = [
-    {
-      weekRange: 'Week 1-4',
-      trimester: 'First Trimester',
-      milestones: 'Conception, Implantation',
-      scans: 'None',
-      status: 'Active'
-    },
-    {
-      weekRange: 'Week 5-8',
-      trimester: 'First Trimester',
-      milestones: 'Heartbeat Detection, Embryo Development',
-      scans: 'Early Ultrasound',
-      status: 'Active'
-    },
-    {
-      weekRange: 'Week 9-12',
-      trimester: 'First Trimester',
-      milestones: 'Major Organs Form, First Prenatal Visit',
-      scans: 'NT Scan',
-      status: 'Active'
-    },
-    {
-      weekRange: 'Week 13-16',
-      trimester: 'Second Trimester',
-      milestones: 'Gender Detection Possible, Quickening',
-      scans: 'None',
-      status: 'Active'
-    }
-  ];
-
-  pregnancyVaccines: Vaccine[] = [
-    {
-      title: 'Tdap Vaccine',
-      timing: 'Timing: 27-36 weeks',
-      description: 'Protects against tetanus, diphtheria, and pertussis',
-      priority: 'High',
-      status: 'Active'
-    },
-    {
-      title: 'Flu Vaccine',
-      timing: 'Timing: Any trimester',
-      description: 'Annual flu shot recommended during pregnancy',
-      priority: 'High',
-      status: 'Active'
-    },
-    {
-      title: 'COVID-19 Vaccine',
-      timing: 'Timing: Any trimester',
-      description: 'Recommended for pregnant women',
-      priority: 'Medium',
-      status: 'Active'
-    }
-  ];
-
-  childVaccines: Vaccine[] = [
-    {
-      title: 'Hepatitis B',
-      timing: 'Age: Birth • Doses: 3',
-      description: 'First dose at birth, second at 1-2 months, third at 6-18 months',
-      priority: 'High',
-      status: 'Active'
-    },
-    {
-      title: 'DTaP',
-      timing: 'Age: 2 months • Doses: 5',
-      description: 'Protection against diphtheria, tetanus, and pertussis',
-      priority: 'High',
-      status: 'Active'
-    },
-    {
-      title: 'Polio (IPV)',
-      timing: 'Age: 2 months • Doses: 4',
-      description: 'Inactivated poliovirus vaccine',
-      priority: 'High',
-      status: 'Active'
-    },
-    {
-      title: 'MMR',
-      timing: 'Age: 12 months • Doses: 2',
-      description: 'Measles, mumps, and rubella vaccine',
-      priority: 'High',
-      status: 'Active'
-    }
-  ];
+  stagesList: Stage[] = [];
+  pregnancyVaccines: Vaccine[] = [];
+  childVaccines: Vaccine[] = [];
   
   activeTab: 'Pregnancy Care' | 'Pregnancy Vaccines' | 'Child Vaccines' = 'Pregnancy Care';
   selectedItem: any = null;
@@ -417,7 +336,82 @@ export class PreventiveCareComponent implements OnInit {
   pregnancyImportanceLevel = 'High';
   pregnancyDescription = '';
 
-  constructor(private api: WebapiService) {}
+  // Dropdown state
+  openDropdownId: string | null = null;
+
+  // Edit Modal state
+  showEditModal = false;
+  editItemType: 'stage' | 'pregnancyVaccine' | 'childVaccine' | null = null;
+  editingItemRef: any = null;
+  editTitle = '';
+  editTiming = '';
+  editDescription = '';
+  editWeekRange = '';
+  editTrimester = 1;
+  editMilestones = '';
+  editScans = '';
+
+  constructor(private api: WebapiService) {
+    document.addEventListener('click', () => this.closeDropdown());
+  }
+
+  toggleDropdown(id: string, event: Event) {
+    event.stopPropagation();
+    this.openDropdownId = this.openDropdownId === id ? null : id;
+  }
+
+  closeDropdown() {
+    this.openDropdownId = null;
+  }
+
+  toggleStatus(item: Stage | Vaccine, event?: Event) {
+    if (event) event.stopPropagation();
+    this.closeDropdown();
+    item.status = item.status === 'Active' ? 'Inactive' : 'Active';
+  }
+
+  openEditModal(item: any, type: 'stage' | 'pregnancyVaccine' | 'childVaccine', event?: Event) {
+    if (event) event.stopPropagation();
+    this.closeDropdown();
+    this.editingItemRef = item;
+    this.editItemType = type;
+
+    if (type === 'stage') {
+      this.editWeekRange = item.weekRange || '';
+      this.editTrimester = item.trimester === 'First Trimester' ? 1 : item.trimester === 'Second Trimester' ? 2 : 3;
+      this.editMilestones = item.milestones || '';
+      this.editScans = item.scans || '';
+    } else {
+      this.editTitle = item.title || '';
+      this.editTiming = item.timing || '';
+      this.editDescription = item.description || '';
+    }
+
+    this.showEditModal = true;
+  }
+
+  closeEditModal() {
+    this.showEditModal = false;
+    this.editingItemRef = null;
+    this.editItemType = null;
+  }
+
+  saveEditChanges() {
+    if (!this.editingItemRef) return;
+
+    if (this.editItemType === 'stage') {
+      this.editingItemRef.weekRange = this.editWeekRange.trim();
+      this.editingItemRef.trimester = this.editTrimester === 1 ? 'First Trimester' : this.editTrimester === 2 ? 'Second Trimester' : 'Third Trimester';
+      this.editingItemRef.milestones = this.editMilestones.trim();
+      this.editingItemRef.scans = this.editScans.trim();
+    } else {
+      this.editingItemRef.title = this.editTitle.trim();
+      this.editingItemRef.timing = this.editTiming.trim();
+      this.editingItemRef.description = this.editDescription.trim();
+    }
+
+    this.closeEditModal();
+  }
 
   ngOnInit() {
     this.loadPreventiveCareData();
@@ -431,8 +425,8 @@ export class PreventiveCareComponent implements OnInit {
     this.api.GetPreventiveCare().subscribe({
       next: (res: any) => {
         if (res?.success && res.data) {
-          // 1. Map pregnancy stages from API if present
-          if (res.data.pregnancyStages && res.data.pregnancyStages.length > 0) {
+          // 1. Map pregnancy stages from API
+          if (Array.isArray(res.data.pregnancyStages)) {
             const stages = res.data.pregnancyStages;
             stages.sort((a: any, b: any) => (a.weekStart || 0) - (b.weekStart || 0));
             this.stagesList = stages.map((s: any) => ({
@@ -442,22 +436,26 @@ export class PreventiveCareComponent implements OnInit {
               scans: s.scans || '—',
               status: 'Active'
             }));
+          } else {
+            this.stagesList = [];
           }
 
-          // 2. Map pregnancy vaccines from API if present
-          if (res.data.pregnancyVaccines && res.data.pregnancyVaccines.length > 0) {
+          // 2. Map pregnancy vaccines from API
+          if (Array.isArray(res.data.pregnancyVaccines)) {
             const pVaccines = res.data.pregnancyVaccines;
             this.pregnancyVaccines = pVaccines.map((v: any) => ({
               title: v.vaccineName || '—',
               timing: v.recommendedTiming ? `Timing: ${v.recommendedTiming}` : 'Timing: Any trimester',
               description: v.description || '—',
-              priority: v.recommendedTiming === 'ANY' ? 'Medium' : 'High',
+              priority: 'High',
               status: 'Active'
             }));
+          } else {
+            this.pregnancyVaccines = [];
           }
 
-          // 3. Map child vaccines from API if present
-          if (res.data.childVaccines && res.data.childVaccines.length > 0) {
+          // 3. Map child vaccines from API
+          if (Array.isArray(res.data.childVaccines)) {
             const cVaccines = res.data.childVaccines;
             cVaccines.sort((a: any, b: any) => (a.recommendedAgeMonths || 0) - (b.recommendedAgeMonths || 0));
             this.childVaccines = cVaccines.map((v: any) => ({
@@ -467,17 +465,21 @@ export class PreventiveCareComponent implements OnInit {
               priority: 'High',
               status: 'Active'
             }));
+          } else {
+            this.childVaccines = [];
           }
 
-          // 4. Update dynamic counts
+          // 4. Dynamic counts strictly calculated from API data
           if (res.data.stats) {
-            this.pregnancyProgramsCount = res.data.stats.pregnancyPrograms ?? 342;
-            this.childCareProgramsCount = res.data.stats.childCarePrograms ?? 1234;
+            this.pregnancyProgramsCount = res.data.stats.pregnancyPrograms ?? this.stagesList.length;
+            this.childCareProgramsCount = res.data.stats.childCarePrograms ?? this.childVaccines.length;
             this.vaccinesTrackedCount = res.data.stats.vaccinesTracked ?? (this.pregnancyVaccines.length + this.childVaccines.length);
-            this.milestonesLoggedCount = res.data.stats.milestonesLogged ?? 12456;
+            this.milestonesLoggedCount = res.data.stats.milestonesLogged ?? 0;
           } else {
-            this.pregnancyProgramsCount = Math.max(342, this.stagesList.length);
-            this.vaccinesTrackedCount = Math.max(8945, this.pregnancyVaccines.length + this.childVaccines.length);
+            this.pregnancyProgramsCount = this.stagesList.length;
+            this.childCareProgramsCount = this.childVaccines.length;
+            this.vaccinesTrackedCount = this.pregnancyVaccines.length + this.childVaccines.length;
+            this.milestonesLoggedCount = 0;
           }
         }
         this.isLoading = false;
