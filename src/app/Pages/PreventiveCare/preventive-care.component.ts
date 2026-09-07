@@ -172,9 +172,12 @@ interface Vaccine {
     }
 
     .pc-card-title {
-      font-family: 'Inter', sans-serif !important;
-      font-size: 17px !important;
-      font-weight: 700 !important;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+      font-size: 18px !important;
+      font-weight: 600 !important;
+      font-style: normal !important;
+      line-height: 28px !important;
+      letter-spacing: -0.44px !important;
       color: #0F172A !important;
       margin: 0 !important;
     }
@@ -283,6 +286,63 @@ interface Vaccine {
     .pc-icon-btn.danger:hover {
       background-color: #FEE2E2 !important;
       color: #EF4444 !important;
+    }
+
+    /* Modal Action Buttons matching Design / Screenshot */
+    .pc-modal-actions {
+      display: flex !important;
+      align-items: center !important;
+      gap: 12px !important;
+      margin-top: 24px !important;
+      width: 100% !important;
+    }
+
+    .pc-modal-btn-cancel {
+      flex: 1 !important;
+      height: 42px !important;
+      border-radius: 10px !important;
+      background: #FFFFFF !important;
+      border: 1px solid #E2E8F0 !important;
+      color: #0F172A !important;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+      font-size: 14px !important;
+      font-weight: 600 !important;
+      cursor: pointer !important;
+      outline: none !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      transition: background 0.15s ease, border-color 0.15s ease !important;
+      box-shadow: none !important;
+    }
+
+    .pc-modal-btn-cancel:hover {
+      background: #F8FAFC !important;
+      border-color: #CBD5E1 !important;
+    }
+
+    .pc-modal-btn-submit {
+      flex: 1 !important;
+      height: 42px !important;
+      border-radius: 10px !important;
+      background: #E60076 !important;
+      border: none !important;
+      color: #FFFFFF !important;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+      font-size: 14px !important;
+      font-weight: 600 !important;
+      cursor: pointer !important;
+      outline: none !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      transition: background 0.15s ease, opacity 0.15s ease !important;
+      box-shadow: none !important;
+    }
+
+    .pc-modal-btn-submit:hover {
+      background: #D0006B !important;
+      opacity: 0.96 !important;
     }
   `]
 })

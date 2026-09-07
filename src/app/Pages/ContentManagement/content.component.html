@@ -5,7 +5,8 @@
     <p class="cm-page-subtitle">Manage wellness and lifestyle content</p>
   </div>
   <button type="button" class="cm-btn-upload" (click)="openUploadModal()">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+      stroke-linecap="round" stroke-linejoin="round">
       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
       <polyline points="17 8 12 3 7 8"></polyline>
       <line x1="12" y1="3" x2="12" y2="15"></line>
@@ -64,40 +65,29 @@
       <div class="d-flex flex-column" style="gap: 16px;">
         <!-- Extended 100% Full-Width Compact Search Bar -->
         <div class="cm-search-wrapper w-100">
-          <svg class="cm-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg class="cm-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="11" cy="11" r="8"></circle>
             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
           </svg>
-          <input type="text" 
-                 [(ngModel)]="searchQuery"
-                 (input)="onSearchInput($event)"
-                 (keyup.enter)="onSearchClick()"
-                 placeholder="Search content by title or category..." 
-                 class="cm-search-input">
+          <input type="text" [(ngModel)]="searchQuery" (input)="onSearchInput($event)" (keyup.enter)="onSearchClick()"
+            placeholder="Search content by title or category..." class="cm-search-input">
         </div>
 
         <!-- Filter Controls Row (Category Tabs) -->
         <div class="d-flex align-items-center justify-content-between flex-wrap" style="gap: 12px;">
           <!-- Category Tabs -->
           <div class="d-flex flex-wrap" style="gap: 8px;">
-            <button (click)="setTab('All')" 
-                    class="cm-tab-btn"
-                    [class.active]="activeTab === 'All'">
+            <button (click)="setTab('All')" class="cm-tab-btn" [class.active]="activeTab === 'All'">
               All
             </button>
-            <button (click)="setTab('Gym')" 
-                    class="cm-tab-btn"
-                    [class.active]="activeTab === 'Gym'">
+            <button (click)="setTab('Gym')" class="cm-tab-btn" [class.active]="activeTab === 'Gym'">
               Gym
             </button>
-            <button (click)="setTab('Meditation')" 
-                    class="cm-tab-btn"
-                    [class.active]="activeTab === 'Meditation'">
+            <button (click)="setTab('Meditation')" class="cm-tab-btn" [class.active]="activeTab === 'Meditation'">
               Meditation
             </button>
-            <button (click)="setTab('Videos')" 
-                    class="cm-tab-btn"
-                    [class.active]="activeTab === 'Videos'">
+            <button (click)="setTab('Videos')" class="cm-tab-btn" [class.active]="activeTab === 'Videos'">
               Videos
             </button>
           </div>
@@ -109,19 +99,20 @@
 
 <!-- Content Grid -->
 <div class="row g-4 mb-4">
-  <div *ngFor="let item of filteredContent" class="col-12 col-md-6 col-lg-4 d-flex" [style.z-index]="openDropdownId === item.id ? '1000' : '1'" style="position: relative;">
-    <div class="card cm-media-card border-0 shadow-sm w-100 d-flex flex-column" [style.z-index]="openDropdownId === item.id ? '1000' : '1'" style="border-radius: 14px; background: #FFFFFF; border: 1px solid rgba(0, 0, 0, 0.1); overflow: visible !important; transform: rotate(0deg); opacity: 1; position: relative;">
-      
+  <div *ngFor="let item of filteredContent" class="col-12 col-md-6 col-lg-4 d-flex"
+    [style.z-index]="openDropdownId === item.id ? '1000' : '1'" style="position: relative;">
+    <div class="card cm-media-card border-0 shadow-sm w-100 d-flex flex-column"
+      [style.z-index]="openDropdownId === item.id ? '1000' : '1'"
+      style="border-radius: 14px; background: #FFFFFF; border: 1px solid rgba(0, 0, 0, 0.1); overflow: visible !important; transform: rotate(0deg); opacity: 1; position: relative;">
+
       <!-- Video Thumbnail Placeholder -->
-      <div class="cm-thumbnail-box" style="width: 100%; height: 165px; background: #D6E0EA; display: flex; align-items: center; justify-content: center; position: relative; border-top-left-radius: 14px; border-top-right-radius: 14px; overflow: hidden;">
+      <div class="cm-thumbnail-box"
+        style="width: 100%; height: 165px; background: #D6E0EA; display: flex; align-items: center; justify-content: center; position: relative; border-top-left-radius: 14px; border-top-right-radius: 14px; overflow: hidden;">
         <!-- Play icon -->
-        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.95;">
+        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.95;">
           <polygon points="5 3 19 12 5 21 5 3"></polygon>
         </svg>
-        <!-- Duration Badge -->
-        <span class="position-absolute" style="top: 12px; right: 12px; background: #FFFFFF; border-radius: 6px; padding: 3px 10px; font-size: 12px; font-weight: 500; color: #0F172A; font-family: 'Inter', sans-serif; box-shadow: 0 1px 2px rgba(0,0,0,0.06);">
-          {{ item.duration }}
-        </span>
       </div>
 
       <!-- Card Body -->
@@ -129,21 +120,26 @@
         <div>
           <!-- Title & Actions -->
           <div class="d-flex align-items-start justify-content-between mb-1" style="position: relative;">
-            <h5 class="m-0" style="font-size: 15px; font-weight: 600; line-height: 22px; color: #0F172A; font-family: 'Inter', sans-serif;">
+            <h5 class="m-0 cm-media-title"
+              style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 16px; font-weight: 600; font-style: normal; line-height: 24px; letter-spacing: -0.31px; color: #0F172A;">
               {{ item.title }}
             </h5>
             <div style="position: relative;">
-              <button (click)="toggleDropdown(item.id, $event)" class="btn btn-link text-muted p-0 border-0 bg-transparent" style="font-size: 16px; outline: none; line-height: 1; color: #64748B; cursor: pointer;">
+              <button (click)="toggleDropdown(item.id, $event)"
+                class="btn btn-link text-muted p-0 border-0 bg-transparent"
+                style="font-size: 16px; outline: none; line-height: 1; color: #64748B; cursor: pointer;">
                 ⋮
               </button>
 
               <!-- Action Dropdown Menu -->
-              <div *ngIf="openDropdownId === item.id" 
-                   (click)="$event.stopPropagation()"
-                   style="position: absolute; right: 0; top: 26px; z-index: 9999; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1); min-width: 145px; padding: 6px 0; font-family: 'Inter', sans-serif;">
-                
+              <div *ngIf="openDropdownId === item.id" (click)="$event.stopPropagation()"
+                style="position: absolute; right: 0; top: 26px; z-index: 9999; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1); min-width: 145px; padding: 6px 0; font-family: 'Inter', sans-serif;">
+
                 <!-- Update -->
-                <button (click)="onAction('update', item)" style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 16px; background: none; border: none; cursor: pointer; font-size: 14px; font-weight: 500; color: #1E293B; transition: background 0.15s;" (mouseenter)="$any($event.currentTarget).style.background='#F8FAFC'" (mouseleave)="$any($event.currentTarget).style.background='none'">
+                <button (click)="onAction('update', item)"
+                  style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 16px; background: none; border: none; cursor: pointer; font-size: 14px; font-weight: 500; color: #1E293B; transition: background 0.15s;"
+                  (mouseenter)="$any($event.currentTarget).style.background='#F8FAFC'"
+                  (mouseleave)="$any($event.currentTarget).style.background='none'">
                   <svg width="16" height="16" fill="none" stroke="#475569" stroke-width="1.8" viewBox="0 0 24 24">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                     <polyline points="17 8 12 3 7 8"></polyline>
@@ -153,7 +149,10 @@
                 </button>
 
                 <!-- Disable / Enable -->
-                <button (click)="onAction('disable', item)" style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 16px; background: none; border: none; cursor: pointer; font-size: 14px; font-weight: 500; color: #D97706; transition: background 0.15s;" (mouseenter)="$any($event.currentTarget).style.background='#FEF3C7'" (mouseleave)="$any($event.currentTarget).style.background='none'">
+                <button (click)="onAction('disable', item)"
+                  style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 16px; background: none; border: none; cursor: pointer; font-size: 14px; font-weight: 500; color: #D97706; transition: background 0.15s;"
+                  (mouseenter)="$any($event.currentTarget).style.background='#FEF3C7'"
+                  (mouseleave)="$any($event.currentTarget).style.background='none'">
                   <svg width="16" height="16" fill="none" stroke="#D97706" stroke-width="1.8" viewBox="0 0 24 24">
                     <rect x="1" y="5" width="22" height="14" rx="7" ry="7"></rect>
                     <circle cx="16" cy="12" r="3"></circle>
@@ -165,38 +164,40 @@
             </div>
           </div>
           <!-- ID -->
-          <div class="mb-2" style="font-size: 13px; font-weight: 400; color: #94A3B8; font-family: 'Inter', sans-serif;">
+          <div class="mb-2"
+            style="font-size: 13px; font-weight: 400; color: #94A3B8; font-family: 'Inter', sans-serif;">
             {{ item.id }}
           </div>
 
           <!-- Category and Status Badges -->
           <div class="d-flex flex-wrap mb-2" style="gap: 8px;">
             <!-- Category Badge -->
-            <span class="badge" 
-                  [style.background]="item.category === 'Gym' ? '#DCFCE7' : (item.category === 'Meditation' ? '#F3E8FF' : '#DBEAFE')"
-                  [style.color]="item.category === 'Gym' ? '#16A34A' : (item.category === 'Meditation' ? '#9333EA' : '#2563EB')"
-                  style="border-radius: 8px; font-size: 12px; font-weight: 500; padding: 4px 10px; font-family: 'Inter', sans-serif;">
+            <span class="badge"
+              [style.background]="item.category === 'Gym' ? '#DCFCE7' : (item.category === 'Meditation' ? '#F3E8FF' : '#DBEAFE')"
+              [style.color]="item.category === 'Gym' ? '#16A34A' : (item.category === 'Meditation' ? '#9333EA' : '#2563EB')"
+              style="border-radius: 8px; font-size: 12px; font-weight: 500; padding: 4px 10px; font-family: 'Inter', sans-serif;">
               {{ item.category }}
             </span>
             <!-- Status Badge -->
-            <span class="badge" 
-                  [style.background]="item.status === 'Active' ? '#DCFCE7' : '#F1F5F9'"
-                  [style.color]="item.status === 'Active' ? '#16A34A' : '#64748B'"
-                  style="border-radius: 8px; font-size: 12px; font-weight: 500; padding: 4px 10px; font-family: 'Inter', sans-serif;">
+            <span class="badge" [style.background]="item.status === 'Active' ? '#DCFCE7' : '#F1F5F9'"
+              [style.color]="item.status === 'Active' ? '#16A34A' : '#64748B'"
+              style="border-radius: 8px; font-size: 12px; font-weight: 500; padding: 4px 10px; font-family: 'Inter', sans-serif;">
               {{ item.status }}
             </span>
           </div>
 
           <!-- Tags -->
           <div class="d-flex flex-wrap mb-3" style="gap: 8px;">
-            <span *ngFor="let tag of item.tags" class="badge" style="background: #F1F5F9; color: #475569; border-radius: 8px; font-size: 12px; font-weight: 400; padding: 4px 10px; font-family: 'Inter', sans-serif;">
+            <span *ngFor="let tag of item.tags" class="badge"
+              style="background: #F1F5F9; color: #475569; border-radius: 8px; font-size: 12px; font-weight: 400; padding: 4px 10px; font-family: 'Inter', sans-serif;">
               {{ tag }}
             </span>
           </div>
         </div>
 
         <!-- Footer -->
-        <div class="d-flex align-items-center justify-content-between pt-2" style="font-size: 13px; font-weight: 400; color: #64748B; font-family: 'Inter', sans-serif;">
+        <div class="d-flex align-items-center justify-content-between pt-2"
+          style="font-size: 13px; font-weight: 400; color: #64748B; font-family: 'Inter', sans-serif;">
           <span>{{ item.views }}</span>
           <span>{{ item.created }}</span>
         </div>
@@ -204,70 +205,90 @@
 
     </div>
   </div>
-  
-  <div *ngIf="filteredContent.length === 0" class="col-md-12 text-center text-muted py-5" style="font-size: 1.1rem; font-family: 'Poppins', sans-serif;">
+
+  <div *ngIf="filteredContent.length === 0" class="col-md-12 text-center text-muted py-5"
+    style="font-size: 1.1rem; font-family: 'Poppins', sans-serif;">
     No content items found matching your filter criteria.
   </div>
 </div>
 
 <!-- Upload Content Modal -->
 @if (showUploadModal) {
-<div class="modal-backdrop fade show animate-fade-in" style="background-color: rgba(0, 0, 0, 0.45); z-index: 1040; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;"></div>
-<div class="modal d-block" tabindex="-1" style="z-index: 1050; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; overflow-y: auto; display: flex; align-items: center; justify-content: center;">
-  <div class="modal-dialog modal-dialog-centered w-100 border-0" style="max-width: 390px; margin: 15px auto; transform: none; box-shadow: none !important; background: transparent !important; border: none !important;">
-    <div class="modal-content border-0" style="border-radius: 14px; background: #ffffff; padding: 20px 24px; position: relative; box-shadow: none !important; border: none !important;">
-      
+<div class="modal-backdrop fade show animate-fade-in"
+  style="background-color: rgba(0, 0, 0, 0.45); z-index: 1040; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;">
+</div>
+<div class="modal d-block" tabindex="-1"
+  style="z-index: 1050; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; overflow-y: auto; display: flex; align-items: center; justify-content: center;">
+  <div class="modal-dialog modal-dialog-centered w-100 border-0"
+    style="max-width: 390px; margin: 15px auto; transform: none; box-shadow: none !important; background: transparent !important; border: none !important;">
+    <div class="modal-content border-0"
+      style="border-radius: 14px; background: #ffffff; padding: 20px 24px; position: relative; box-shadow: none !important; border: none !important;">
+
       <!-- Modal Header -->
       <div class="d-flex align-items-center justify-content-between mb-3">
-        <h4 class="modal-title font-weight-bold m-0" style="font-family: 'Inter', -apple-system, sans-serif; font-size: 1.1rem; color: #0F172A; letter-spacing: -0.01em;">Upload New Content</h4>
-        <button (click)="closeUploadModal()" type="button" class="btn-close border-0 bg-transparent p-0 text-muted" style="font-size: 1.2rem; outline: none; cursor: pointer; line-height: 1;">&times;</button>
+        <h4 class="modal-title font-weight-bold m-0"
+          style="font-family: 'Inter', -apple-system, sans-serif; font-size: 1.1rem; color: #0F172A; letter-spacing: -0.01em;">
+          Upload New Content</h4>
+        <button (click)="closeUploadModal()" type="button" class="btn-close border-0 bg-transparent p-0 text-muted"
+          style="font-size: 1.2rem; outline: none; cursor: pointer; line-height: 1;">&times;</button>
       </div>
 
       <!-- Modal Body Form -->
       <form (submit)="submitUploadContent(); $event.preventDefault();">
         <!-- Error & Success Alerts -->
-        <div *ngIf="uploadErrorMessage" class="alert alert-danger py-2 px-3 mb-3" style="border-radius: 8px; font-size: 0.8rem; font-family: 'Inter', sans-serif;">
+        <div *ngIf="uploadErrorMessage" class="alert alert-danger py-2 px-3 mb-3"
+          style="border-radius: 8px; font-size: 0.8rem; font-family: 'Inter', sans-serif;">
           {{ uploadErrorMessage }}
         </div>
-        <div *ngIf="uploadSuccessMessage" class="alert alert-success py-2 px-3 mb-3" style="border-radius: 8px; font-size: 0.8rem; font-family: 'Inter', sans-serif;">
+        <div *ngIf="uploadSuccessMessage" class="alert alert-success py-2 px-3 mb-3"
+          style="border-radius: 8px; font-size: 0.8rem; font-family: 'Inter', sans-serif;">
           {{ uploadSuccessMessage }}
         </div>
 
         <!-- Title Input -->
         <div style="margin-bottom: 12px;">
-          <label class="form-label font-weight-bold d-block" style="font-size: 0.8rem; color: #0F172A; font-family: 'Inter', sans-serif; margin-bottom: 5px;">Title</label>
-          <input type="text" [(ngModel)]="uploadTitle" name="uploadTitle" placeholder="Enter content title" class="form-control" 
-                 style="border-radius: 10px; border: none !important; height: 38px; font-size: 0.85rem; padding: 8px 12px; font-family: 'Inter', sans-serif; outline: none; background: #F4F5F7; color: #0F172A;">
+          <label class="form-label font-weight-bold d-block"
+            style="font-size: 0.8rem; color: #0F172A; font-family: 'Inter', sans-serif; margin-bottom: 5px;">Title</label>
+          <input type="text" [(ngModel)]="uploadTitle" name="uploadTitle" placeholder="Enter content title"
+            class="form-control"
+            style="border-radius: 10px; border: none !important; height: 38px; font-size: 0.85rem; padding: 8px 12px; font-family: 'Inter', sans-serif; outline: none; background: #F4F5F7; color: #0F172A;">
         </div>
 
         <!-- Choose Category Dropdown -->
         <div style="margin-bottom: 12px;">
-          <label class="form-label font-weight-bold d-block" style="font-size: 0.8rem; color: #0F172A; font-family: 'Inter', sans-serif; margin-bottom: 5px;">Choose Category</label>
+          <label class="form-label font-weight-bold d-block"
+            style="font-size: 0.8rem; color: #0F172A; font-family: 'Inter', sans-serif; margin-bottom: 5px;">Choose
+            Category</label>
           <div class="position-relative">
-            <select [(ngModel)]="uploadCategory" name="uploadCategory" class="form-select w-100" 
-                    style="border-radius: 10px; border: none !important; height: 38px; font-size: 0.85rem; padding: 8px 12px; font-family: 'Inter', sans-serif; color: #0F172A; appearance: none; outline: none; background: #F4F5F7; cursor: pointer;">
+            <select [(ngModel)]="uploadCategory" name="uploadCategory" class="form-select w-100"
+              style="border-radius: 10px; border: none !important; height: 38px; font-size: 0.85rem; padding: 8px 12px; font-family: 'Inter', sans-serif; color: #0F172A; appearance: none; outline: none; background: #F4F5F7; cursor: pointer;">
               <option value="" disabled selected>Select category</option>
               <option value="Gym">Gym</option>
               <option value="Meditation">Meditation</option>
               <option value="Videos">Videos</option>
             </select>
-            <i class="fa fa-chevron-down position-absolute" style="right: 12px; top: 13px; font-size: 0.7rem; color: #94A3B8; pointer-events: none;"></i>
+            <i class="fa fa-chevron-down position-absolute"
+              style="right: 12px; top: 13px; font-size: 0.7rem; color: #94A3B8; pointer-events: none;"></i>
           </div>
         </div>
 
         <!-- Choose Path Input -->
         <div style="margin-bottom: 12px;">
-          <label class="form-label font-weight-bold d-block" style="font-size: 0.8rem; color: #0F172A; font-family: 'Inter', sans-serif; margin-bottom: 5px;">Choose Path</label>
+          <label class="form-label font-weight-bold d-block"
+            style="font-size: 0.8rem; color: #0F172A; font-family: 'Inter', sans-serif; margin-bottom: 5px;">Choose
+            Path</label>
           <div class="position-relative">
-            <input type="text" [(ngModel)]="uploadPath" name="uploadPath" placeholder="Select path" class="form-control" 
-                   style="border-radius: 10px; border: none !important; height: 38px; font-size: 0.85rem; padding: 8px 30px 8px 12px; font-family: 'Inter', sans-serif; background: #F4F5F7; color: #0F172A; outline: none;">
-            <i class="fa fa-chevron-down position-absolute" style="right: 12px; top: 13px; font-size: 0.7rem; color: #94A3B8; pointer-events: none;"></i>
+            <input type="text" [(ngModel)]="uploadPath" name="uploadPath" placeholder="Select path" class="form-control"
+              style="border-radius: 10px; border: none !important; height: 38px; font-size: 0.85rem; padding: 8px 30px 8px 12px; font-family: 'Inter', sans-serif; background: #F4F5F7; color: #0F172A; outline: none;">
+            <i class="fa fa-chevron-down position-absolute"
+              style="right: 12px; top: 13px; font-size: 0.7rem; color: #94A3B8; pointer-events: none;"></i>
           </div>
         </div>
 
         <!-- Level Pills -->
         <div style="margin-bottom: 12px;">
-          <label class="form-label font-weight-bold d-block" style="font-size: 0.8rem; color: #0F172A; font-family: 'Inter', sans-serif; margin-bottom: 6px;">Level</label>
+          <label class="form-label font-weight-bold d-block"
+            style="font-size: 0.8rem; color: #0F172A; font-family: 'Inter', sans-serif; margin-bottom: 6px;">Level</label>
           <div class="d-flex align-items-center" style="gap: 8px;">
             <button type="button" (click)="setLevel('Beginner')"
               [style.background]="uploadLevel === 'Beginner' ? '#0F172A' : '#F1F5F9'"
@@ -294,79 +315,101 @@
 
         <!-- Tags Input with Enter Badge -->
         <div style="margin-bottom: 18px;">
-          <label class="form-label font-weight-bold d-block" style="font-size: 0.8rem; color: #0F172A; font-family: 'Inter', sans-serif; margin-bottom: 5px;">Tags</label>
+          <label class="form-label font-weight-bold d-block"
+            style="font-size: 0.8rem; color: #0F172A; font-family: 'Inter', sans-serif; margin-bottom: 5px;">Tags</label>
           <div class="position-relative">
-            <input type="text" [(ngModel)]="uploadTags" name="uploadTags" placeholder="Add tags" class="form-control" 
-                   style="border-radius: 10px; border: none !important; height: 38px; font-size: 0.85rem; padding: 8px 65px 8px 12px; font-family: 'Inter', sans-serif; background: #F4F5F7; color: #0F172A; outline: none;">
-            <span class="position-absolute" style="right: 8px; top: 6px; background: #E2E8F0; color: #475569; font-size: 0.75rem; padding: 3px 10px; border-radius: 6px; font-family: 'Inter', sans-serif; pointer-events: none;">Enter</span>
+            <input type="text" [(ngModel)]="uploadTags" name="uploadTags" placeholder="Add tags" class="form-control"
+              style="border-radius: 10px; border: none !important; height: 38px; font-size: 0.85rem; padding: 8px 65px 8px 12px; font-family: 'Inter', sans-serif; background: #F4F5F7; color: #0F172A; outline: none;">
+            <span class="position-absolute"
+              style="right: 8px; top: 6px; background: #E2E8F0; color: #475569; font-size: 0.75rem; padding: 3px 10px; border-radius: 6px; font-family: 'Inter', sans-serif; pointer-events: none;">Enter</span>
           </div>
         </div>
 
         <!-- Submit Button -->
         <button type="submit" [disabled]="uploading" class="cm-modal-submit-btn">
-          <span *ngIf="uploading" class="spinner-border spinner-border-sm me-2 text-white" role="status" aria-hidden="true"></span>
-          <span style="color: #FFFFFF !important; font-weight: 600; font-size: 14px;">{{ uploading ? 'Uploading...' : 'Upload Content' }}</span>
+          <span *ngIf="uploading" class="spinner-border spinner-border-sm me-2 text-white" role="status"
+            aria-hidden="true"></span>
+          <span style="color: #FFFFFF !important; font-weight: 600; font-size: 14px;">{{ uploading ? 'Uploading...' :
+            'Upload Content' }}</span>
         </button>
       </form>
 
     </div>
-</div>
+  </div>
 </div>
 }
 
 <!-- Update Content Modal -->
 @if (showUpdateModal) {
-<div class="modal-backdrop fade show animate-fade-in" style="background-color: rgba(0, 0, 0, 0.45); z-index: 1040; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;"></div>
-<div class="modal d-block" tabindex="-1" style="z-index: 1050; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; overflow-y: auto; display: flex; align-items: center; justify-content: center;">
-  <div class="modal-dialog modal-dialog-centered w-100 border-0" style="max-width: 390px; margin: 15px auto; transform: none; box-shadow: none !important; background: transparent !important; border: none !important;">
-    <div class="modal-content border-0" style="border-radius: 14px; background: #ffffff; padding: 20px 24px; position: relative; box-shadow: none !important; border: none !important;">
-      
+<div class="modal-backdrop fade show animate-fade-in"
+  style="background-color: rgba(0, 0, 0, 0.45); z-index: 1040; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;">
+</div>
+<div class="modal d-block" tabindex="-1"
+  style="z-index: 1050; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; overflow-y: auto; display: flex; align-items: center; justify-content: center;">
+  <div class="modal-dialog modal-dialog-centered w-100 border-0"
+    style="max-width: 390px; margin: 15px auto; transform: none; box-shadow: none !important; background: transparent !important; border: none !important;">
+    <div class="modal-content border-0"
+      style="border-radius: 14px; background: #ffffff; padding: 20px 24px; position: relative; box-shadow: none !important; border: none !important;">
+
       <!-- Modal Header -->
       <div class="d-flex align-items-center justify-content-between mb-3">
-        <h4 class="modal-title font-weight-bold m-0" style="font-family: 'Inter', -apple-system, sans-serif; font-size: 1.1rem; color: #0F172A; letter-spacing: -0.01em;">Update Content</h4>
-        <button (click)="closeUpdateModal()" type="button" class="btn-close border-0 bg-transparent p-0 text-muted" style="font-size: 1.2rem; outline: none; cursor: pointer; line-height: 1;">&times;</button>
+        <h4 class="modal-title font-weight-bold m-0"
+          style="font-family: 'Inter', -apple-system, sans-serif; font-size: 1.1rem; color: #0F172A; letter-spacing: -0.01em;">
+          Update Content</h4>
+        <button (click)="closeUpdateModal()" type="button" class="btn-close border-0 bg-transparent p-0 text-muted"
+          style="font-size: 1.2rem; outline: none; cursor: pointer; line-height: 1;">&times;</button>
       </div>
 
       <!-- Modal Body Form -->
       <form (submit)="saveUpdateContent(); $event.preventDefault();">
-        <div *ngIf="updateErrorMessage" class="alert alert-danger py-2 px-3 mb-3" style="border-radius: 8px; font-size: 0.8rem; font-family: 'Inter', sans-serif;">
+        <div *ngIf="updateErrorMessage" class="alert alert-danger py-2 px-3 mb-3"
+          style="border-radius: 8px; font-size: 0.8rem; font-family: 'Inter', sans-serif;">
           {{ updateErrorMessage }}
         </div>
 
         <!-- Title Input -->
         <div style="margin-bottom: 12px;">
-          <label class="form-label font-weight-bold d-block" style="font-size: 0.8rem; color: #0F172A; font-family: 'Inter', sans-serif; margin-bottom: 5px;">Title</label>
-          <input type="text" [(ngModel)]="updateTitle" name="updateTitle" placeholder="Enter content title" class="form-control" 
-                 style="border-radius: 10px; border: none !important; height: 38px; font-size: 0.85rem; padding: 8px 12px; font-family: 'Inter', sans-serif; outline: none; background: #F4F5F7; color: #0F172A;">
+          <label class="form-label font-weight-bold d-block"
+            style="font-size: 0.8rem; color: #0F172A; font-family: 'Inter', sans-serif; margin-bottom: 5px;">Title</label>
+          <input type="text" [(ngModel)]="updateTitle" name="updateTitle" placeholder="Enter content title"
+            class="form-control"
+            style="border-radius: 10px; border: none !important; height: 38px; font-size: 0.85rem; padding: 8px 12px; font-family: 'Inter', sans-serif; outline: none; background: #F4F5F7; color: #0F172A;">
         </div>
 
         <!-- Choose Category Dropdown -->
         <div style="margin-bottom: 12px;">
-          <label class="form-label font-weight-bold d-block" style="font-size: 0.8rem; color: #0F172A; font-family: 'Inter', sans-serif; margin-bottom: 5px;">Choose Category</label>
+          <label class="form-label font-weight-bold d-block"
+            style="font-size: 0.8rem; color: #0F172A; font-family: 'Inter', sans-serif; margin-bottom: 5px;">Choose
+            Category</label>
           <div class="position-relative">
-            <select [(ngModel)]="updateCategory" name="updateCategory" class="form-select w-100" 
-                    style="border-radius: 10px; border: none !important; height: 38px; font-size: 0.85rem; padding: 8px 12px; font-family: 'Inter', sans-serif; color: #0F172A; appearance: none; outline: none; background: #F4F5F7; cursor: pointer;">
+            <select [(ngModel)]="updateCategory" name="updateCategory" class="form-select w-100"
+              style="border-radius: 10px; border: none !important; height: 38px; font-size: 0.85rem; padding: 8px 12px; font-family: 'Inter', sans-serif; color: #0F172A; appearance: none; outline: none; background: #F4F5F7; cursor: pointer;">
               <option value="Gym">Gym</option>
               <option value="Meditation">Meditation</option>
               <option value="Videos">Videos</option>
             </select>
-            <i class="fa fa-chevron-down position-absolute" style="right: 12px; top: 13px; font-size: 0.7rem; color: #94A3B8; pointer-events: none;"></i>
+            <i class="fa fa-chevron-down position-absolute"
+              style="right: 12px; top: 13px; font-size: 0.7rem; color: #94A3B8; pointer-events: none;"></i>
           </div>
         </div>
 
         <!-- Choose Path Input -->
         <div style="margin-bottom: 12px;">
-          <label class="form-label font-weight-bold d-block" style="font-size: 0.8rem; color: #0F172A; font-family: 'Inter', sans-serif; margin-bottom: 5px;">Choose Path</label>
+          <label class="form-label font-weight-bold d-block"
+            style="font-size: 0.8rem; color: #0F172A; font-family: 'Inter', sans-serif; margin-bottom: 5px;">Choose
+            Path</label>
           <div class="position-relative">
-            <input type="text" [(ngModel)]="updatePath" name="updatePath" placeholder="Select path" class="form-control" 
-                   style="border-radius: 10px; border: none !important; height: 38px; font-size: 0.85rem; padding: 8px 30px 8px 12px; font-family: 'Inter', sans-serif; background: #F4F5F7; color: #0F172A; outline: none;">
-            <i class="fa fa-chevron-down position-absolute" style="right: 12px; top: 13px; font-size: 0.7rem; color: #94A3B8; pointer-events: none;"></i>
+            <input type="text" [(ngModel)]="updatePath" name="updatePath" placeholder="Select path" class="form-control"
+              style="border-radius: 10px; border: none !important; height: 38px; font-size: 0.85rem; padding: 8px 30px 8px 12px; font-family: 'Inter', sans-serif; background: #F4F5F7; color: #0F172A; outline: none;">
+            <i class="fa fa-chevron-down position-absolute"
+              style="right: 12px; top: 13px; font-size: 0.7rem; color: #94A3B8; pointer-events: none;"></i>
           </div>
         </div>
 
         <!-- Level Pills -->
         <div style="margin-bottom: 12px;">
-          <label class="form-label font-weight-bold d-block" style="font-size: 0.8rem; color: #0F172A; font-family: 'Inter', sans-serif; margin-bottom: 6px;">Level</label>
+          <label class="form-label font-weight-bold d-block"
+            style="font-size: 0.8rem; color: #0F172A; font-family: 'Inter', sans-serif; margin-bottom: 6px;">Level</label>
           <div class="d-flex align-items-center" style="gap: 8px;">
             <button type="button" (click)="setUpdateLevel('Beginner')"
               [style.background]="updateLevel === 'Beginner' ? '#0F172A' : '#F1F5F9'"
@@ -391,11 +434,13 @@
 
         <!-- Tags Input -->
         <div style="margin-bottom: 18px;">
-          <label class="form-label font-weight-bold d-block" style="font-size: 0.8rem; color: #0F172A; font-family: 'Inter', sans-serif; margin-bottom: 5px;">Tags</label>
+          <label class="form-label font-weight-bold d-block"
+            style="font-size: 0.8rem; color: #0F172A; font-family: 'Inter', sans-serif; margin-bottom: 5px;">Tags</label>
           <div class="position-relative">
-            <input type="text" [(ngModel)]="updateTags" name="updateTags" placeholder="Add tags" class="form-control" 
-                   style="border-radius: 10px; border: none !important; height: 38px; font-size: 0.85rem; padding: 8px 65px 8px 12px; font-family: 'Inter', sans-serif; background: #F4F5F7; color: #0F172A; outline: none;">
-            <span class="position-absolute" style="right: 8px; top: 6px; background: #E2E8F0; color: #475569; font-size: 0.75rem; padding: 3px 10px; border-radius: 6px; font-family: 'Inter', sans-serif; pointer-events: none;">Enter</span>
+            <input type="text" [(ngModel)]="updateTags" name="updateTags" placeholder="Add tags" class="form-control"
+              style="border-radius: 10px; border: none !important; height: 38px; font-size: 0.85rem; padding: 8px 65px 8px 12px; font-family: 'Inter', sans-serif; background: #F4F5F7; color: #0F172A; outline: none;">
+            <span class="position-absolute"
+              style="right: 8px; top: 6px; background: #E2E8F0; color: #475569; font-size: 0.75rem; padding: 3px 10px; border-radius: 6px; font-family: 'Inter', sans-serif; pointer-events: none;">Enter</span>
           </div>
         </div>
 
@@ -411,8 +456,7 @@
 }
 
 <!-- Preview Content Details Modal -->
-<div *ngIf="showPreviewModal && selectedContent"
-  class="position-fixed d-flex align-items-center justify-content-center"
+<div *ngIf="showPreviewModal && selectedContent" class="position-fixed d-flex align-items-center justify-content-center"
   style="top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.45); z-index: 10000; font-family: 'Inter', -apple-system, sans-serif;">
   <div class="card border-0 p-4"
     style="width: 100%; max-width: 500px; border-radius: 16px; background: #ffffff; position: relative; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);">
@@ -423,15 +467,19 @@
     </button>
 
     <!-- Thumbnail Header -->
-    <div class="mb-3 rounded overflow-hidden position-relative" style="height: 180px; background: #0F172A; display: flex; align-items: center; justify-content: center;">
-      <img *ngIf="getThumbnailUrl(selectedContent.path)" [src]="getThumbnailUrl(selectedContent.path)" style="width: 100%; height: 100%; object-fit: cover;" />
+    <div class="mb-3 rounded overflow-hidden position-relative"
+      style="height: 180px; background: #0F172A; display: flex; align-items: center; justify-content: center;">
+      <img *ngIf="getThumbnailUrl(selectedContent.path)" [src]="getThumbnailUrl(selectedContent.path)"
+        style="width: 100%; height: 100%; object-fit: cover;" />
       <div *ngIf="!getThumbnailUrl(selectedContent.path)" class="text-white text-center p-3">
-        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="mb-2">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+          class="mb-2">
           <polygon points="5 3 19 12 5 21 5 3"></polygon>
         </svg>
         <div style="font-weight: 500; font-size: 14px;">{{ selectedContent.title }}</div>
       </div>
-      <span class="badge position-absolute" style="top: 12px; left: 12px; background: rgba(15, 23, 42, 0.85); color: #ffffff; padding: 4px 10px; border-radius: 12px; font-size: 11px;">
+      <span class="badge position-absolute"
+        style="top: 12px; left: 12px; background: rgba(15, 23, 42, 0.85); color: #ffffff; padding: 4px 10px; border-radius: 12px; font-size: 11px;">
         {{ selectedContent.category }}
       </span>
     </div>
@@ -439,7 +487,9 @@
     <!-- Title & Status -->
     <div class="d-flex align-items-center justify-content-between mb-3">
       <h5 class="m-0 font-weight-bold text-dark" style="font-size: 1.1rem;">{{ selectedContent.title }}</h5>
-      <span class="badge" [style.background]="selectedContent.status === 'Active' ? '#DCFCE7' : '#FEE2E2'" [style.color]="selectedContent.status === 'Active' ? '#16A34A' : '#DC2626'" style="font-size: 0.75rem; font-weight: 600; padding: 4px 10px; border-radius: 12px;">
+      <span class="badge" [style.background]="selectedContent.status === 'Active' ? '#DCFCE7' : '#FEE2E2'"
+        [style.color]="selectedContent.status === 'Active' ? '#16A34A' : '#DC2626'"
+        style="font-size: 0.75rem; font-weight: 600; padding: 4px 10px; border-radius: 12px;">
         {{ selectedContent.status }}
       </span>
     </div>
@@ -461,12 +511,14 @@
       <div class="d-flex justify-content-between pb-2" style="border-bottom: 1px solid #f1f5f9;">
         <span class="text-muted">Tags / Level</span>
         <div class="d-flex gap-1 flex-wrap">
-          <span *ngFor="let tag of selectedContent.tags" class="badge" style="background: #F1F5F9; color: #334155; font-size: 11px; padding: 3px 8px; border-radius: 10px;">
+          <span *ngFor="let tag of selectedContent.tags" class="badge"
+            style="background: #F1F5F9; color: #334155; font-size: 11px; padding: 3px 8px; border-radius: 10px;">
             {{ tag }}
           </span>
         </div>
       </div>
-      <div *ngIf="selectedContent.created" class="d-flex justify-content-between pb-2" style="border-bottom: 1px solid #f1f5f9;">
+      <div *ngIf="selectedContent.created" class="d-flex justify-content-between pb-2"
+        style="border-bottom: 1px solid #f1f5f9;">
         <span class="text-muted">Upload Date</span>
         <span class="font-weight-600 text-dark">{{ selectedContent.created }}</span>
       </div>
@@ -474,7 +526,8 @@
 
     <!-- Modal Footer -->
     <div class="mt-4 pt-2 text-right">
-      <button (click)="closePreviewModal()" class="btn btn-secondary border-0 px-4" style="border-radius: 8px; font-size: 0.875rem; background: #0F172A; color: #ffffff;">
+      <button (click)="closePreviewModal()" class="btn btn-secondary border-0 px-4"
+        style="border-radius: 8px; font-size: 0.875rem; background: #0F172A; color: #ffffff;">
         Close
       </button>
     </div>

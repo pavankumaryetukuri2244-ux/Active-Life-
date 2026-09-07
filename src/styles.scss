@@ -4,8 +4,6 @@
    GOOGLE FONTS — loaded via index.html to avoid build-time SSL issues
    Inter (primary), Poppins, Outfit are declared in <head> link tags
    ================================================================ */
-@import 'datatables.net-dt/css/dataTables.dataTables.css';
-@import 'datatables.net-buttons-dt/css/buttons.dataTables.css';
 
 /* ================================================================
    DESIGN TOKENS — CSS Custom Properties
@@ -169,7 +167,7 @@ body {
   display: block !important;
   flex: none !important;
   min-height: calc(100vh - 120px) !important;
-  padding: 28px 36px 40px 36px !important;
+  padding: 32px !important;
 }
 
 .app-main__outer {
@@ -737,7 +735,7 @@ button {
 
 /* Slide page content smoothly when sidebar is hovered and expanded in collapsed mode */
 .closed-sidebar-open.closed-sidebar:not(.closed-sidebar-md) .app-main__outer {
-  padding-left: 280px !important;
+  padding-left: 256px !important;
 }
 
 /* Toast Animation */

@@ -1,6 +1,5 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { ChartConfiguration } from 'chart.js';
-import { UserinfoService } from '../../../services/userinfo.service';
 import { WebapiService } from '../../../services/webapi.service';
 
 @Component({
@@ -12,7 +11,6 @@ export class AnalyticsComponent implements OnInit {
   totalUsers = 12459;
 
   constructor(
-    public userInfo: UserinfoService,
     private webApiService: WebapiService,
     private cdr: ChangeDetectorRef
   ) { }

@@ -17,21 +17,15 @@ import moment from "moment";
   providedIn: 'root'
 })
 export class CommonService {
-  public sitepath = 'https://www.replaceprojectname.com'
   public isSpinnerVisible = signal(false);
   public showMenu: boolean = false;
-  public showCart: boolean = false;
   public showAuth: boolean = false;
-
-  public pcart: boolean = false;
-  public bcart: boolean = false;
-  public Token = 'replaceprojectnameweb' + this.GetDate(new Date());
   public isBrowser: boolean;
   private renderer: Renderer2;
   public setlang = 'INR';
+  public Token = 'accessToken';
   public isLoggedIn$: Observable<boolean>;
   public refreshLogin$ = new BehaviorSubject<boolean>(false);
-  public OrderSuccess: any;
   private modalReference: any;
   
 
@@ -75,38 +69,17 @@ export class CommonService {
   }
   public generateTags(tags: any) {
     tags = {
-      title: "replaceprojectname",
-      description: "",
-      keywords: "",
-      image: "/assets/images/jpg/home.jpg",
+      title: "Active Life",
+      description: "Active Life Admin Dashboard",
+      keywords: "active life, admin, health",
+      image: "/favicon.ico",
       path: "", ...tags,
     };
-    // Set a title
     this.title.setTitle(tags.title);
     this.meta.updateTag({ name: "Description", content: tags.description });
     this.meta.updateTag({ name: "Keywords", content: tags.keywords });
-    // Set meta tags
-    this.meta.updateTag({ name: "twitter:card", content: "summary" });
-    this.meta.updateTag({ name: "twitter:site", content: "@replaceprojectname" });
-    this.meta.updateTag({ name: "twitter:title", content: tags.title });
-    this.meta.updateTag({
-      name: "twitter:description",
-      content: tags.description,
-    });
-    this.meta.updateTag({ name: "twitter:image", content: tags.image });
-    this.meta.updateTag({ property: "fb:app_id", content: "182752693091917" });
-    this.meta.updateTag({ property: "og:type", content: "product" });
-    this.meta.updateTag({ property: "og:site_name", content: "replaceprojectname" });
     this.meta.updateTag({ property: "og:title", content: tags.title });
-    this.meta.updateTag({
-      property: "og:description",
-      content: tags.description,
-    });
-    this.meta.updateTag({ property: "og:image", content: tags.image });
-    this.meta.updateTag({
-      property: "og:url",
-      content: this.sitepath + "/" + tags.path,
-    });
+    this.meta.updateTag({ property: "og:description", content: tags.description });
   }
   public OpenPopup(content: any, selclass = "My_Popup", size = 'lg') {
     this.modalReference = this.modalService.open(content, { centered: true, windowClass: selclass, size });
@@ -117,21 +90,10 @@ export class CommonService {
   public GotoURLParam(url: string) {
     this.router.navigateByUrl(url);
   }
-  public loadRAutocomplete(file: any) {
-    const node = document.createElement("script");
-    node.src = `${file}`;
-    node.type = "text/javascript";
-    node.async = true;
-    node.defer = true;
-    document.getElementsByTagName("head")[0].appendChild(node);
-  }
   public toggleOverflow() {
-
     if (this.isBrowser) {
       (this.showMenu) ? this.renderer.addClass(window.document.body, 'overflowx') : this.renderer.removeClass(window.document.body, 'overflowx');
       (this.showMenu) ? this.renderer.addClass(window.document.documentElement, 'overflowx') : this.renderer.removeClass(window.document.documentElement, 'overflowx');
-      (this.showCart) ? this.renderer.addClass(window.document.body, 'overflowx') : this.renderer.removeClass(window.document.body, 'overflowx');
-      (this.showCart) ? this.renderer.addClass(window.document.documentElement, 'overflowx') : this.renderer.removeClass(window.document.documentElement, 'overflowx');
     }
   }
   public NoSpace(event: any) {
@@ -186,13 +148,6 @@ export class CommonService {
       behavior: "smooth",
       block: "center",
       inline: "nearest",
-    });
-  }
-  public bowlGoTo($element: any): void {
-    $element.scrollIntoView({
-      behavior: "smooth",
-      block: "start",
-      inline: "start",
     });
   }
   ToastClear() {

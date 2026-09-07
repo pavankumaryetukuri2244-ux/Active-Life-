@@ -161,7 +161,7 @@ interface AuditStats {
     .al-filter-card {
       background: #FFFFFF !important;
       border: 1px solid #E5E7EB !important;
-      border-radius: 16px !important;
+      border-radius: 14px !important;
       padding: 20px 24px !important;
       margin-bottom: 24px !important;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
@@ -239,7 +239,7 @@ interface AuditStats {
     .al-table-card {
       background: #FFFFFF !important;
       border: 1px solid #E5E7EB !important;
-      border-radius: 16px !important;
+      border-radius: 14px !important;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
       padding: 0 !important;
     }
@@ -247,7 +247,7 @@ interface AuditStats {
     .al-table-responsive {
       width: 100% !important;
       overflow-x: auto !important;
-      border-radius: 16px !important;
+      border-radius: 14px !important;
     }
 
     .al-table {

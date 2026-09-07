@@ -295,6 +295,17 @@ interface ContentItem {
     .cm-media-card:hover {
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
     }
+
+    .cm-media-title {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+      font-size: 16px !important;
+      font-weight: 600 !important;
+      font-style: normal !important;
+      line-height: 24px !important;
+      letter-spacing: -0.31px !important;
+      color: #0F172A !important;
+      margin: 0 !important;
+    }
   `]
 })
 export class ContentManagementComponent implements OnInit {
