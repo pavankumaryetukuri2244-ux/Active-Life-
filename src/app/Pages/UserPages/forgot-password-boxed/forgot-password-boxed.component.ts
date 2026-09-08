@@ -415,7 +415,7 @@ export class ForgotPasswordBoxedComponent implements OnInit, AfterViewInit {
         this.resendMessage = 'OTP sent successfully. Please check your email.';
         this.clearOtpInputs();
       }
-    }, 4500);
+    }, 2000);
 
     this.webApiService.SendOtp(this.email, false).subscribe({
       next: (res: any) => {
