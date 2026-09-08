@@ -2,19 +2,29 @@ import { Component, OnInit } from '@angular/core';
 import { WebapiService } from '../../services/webapi.service';
 
 interface Stage {
+  id?: number;
+  raw?: any;
   weekRange: string;
   trimester: string;
   milestones: string;
   scans: string;
   status: 'Active' | 'Inactive';
+  isActive?: boolean;
 }
 
 interface Vaccine {
+  id?: number;
+  raw?: any;
   title: string;
+  vaccineName?: string;
   timing: string;
+  recommendedAge?: string;
+  numberOfDoses?: number | string;
+  doseNumber?: number | string;
+  recommendedTiming?: string;
   description: string;
   priority: 'High' | 'Medium' | 'Low';
-  status: 'Active' | 'Inactive';
+  status?: string;
 }
 
 @Component({
@@ -347,7 +357,7 @@ interface Vaccine {
   `]
 })
 export class PreventiveCareComponent implements OnInit {
-  
+
   pregnancyProgramsCount = 0;
   childCareProgramsCount = 0;
   vaccinesTrackedCount = 0;
@@ -356,7 +366,7 @@ export class PreventiveCareComponent implements OnInit {
   stagesList: Stage[] = [];
   pregnancyVaccines: Vaccine[] = [];
   childVaccines: Vaccine[] = [];
-  
+
   activeTab: 'Pregnancy Care' | 'Pregnancy Vaccines' | 'Child Vaccines' = 'Pregnancy Care';
   selectedItem: any = null;
   isLoading = false;
@@ -401,6 +411,8 @@ export class PreventiveCareComponent implements OnInit {
 
   // Edit Modal state
   showEditModal = false;
+  isSavingEdit = false;
+  editErrorMessage = '';
   editItemType: 'stage' | 'pregnancyVaccine' | 'childVaccine' | null = null;
   editingItemRef: any = null;
   editTitle = '';
@@ -410,6 +422,20 @@ export class PreventiveCareComponent implements OnInit {
   editTrimester = 1;
   editMilestones = '';
   editScans = '';
+  editStageId: number = 0;
+
+  // Child Vaccine Edit fields (matching Add Child Vaccine modal)
+  editChildVaccineId: number = 0;
+  editChildVaccineName = '';
+  editChildRecommendedAge = '';
+  editChildDoseNumber = '';
+  editChildDescription = '';
+
+  // Pregnancy Vaccine Edit fields (matching Add Pregnancy Vaccine modal)
+  editPregnancyVaccineId: number = 0;
+  editPregnancyVaccineName = '';
+  editPregnancyRecommendedTiming = '';
+  editPregnancyDescription = '';
 
   constructor(private api: WebapiService) {
     document.addEventListener('click', () => this.closeDropdown());
@@ -427,7 +453,29 @@ export class PreventiveCareComponent implements OnInit {
   toggleStatus(item: Stage | Vaccine, event?: Event) {
     if (event) event.stopPropagation();
     this.closeDropdown();
-    item.status = item.status === 'Active' ? 'Inactive' : 'Active';
+
+    const stageId = (item as any).id || (item as any).raw?.id;
+    if (stageId && ('milestones' in item || 'scans' in item)) {
+      const prevStatus = item.status;
+      item.status = item.status === 'Active' ? 'Inactive' : 'Active';
+
+      this.api.TogglePregnancyStageStatus(stageId).subscribe({
+        next: (res: any) => {
+          if (res && res.data) {
+            const isAct = res.data.isActive !== undefined ? res.data.isActive : (res.data.status?.toLowerCase() === 'active');
+            item.status = isAct ? 'Active' : 'Inactive';
+            (item as any).isActive = isAct;
+          }
+          this.loadPreventiveCareData(false);
+        },
+        error: (err: any) => {
+          console.error('Error toggling pregnancy stage status:', err);
+          item.status = prevStatus;
+        }
+      });
+    } else {
+      item.status = item.status === 'Active' ? 'Inactive' : 'Active';
+    }
   }
 
   openEditModal(item: any, type: 'stage' | 'pregnancyVaccine' | 'childVaccine', event?: Event) {
@@ -435,12 +483,39 @@ export class PreventiveCareComponent implements OnInit {
     this.closeDropdown();
     this.editingItemRef = item;
     this.editItemType = type;
+    this.editErrorMessage = '';
+    this.isSavingEdit = false;
 
     if (type === 'stage') {
+      this.editStageId = Number(item.id || item.raw?.id || 0);
       this.editWeekRange = item.weekRange || '';
       this.editTrimester = item.trimester === 'First Trimester' ? 1 : item.trimester === 'Second Trimester' ? 2 : 3;
-      this.editMilestones = item.milestones || '';
-      this.editScans = item.scans || '';
+      this.editMilestones = item.milestones && item.milestones !== '—' ? item.milestones : '';
+      this.editScans = item.scans && item.scans !== '—' ? item.scans : '';
+    } else if (type === 'childVaccine') {
+      this.editChildVaccineId = Number(item.id || item.raw?.id || 0);
+      this.editChildVaccineName = item.vaccineName || item.title?.replace(/\s*\(Dose\s*\d+\)/i, '').replace(/\s*\(\d+\s*dose[s]?\)/i, '') || '';
+      
+      // Extract clean number of months (e.g. "8", or "0" for at birth) so input doesn't carry "months" text
+      let initialAge = '';
+      if (item.raw?.recommendedAgeMonths !== undefined && item.raw?.recommendedAgeMonths !== null) {
+        initialAge = String(item.raw.recommendedAgeMonths);
+      } else {
+        const sourceAge = String(item.recommendedAge || item.timing || '');
+        if (sourceAge.toLowerCase().includes('birth')) {
+          initialAge = '0';
+        } else {
+          initialAge = sourceAge.replace(/\D/g, '');
+        }
+      }
+      this.editChildRecommendedAge = initialAge;
+      this.editChildDoseNumber = String(item.numberOfDoses || item.doseNumber || item.raw?.numberOfDoses || item.raw?.dose || '').replace(/\D/g, '') || '';
+      this.editChildDescription = item.description && item.description !== '—' ? item.description : '';
+    } else if (type === 'pregnancyVaccine') {
+      this.editPregnancyVaccineId = Number(item.id || item.raw?.id || 0);
+      this.editPregnancyVaccineName = item.vaccineName || item.title || '';
+      this.editPregnancyRecommendedTiming = item.recommendedTiming || item.timing?.replace(/^Timing:\s*/i, '') || '';
+      this.editPregnancyDescription = item.description && item.description !== '—' ? item.description : '';
     } else {
       this.editTitle = item.title || '';
       this.editTiming = item.timing || '';
@@ -454,23 +529,241 @@ export class PreventiveCareComponent implements OnInit {
     this.showEditModal = false;
     this.editingItemRef = null;
     this.editItemType = null;
+    this.editStageId = 0;
+    this.editPregnancyVaccineId = 0;
+    this.editChildVaccineId = 0;
+    this.editErrorMessage = '';
+    this.isSavingEdit = false;
   }
 
   saveEditChanges() {
     if (!this.editingItemRef) return;
 
     if (this.editItemType === 'stage') {
-      this.editingItemRef.weekRange = this.editWeekRange.trim();
-      this.editingItemRef.trimester = this.editTrimester === 1 ? 'First Trimester' : this.editTrimester === 2 ? 'Second Trimester' : 'Third Trimester';
-      this.editingItemRef.milestones = this.editMilestones.trim();
-      this.editingItemRef.scans = this.editScans.trim();
+      const stageId = Number(this.editStageId || this.editingItemRef?.id || this.editingItemRef?.raw?.id);
+      let rangeInput = this.editWeekRange.trim();
+      const milestones = this.editMilestones.trim();
+      const scan = this.editScans.trim();
+
+      if (!rangeInput) {
+        this.editErrorMessage = 'Please enter a week range.';
+        return;
+      }
+
+      if (!rangeInput.toLowerCase().startsWith('week')) {
+        rangeInput = 'Week ' + rangeInput;
+      }
+
+      const itemRef = this.editingItemRef;
+
+      // Optimistically update local stage so UI reflects changes immediately
+      if (itemRef) {
+        itemRef.weekRange = rangeInput;
+        itemRef.milestones = milestones || '—';
+        itemRef.scans = scan || '—';
+      }
+
+      const payload = {
+        id: stageId,
+        weekRange: rangeInput,
+        milestones: milestones,
+        scan: scan
+      };
+
+      this.isSavingEdit = true;
+      this.editErrorMessage = '';
+
+      this.api.UpdatePregnancyStage(payload).subscribe({
+        next: (res: any) => {
+          this.isSavingEdit = false;
+          if (res?.success || res?.status === 200) {
+            const returned = res.data;
+            if (returned && itemRef) {
+              itemRef.id = returned.id || itemRef.id;
+              itemRef.weekRange = returned.weekRange
+                ? (returned.weekRange.toLowerCase().startsWith('week') ? returned.weekRange : `Week ${returned.weekRange}`)
+                : itemRef.weekRange;
+              itemRef.trimester = returned.trimester || itemRef.trimester;
+              itemRef.milestones = returned.milestoneName || returned.milestones || milestones || '—';
+              itemRef.scans = returned.milestoneType || returned.scan || returned.scans || scan || '—';
+              if (returned.isActive !== undefined) {
+                itemRef.isActive = returned.isActive;
+                itemRef.status = returned.isActive ? 'Active' : 'Inactive';
+              }
+            }
+            this.loadPreventiveCareData(false);
+            this.closeEditModal();
+          } else {
+            this.editErrorMessage = res?.message || 'Failed to update pregnancy stage.';
+          }
+        },
+        error: (err: any) => {
+          this.isSavingEdit = false;
+          console.error('Error updating pregnancy stage:', err);
+          const errMsg = err.error?.message || err.message || 'Failed to update pregnancy stage. Please try again.';
+          this.editErrorMessage = errMsg;
+        }
+      });
+      return;
+    } else if (this.editItemType === 'childVaccine') {
+      const vName = this.editChildVaccineName.trim();
+      const rawAge = this.editChildRecommendedAge.trim();
+      const doseNum = parseInt(String(this.editChildDoseNumber).replace(/\D/g, ''), 10) || 1;
+      const desc = this.editChildDescription.trim();
+
+      if (!vName) {
+        this.editErrorMessage = 'Please enter a vaccine name.';
+        return;
+      }
+      if (!rawAge) {
+        this.editErrorMessage = 'Please enter recommended age.';
+        return;
+      }
+      if (!desc) {
+        this.editErrorMessage = 'Please enter description.';
+        return;
+      }
+
+      // Backend expects recommendedAge to be a pure number of months string (e.g. "8", or "0" for at birth).
+      // If "8 months" is sent, backend throws: "Recommended age must be a valid number of months."
+      const cleanAge = rawAge.toLowerCase().includes('birth') ? '0' : rawAge.replace(/\D/g, '').trim();
+      if (!cleanAge) {
+        this.editErrorMessage = 'Recommended age must be a valid number of months (e.g. 8, or 0 for at birth).';
+        return;
+      }
+
+      const itemRef = this.editingItemRef;
+      const vaccineId = Number(this.editChildVaccineId || itemRef?.id || itemRef?.raw?.id);
+
+      // Optimistically update local item so user sees changes immediately
+      if (itemRef) {
+        itemRef.vaccineName = vName;
+        itemRef.recommendedAge = cleanAge === '0' ? 'At birth' : `${cleanAge} months`;
+        itemRef.numberOfDoses = doseNum;
+        itemRef.title = vName + (doseNum ? ` (Dose ${doseNum})` : '');
+        itemRef.timing = cleanAge === '0' ? 'Timing: At birth' : `Recommended Age: ${cleanAge} months`;
+        itemRef.description = desc || '—';
+      }
+
+      const payload: {
+        id?: number;
+        vaccineName: string;
+        recommendedAge: string;
+        numberOfDoses: number;
+        description: string;
+      } = {
+        vaccineName: vName,
+        recommendedAge: cleanAge,
+        numberOfDoses: doseNum,
+        description: desc
+      };
+
+      if (vaccineId) {
+        payload.id = vaccineId;
+      }
+
+      this.isSavingEdit = true;
+      this.editErrorMessage = '';
+
+      this.api.AddChildVaccine(payload).subscribe({
+        next: (res: any) => {
+          this.isSavingEdit = false;
+          if (res?.success || res?.status === 200) {
+            const returned = Array.isArray(res.data) ? res.data[0] : res.data;
+            if (returned && itemRef) {
+              itemRef.id = returned.id || itemRef.id;
+              itemRef.vaccineName = returned.vaccineName || vName;
+              itemRef.recommendedAge = returned.recommendedAge || (returned.recommendedAgeMonths !== undefined ? `${returned.recommendedAgeMonths} months` : (cleanAge === '0' ? 'At birth' : `${cleanAge} months`));
+              itemRef.numberOfDoses = returned.numberOfDoses || returned.doseNumber || doseNum;
+              itemRef.title = itemRef.vaccineName + (itemRef.numberOfDoses ? ` (Dose ${itemRef.numberOfDoses})` : '');
+              itemRef.description = returned.description || desc;
+            }
+            this.loadPreventiveCareData(false);
+            this.closeEditModal();
+          } else {
+            this.editErrorMessage = res?.message || 'Failed to update child vaccine.';
+          }
+        },
+        error: (err: any) => {
+          this.isSavingEdit = false;
+          console.error('Error updating child vaccine:', err);
+          const errMsg = err.error?.message || err.message || 'Failed to update child vaccine. Please try again.';
+          this.editErrorMessage = errMsg;
+        }
+      });
+      return;
+    } else if (this.editItemType === 'pregnancyVaccine') {
+      const vName = this.editPregnancyVaccineName.trim();
+      const timing = this.editPregnancyRecommendedTiming.trim();
+      const desc = this.editPregnancyDescription.trim();
+
+      if (!vName) {
+        this.editErrorMessage = 'Please enter a vaccine name.';
+        return;
+      }
+
+      const itemRef = this.editingItemRef;
+      const vaccineId = Number(this.editPregnancyVaccineId || itemRef?.id || itemRef?.raw?.id);
+
+      // Optimistically update the local object so user sees changes immediately
+      if (itemRef) {
+        itemRef.vaccineName = vName;
+        itemRef.recommendedTiming = timing;
+        itemRef.title = vName;
+        itemRef.timing = timing ? (timing.toLowerCase().startsWith('timing') ? timing : `Timing: ${timing}`) : 'Timing: Any trimester';
+        itemRef.description = desc || '—';
+      }
+
+      const payload: {
+        id?: number;
+        vaccineName: string;
+        recommendedTiming: string;
+        description: string;
+      } = {
+        vaccineName: vName,
+        recommendedTiming: timing,
+        description: desc
+      };
+
+      if (vaccineId) {
+        payload.id = vaccineId;
+      }
+
+      this.isSavingEdit = true;
+      this.editErrorMessage = '';
+
+      this.api.AddPregnancyVaccine(payload).subscribe({
+        next: (res: any) => {
+          this.isSavingEdit = false;
+          if (res?.success || res?.status === 200) {
+            if (res.data && itemRef) {
+              itemRef.id = res.data.id || itemRef.id;
+              itemRef.vaccineName = res.data.vaccineName || vName;
+              itemRef.recommendedTiming = res.data.recommendedTiming || timing;
+              itemRef.title = res.data.vaccineName || vName;
+              itemRef.description = res.data.description || desc;
+              itemRef.timing = itemRef.recommendedTiming ? (itemRef.recommendedTiming.toLowerCase().startsWith('timing') ? itemRef.recommendedTiming : `Timing: ${itemRef.recommendedTiming}`) : 'Timing: Any trimester';
+            }
+            this.loadPreventiveCareData(false);
+            this.closeEditModal();
+          } else {
+            this.editErrorMessage = res?.message || 'Failed to update pregnancy vaccine.';
+          }
+        },
+        error: (err: any) => {
+          this.isSavingEdit = false;
+          console.error('Error updating pregnancy vaccine:', err);
+          const errMsg = err.error?.message || err.message || 'Failed to update pregnancy vaccine. Please try again.';
+          this.editErrorMessage = errMsg;
+        }
+      });
+      return;
     } else {
       this.editingItemRef.title = this.editTitle.trim();
       this.editingItemRef.timing = this.editTiming.trim();
       this.editingItemRef.description = this.editDescription.trim();
+      this.closeEditModal();
     }
-
-    this.closeEditModal();
   }
 
   ngOnInit() {
@@ -488,14 +781,38 @@ export class PreventiveCareComponent implements OnInit {
           // 1. Map pregnancy stages from API
           if (Array.isArray(res.data.pregnancyStages)) {
             const stages = res.data.pregnancyStages;
-            stages.sort((a: any, b: any) => (a.weekStart || 0) - (b.weekStart || 0));
-            this.stagesList = stages.map((s: any) => ({
-              weekRange: s.weekStart === s.weekEnd ? `Week ${s.weekStart}` : `Week ${s.weekStart}-${s.weekEnd}`,
-              trimester: s.trimester === 1 ? 'First Trimester' : s.trimester === 2 ? 'Second Trimester' : 'Third Trimester',
-              milestones: s.milestones || '—',
-              scans: s.scans || '—',
-              status: 'Active'
-            }));
+            stages.sort((a: any, b: any) => (a.weekRangeStart || a.weekStart || 0) - (b.weekRangeStart || b.weekStart || 0));
+            this.stagesList = stages.map((s: any) => {
+              const weekRangeStr = s.weekRange
+                ? (s.weekRange.toLowerCase().startsWith('week') ? s.weekRange : `Week ${s.weekRange}`)
+                : (s.weekRangeStart && s.weekRangeEnd ? (s.weekRangeStart === s.weekRangeEnd ? `Week ${s.weekRangeStart}` : `Week ${s.weekRangeStart}-${s.weekRangeEnd}`) : (s.weekStart ? `Week ${s.weekStart}` : '—'));
+
+              let trimStr = 'First Trimester';
+              if (s.trimester) {
+                if (typeof s.trimester === 'string') {
+                  const tLower = s.trimester.toLowerCase();
+                  if (tLower.includes('first') || tLower.includes('1')) trimStr = 'First Trimester';
+                  else if (tLower.includes('second') || tLower.includes('2')) trimStr = 'Second Trimester';
+                  else if (tLower.includes('third') || tLower.includes('3')) trimStr = 'Third Trimester';
+                  else trimStr = s.trimester;
+                } else if (s.trimester === 1) trimStr = 'First Trimester';
+                else if (s.trimester === 2) trimStr = 'Second Trimester';
+                else if (s.trimester === 3) trimStr = 'Third Trimester';
+              }
+
+              const isAct = s.isActive !== undefined ? s.isActive : (s.status ? s.status.toLowerCase() === 'active' : true);
+
+              return {
+                id: s.id,
+                weekRange: weekRangeStr,
+                trimester: trimStr,
+                milestones: s.milestoneName || s.milestones || '—',
+                scans: s.milestoneType || s.scan || s.scans || '—',
+                status: isAct ? 'Active' : 'Inactive',
+                isActive: isAct,
+                raw: s
+              };
+            });
           } else {
             this.stagesList = [];
           }
@@ -504,11 +821,15 @@ export class PreventiveCareComponent implements OnInit {
           if (Array.isArray(res.data.pregnancyVaccines)) {
             const pVaccines = res.data.pregnancyVaccines;
             this.pregnancyVaccines = pVaccines.map((v: any) => ({
+              id: v.id,
+              vaccineName: v.vaccineName || '',
+              recommendedTiming: v.recommendedTiming || '',
               title: v.vaccineName || '—',
               timing: v.recommendedTiming ? `Timing: ${v.recommendedTiming}` : 'Timing: Any trimester',
               description: v.description || '—',
               priority: 'High',
-              status: 'Active'
+              status: v.status ? (v.status.toUpperCase() === 'ACTIVE' ? 'Active' : 'Inactive') : '',
+              raw: v
             }));
           } else {
             this.pregnancyVaccines = [];
@@ -519,11 +840,16 @@ export class PreventiveCareComponent implements OnInit {
             const cVaccines = res.data.childVaccines;
             cVaccines.sort((a: any, b: any) => (a.recommendedAgeMonths || 0) - (b.recommendedAgeMonths || 0));
             this.childVaccines = cVaccines.map((v: any) => ({
-              title: v.vaccineName + (v.doseNumber ? ` (Dose ${v.doseNumber})` : ''),
-              timing: v.recommendedAgeMonths === 0 || v.recommendedAgeMonths === null ? 'Timing: At birth' : `Recommended Age: ${v.recommendedAgeMonths} months`,
+              id: v.id,
+              vaccineName: v.vaccineName || '',
+              recommendedAge: v.recommendedAge || (v.recommendedAgeMonths !== undefined && v.recommendedAgeMonths !== null ? `${v.recommendedAgeMonths} months` : ''),
+              numberOfDoses: v.numberOfDoses || v.doseNumber || (v.dose ? String(v.dose).replace(/\D/g, '') : '') || '',
+              title: v.vaccineName + (v.doseNumber ? ` (Dose ${v.doseNumber})` : (v.dose ? ` (${v.dose})` : '')),
+              timing: v.recommendedAgeMonths === 0 || v.recommendedAgeMonths === null ? 'Timing: At birth' : (v.recommendedAge ? `Recommended Age: ${v.recommendedAge}` : `Recommended Age: ${v.recommendedAgeMonths} months`),
               description: v.description || '—',
               priority: 'High',
-              status: 'Active'
+              status: v.status ? (v.status.toUpperCase() === 'ACTIVE' ? 'Active' : 'Inactive') : '',
+              raw: v
             }));
           } else {
             this.childVaccines = [];
@@ -578,7 +904,7 @@ export class PreventiveCareComponent implements OnInit {
     const body = {
       weekRange: rangeInput,
       milestones: this.stageMilestones.trim(),
-      scans: this.stageScans.trim()
+      scan: this.stageScans.trim()
     };
 
     this.showAddStageModal = false;
@@ -593,7 +919,8 @@ export class PreventiveCareComponent implements OnInit {
       },
       error: (err: any) => {
         console.error('Add pregnancy stage error:', err);
-        this.errorMessage = 'Failed to add pregnancy stage. Please try again.';
+        const errMsg = err.error?.message || err.message || 'Failed to add pregnancy stage. Please try again.';
+        this.errorMessage = `Error: ${errMsg}`;
       }
     });
   }
@@ -616,8 +943,14 @@ export class PreventiveCareComponent implements OnInit {
       return;
     }
 
-    // Extract only digits for recommendedAge and keep as string (e.g. "6")
-    const recommendedAge = this.childRecommendedAge.replace(/\D/g, '').trim();
+    // Extract only digits for recommendedAge and keep as string (e.g. "6", or "0" for at birth)
+    const rawAge = this.childRecommendedAge.trim();
+    const recommendedAge = rawAge.toLowerCase().includes('birth') ? '0' : rawAge.replace(/\D/g, '').trim();
+
+    if (!recommendedAge) {
+      alert('Please enter a valid recommended age in months (e.g. 6, or 0 for at birth).');
+      return;
+    }
 
     // Parse Dose Number to integer type
     const doseDigits = this.childDoseNumber.replace(/\D/g, '');

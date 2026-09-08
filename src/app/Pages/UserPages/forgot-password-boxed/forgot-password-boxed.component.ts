@@ -369,6 +369,7 @@ export class ForgotPasswordBoxedComponent implements OnInit, AfterViewInit {
   showNewPassword: boolean = false;
   showConfirmPassword: boolean = false;
   resetError: string = '';
+  otpError: string = '';
   successMessage: string = 'Your password has been reset successfully. Please login with your new password.';
 
   loading: boolean = false;
@@ -530,38 +531,54 @@ export class ForgotPasswordBoxedComponent implements OnInit, AfterViewInit {
   verifyOtp() {
     const code = this.getEnteredOtp();
     if (!code || code.length < 6) {
+      this.otpError = 'Please enter the complete 6-digit OTP.';
       return;
     }
 
     this.loading = true;
-    this.resetError = '';
-
-    // Safety fallback timer to prevent UI freeze
-    const safetyTimer = setTimeout(() => {
-      this.loading = false;
-      this.step = 'resetPassword';
-      this.resetError = '';
-    }, 600);
+    this.otpError = '';
 
     this.webApiService.VerifyOtp(this.email, code).subscribe({
       next: (res: any) => {
-        clearTimeout(safetyTimer);
         this.loading = false;
-        this.step = 'resetPassword';
-        this.resetError = '';
+        if (res && res.success !== false) {
+          this.step = 'resetPassword';
+          this.resetError = '';
+        } else {
+          this.otpError = res?.message || 'Invalid or expired OTP. Please try again.';
+        }
       },
       error: (err: any) => {
-        clearTimeout(safetyTimer);
         this.loading = false;
-        this.step = 'resetPassword';
-        this.resetError = '';
+        console.error('Verify OTP error:', err);
+        this.otpError = err.error?.message || err.message || 'Failed to verify OTP. Please check your OTP and try again.';
       }
     });
   }
 
+  onPasswordChange() {
+    if (this.confirmPassword && this.newPassword) {
+      if (this.newPassword !== this.confirmPassword && this.confirmPassword.length >= this.newPassword.length) {
+        this.resetError = 'Passwords do not match.';
+      } else if (this.newPassword === this.confirmPassword && this.resetError === 'Passwords do not match.') {
+        this.resetError = '';
+      }
+    } else if (this.resetError === 'Passwords do not match.') {
+      this.resetError = '';
+    }
+  }
+
   submitResetPassword() {
-    if (!this.newPassword || this.newPassword.length < 6) {
+    if (!this.newPassword) {
+      this.resetError = 'Please enter a new password.';
+      return;
+    }
+    if (this.newPassword.length < 6) {
       this.resetError = 'Password must be at least 6 characters long.';
+      return;
+    }
+    if (!this.confirmPassword) {
+      this.resetError = 'Please confirm your password.';
       return;
     }
     if (this.newPassword !== this.confirmPassword) {

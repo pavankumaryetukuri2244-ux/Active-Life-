@@ -148,8 +148,8 @@
                   Update
                 </button>
 
-                <!-- Disable / Enable -->
-                <button (click)="onAction('disable', item)"
+                <!-- Status (Disable / Enable) -->
+                <button (click)="onAction('status', item)"
                   style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 16px; background: none; border: none; cursor: pointer; font-size: 14px; font-weight: 500; color: #D97706; transition: background 0.15s;"
                   (mouseenter)="$any($event.currentTarget).style.background='#FEF3C7'"
                   (mouseleave)="$any($event.currentTarget).style.background='none'">
@@ -366,6 +366,10 @@
           style="border-radius: 8px; font-size: 0.8rem; font-family: 'Inter', sans-serif;">
           {{ updateErrorMessage }}
         </div>
+        <div *ngIf="updateSuccessMessage" class="alert alert-success py-2 px-3 mb-3"
+          style="border-radius: 8px; font-size: 0.8rem; font-family: 'Inter', sans-serif;">
+          {{ updateSuccessMessage }}
+        </div>
 
         <!-- Title Input -->
         <div style="margin-bottom: 12px;">
@@ -445,8 +449,11 @@
         </div>
 
         <!-- Submit Button -->
-        <button type="submit" class="cm-modal-submit-btn">
-          <span style="color: #FFFFFF !important; font-weight: 600; font-size: 14px;">Save Changes</span>
+        <button type="submit" [disabled]="updating" class="cm-modal-submit-btn">
+          <span *ngIf="updating" class="spinner-border spinner-border-sm me-2 text-white" role="status"
+            aria-hidden="true"></span>
+          <span style="color: #FFFFFF !important; font-weight: 600; font-size: 14px;">{{ updating ? 'Updating...' :
+            'Save Changes' }}</span>
         </button>
       </form>
 

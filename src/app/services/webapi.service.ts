@@ -99,19 +99,39 @@ export class WebapiService {
   }
 
   public AddPregnancyStage(body: {
+    id?: number;
     weekRange: string;
     milestones: string;
-    scans: string;
+    scan: string;
   }) {
     const token = localStorage.getItem('accessToken');
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${token}`
     });
-    const url = `${this.WebApi}/api/v1/admin/preventive-care/pregnancy-stages`;
+    const url = `${this.WebApi}/api/v1/admin/preventive-care/pregnancy-stage`;
     return this.Http.post<any>(url, body, { headers });
   }
 
+  public UpdatePregnancyStage(body: {
+    id: number;
+    weekRange: string;
+    milestones: string;
+    scan: string;
+  }) {
+    return this.AddPregnancyStage(body);
+  }
+
+  public TogglePregnancyStageStatus(stageId: number) {
+    const token = localStorage.getItem('accessToken');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+    const url = `${this.WebApi}/api/v1/admin/preventive-care/pregnancy-stage/status?stageId=${stageId}`;
+    return this.Http.post<any>(url, { stageId }, { headers });
+  }
+
   public AddChildVaccine(body: {
+    id?: number;
     vaccineName: string;
     description: string;
     numberOfDoses: number;
@@ -125,7 +145,18 @@ export class WebapiService {
     return this.Http.post<any>(url, body, { headers });
   }
 
+  public UpdateChildVaccine(body: {
+    id: number;
+    vaccineName: string;
+    description: string;
+    numberOfDoses: number;
+    recommendedAge: string;
+  }) {
+    return this.AddChildVaccine(body);
+  }
+
   public AddPregnancyVaccine(body: {
+    id?: number;
     vaccineName: string;
     recommendedTiming: string;
     description: string;
@@ -138,7 +169,33 @@ export class WebapiService {
     return this.Http.post<any>(url, body, { headers });
   }
 
+  public UpdatePregnancyVaccine(body: {
+    id: number;
+    vaccineName: string;
+    recommendedTiming: string;
+    description: string;
+  }) {
+    return this.AddPregnancyVaccine(body);
+  }
+
   public UploadContent(body: {
+    id?: number;
+    title: string;
+    category: string;
+    path: string;
+    level: string;
+    tags: string;
+  }) {
+    const token = localStorage.getItem('accessToken');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+    const url = `${this.WebApi}/api/v1/content/upload`;
+    return this.Http.post<any>(url, body, { headers });
+  }
+
+  public UpdateContent(body: {
+    id: number;
     title: string;
     category: string;
     path: string;
@@ -162,13 +219,17 @@ export class WebapiService {
     return this.Http.post<any>(url, filters, { headers });
   }
 
-  public ToggleContentStatus(id: number) {
+  public ContentStatus(id: number) {
     const token = localStorage.getItem('accessToken');
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${token}`
     });
-    const url = `${this.WebApi}/api/v1/content/${id}/toggle-status`;
-    return this.Http.post<any>(url, { contentId: id }, { headers });
+    const url = `${this.WebApi}/api/v1/content/status?contentId=${id}`;
+    return this.Http.post<any>(url, { contentId: id, id }, { headers });
+  }
+
+  public ToggleContentStatus(id: number) {
+    return this.ContentStatus(id);
   }
 
   public SendOtp(email: string, resendOtp: boolean = false) {

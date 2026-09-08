@@ -15,6 +15,7 @@ interface ContentItem {
   created: string;
   path?: string;
   isActive?: boolean;
+  level?: string;
 }
 
 @Component({
@@ -375,24 +376,27 @@ export class ContentManagementComponent implements OnInit {
   // Update Content Modal State
   showUpdateModal = false;
   editingContentRef: ContentItem | null = null;
+  editingContentId: number = 0;
   updateTitle: string = '';
   updateCategory: string = '';
   updatePath: string = '';
   updateLevel: string = 'Beginner';
   updateTags: string = '';
   updateErrorMessage: string = '';
+  updateSuccessMessage: string = '';
+  updating: boolean = false;
 
-  onAction(action: 'preview' | 'update' | 'disable' | 'delete', item: ContentItem) {
+  onAction(action: 'preview' | 'update' | 'disable' | 'status' | 'delete', item: ContentItem) {
     this.closeDropdown();
     this.selectedContent = item;
     if (action === 'preview') {
       // Keep button visible in UI
     } else if (action === 'update') {
       this.openUpdateModal(item);
-    } else if (action === 'disable') {
+    } else if (action === 'disable' || action === 'status') {
       const numericId = item.rawId || parseInt(String(item.id).replace(/\D/g, ''), 10);
       if (numericId) {
-        this.webApiService.ToggleContentStatus(numericId).subscribe({
+        this.webApiService.ContentStatus(numericId).subscribe({
           next: (res: any) => {
             if (res && res.success && res.data) {
               const newIsActive = res.data.isActive;
@@ -405,7 +409,7 @@ export class ContentManagementComponent implements OnInit {
             this.applyFrontendFilters();
           },
           error: (err: any) => {
-            console.error('Error toggling content status:', err);
+            console.error('Error updating content status:', err);
             item.status = item.status === 'Active' ? 'Disabled' : 'Active';
             item.isActive = item.status === 'Active';
             this.applyFrontendFilters();
@@ -423,26 +427,36 @@ export class ContentManagementComponent implements OnInit {
 
   openUpdateModal(item: ContentItem) {
     this.editingContentRef = item;
+    this.editingContentId = item.rawId || parseInt(String(item.id).replace(/\D/g, ''), 10) || 0;
     this.updateTitle = item.title || '';
     this.updateCategory = item.category || 'Gym';
     this.updatePath = item.path || '';
     
-    const firstTag = item.tags && item.tags.length > 0 ? item.tags[0] : 'Beginner';
-    if (['Beginner', 'Intermediate', 'Advanced'].includes(firstTag)) {
-      this.updateLevel = firstTag;
+    if (item.level) {
+      this.updateLevel = item.level;
     } else {
-      this.updateLevel = 'Beginner';
+      const firstTag = item.tags && item.tags.length > 0 ? item.tags[0] : 'Beginner';
+      if (['Beginner', 'Intermediate', 'Advanced'].includes(firstTag)) {
+        this.updateLevel = firstTag;
+      } else {
+        this.updateLevel = 'Beginner';
+      }
     }
 
     this.updateTags = item.tags ? item.tags.join(', ') : '';
     this.updateErrorMessage = '';
+    this.updateSuccessMessage = '';
+    this.updating = false;
     this.showUpdateModal = true;
   }
 
   closeUpdateModal() {
     this.showUpdateModal = false;
     this.editingContentRef = null;
+    this.editingContentId = 0;
     this.updateErrorMessage = '';
+    this.updateSuccessMessage = '';
+    this.updating = false;
   }
 
   setUpdateLevel(level: string) {
@@ -451,25 +465,71 @@ export class ContentManagementComponent implements OnInit {
 
   saveUpdateContent() {
     if (!this.editingContentRef) return;
-    if (!this.updateTitle || !this.updateCategory) {
+    if (!this.updateTitle || !this.updateCategory || !this.updatePath) {
       this.updateErrorMessage = 'Please fill in all required fields';
       return;
     }
 
-    this.editingContentRef.title = this.updateTitle.trim();
-    this.editingContentRef.category = this.updateCategory as 'Gym' | 'Meditation' | 'Videos';
-    if (this.updatePath) {
-      this.editingContentRef.path = this.updatePath.trim();
+    const contentId = this.editingContentId || this.editingContentRef.rawId || parseInt(String(this.editingContentRef.id).replace(/\D/g, ''), 10);
+    if (!contentId) {
+      this.updateErrorMessage = 'Invalid content ID';
+      return;
     }
-    
-    const tagArray = this.updateTags
-      ? this.updateTags.split(',').map(t => t.trim()).filter(t => t)
-      : [this.updateLevel];
 
-    this.editingContentRef.tags = tagArray;
+    this.updating = true;
+    this.updateErrorMessage = '';
+    this.updateSuccessMessage = '';
 
-    this.applyFrontendFilters();
-    this.closeUpdateModal();
+    const payload = {
+      id: Number(contentId),
+      title: this.updateTitle.trim(),
+      category: this.updateCategory.toUpperCase(),
+      path: this.updatePath.trim(),
+      level: (this.updateLevel || 'BEGINNER').toUpperCase(),
+      tags: this.updateTags.trim() || (this.updateLevel || 'BEGINNER').toUpperCase()
+    };
+
+    this.webApiService.UpdateContent(payload).subscribe({
+      next: (res: any) => {
+        this.updating = false;
+        if (res && (res.success || res.status === 200)) {
+          this.updateSuccessMessage = res.message || 'Content updated successfully';
+
+          // Immediately reflect returned DB values in the local UI
+          if (this.editingContentRef) {
+            const returned = res.data || {};
+            this.editingContentRef.title = returned.title || payload.title;
+            const rawCat = (returned.category || payload.category).toUpperCase();
+            this.editingContentRef.category = rawCat === 'GYM' ? 'Gym' : (rawCat === 'MEDITATION' ? 'Meditation' : 'Videos');
+            this.editingContentRef.path = returned.path || payload.path;
+            this.editingContentRef.level = returned.level || this.updateLevel;
+
+            if (returned.tags) {
+              this.editingContentRef.tags = typeof returned.tags === 'string'
+                ? returned.tags.split(',').map((t: string) => t.trim()).filter((t: string) => t)
+                : returned.tags;
+            } else if (this.updateTags) {
+              this.editingContentRef.tags = this.updateTags.split(',').map((t: string) => t.trim()).filter((t: string) => t);
+            }
+            this.applyFrontendFilters();
+          }
+
+          // Reload from database to ensure complete sync
+          this.loadAllContent(false);
+
+          setTimeout(() => {
+            this.closeUpdateModal();
+          }, 1200);
+        } else {
+          this.updateErrorMessage = res.message || 'Failed to update content';
+        }
+      },
+      error: (err: any) => {
+        this.updating = false;
+        console.error('Error updating content:', err);
+        this.updateErrorMessage = err.error?.message || err.message || 'Error updating content. Please try again.';
+      }
+    });
   }
 
   closePreviewModal() {
@@ -532,6 +592,14 @@ export class ContentManagementComponent implements OnInit {
               tagList = [item.level];
             }
 
+            let levelStr = 'Beginner';
+            if (item.level) {
+              const l = item.level.toUpperCase();
+              if (l === 'INTERMEDIATE') levelStr = 'Intermediate';
+              else if (l === 'ADVANCED') levelStr = 'Advanced';
+              else levelStr = 'Beginner';
+            }
+
             const rawIdNum = typeof item.id === 'number' ? item.id : parseInt(String(item.id).replace(/\D/g, ''), 10);
 
             return {
@@ -546,7 +614,8 @@ export class ContentManagementComponent implements OnInit {
               viewsRaw: item.viewCount || 0,
               created: item.createdAt ? item.createdAt.split('T')[0] : '',
               path: item.path || '',
-              isActive: item.isActive !== false
+              isActive: item.isActive !== false,
+              level: levelStr
             };
           });
 
@@ -630,8 +699,12 @@ export class ContentManagementComponent implements OnInit {
     this.uploadLevel = level;
   }
 
-  toggleStatus() {
+  updateUploadStatus() {
     this.uploadStatus = !this.uploadStatus;
+  }
+
+  toggleStatus() {
+    this.updateUploadStatus();
   }
 
   submitUploadContent() {
