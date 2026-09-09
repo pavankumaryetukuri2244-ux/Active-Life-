@@ -551,7 +551,11 @@ export class ForgotPasswordBoxedComponent implements OnInit, AfterViewInit {
       error: (err: any) => {
         this.loading = false;
         console.error('Verify OTP error:', err);
-        this.otpError = err.error?.message || err.message || 'Failed to verify OTP. Please check your OTP and try again.';
+        if (err.name === 'TimeoutError' || err.message?.includes('Timeout') || err.message?.includes('timeout')) {
+          this.otpError = 'Verification request timed out. The backend server took too long to respond. Please try again.';
+        } else {
+          this.otpError = err.error?.message || err.message || 'Failed to verify OTP. Please check your OTP and try again.';
+        }
       }
     });
   }

@@ -1,5 +1,6 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { timeout } from 'rxjs';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -234,17 +235,23 @@ export class WebapiService {
 
   public SendOtp(email: string, resendOtp: boolean = false) {
     const url = `${this.WebApi}/api/v1/admin/auth/send-otp`;
-    return this.Http.post<any>(url, { email, resendOtp });
+    return this.Http.post<any>(url, { email, resendOtp }).pipe(
+      timeout(10000)
+    );
   }
 
   public VerifyOtp(email: string, otp: string) {
     const url = `${this.WebApi}/api/v1/admin/auth/verify-otp`;
-    return this.Http.post<any>(url, { email, otp });
+    return this.Http.post<any>(url, { email, otp }).pipe(
+      timeout(10000)
+    );
   }
 
   public ResetPassword(body: { email: string; newPassword: string; confirmPassword: string }) {
     const url = `${this.WebApi}/api/v1/admin/auth/reset-password`;
-    return this.Http.post<any>(url, body);
+    return this.Http.post<any>(url, body).pipe(
+      timeout(10000)
+    );
   }
 
   public Logout(token: string) {
