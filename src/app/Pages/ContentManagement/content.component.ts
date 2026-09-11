@@ -431,7 +431,7 @@ export class ContentManagementComponent implements OnInit {
     this.updateTitle = item.title || '';
     this.updateCategory = item.category || 'Gym';
     this.updatePath = item.path || '';
-    
+
     if (item.level) {
       this.updateLevel = item.level;
     } else {

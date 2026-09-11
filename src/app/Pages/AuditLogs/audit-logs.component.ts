@@ -619,7 +619,7 @@ export class AuditLogsComponent implements OnInit {
 
   private auditLogsSubscription?: Subscription;
 
-  constructor(private api: WebapiService) {}
+  constructor(private api: WebapiService) { }
 
   ngOnInit() {
     this.loadAuditLogs();
@@ -739,7 +739,7 @@ export class AuditLogsComponent implements OnInit {
       list = list.filter(log => {
         const adminNameMatch = (log.adminName || '').toLowerCase().includes(q);
         const adminCodeMatch = this.getAdminCode(log).toLowerCase().includes(q);
-        
+
         // Log ID match (e.g. "AL001", "1")
         const idFormatted = (log.logId || ('AL' + (log.id < 10 ? '00' + log.id : (log.id < 100 ? '0' + log.id : log.id)))).toLowerCase();
         const logIdMatch = idFormatted.includes(q) || String(log.id).includes(q);

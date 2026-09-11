@@ -450,6 +450,43 @@ export class PreventiveCareComponent implements OnInit {
     this.openDropdownId = null;
   }
 
+  private getStoredInactiveStages(): Stage[] {
+    try {
+      const raw = localStorage.getItem('inactive_pregnancy_stages');
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  private saveStoredInactiveStages(stages: Stage[]): void {
+    try {
+      localStorage.setItem('inactive_pregnancy_stages', JSON.stringify(stages));
+    } catch (e) {
+      console.error('Error saving inactive stages:', e);
+    }
+  }
+
+  private saveSingleInactiveStage(stage: Stage): void {
+    const list = this.getStoredInactiveStages().filter(s => s.id !== stage.id);
+    list.push({
+      id: stage.id,
+      weekRange: stage.weekRange,
+      trimester: stage.trimester,
+      milestones: stage.milestones,
+      scans: stage.scans,
+      status: 'Inactive',
+      isActive: false,
+      raw: stage.raw
+    });
+    this.saveStoredInactiveStages(list);
+  }
+
+  private removeSingleInactiveStage(stageId: number): void {
+    const list = this.getStoredInactiveStages().filter(s => s.id !== stageId);
+    this.saveStoredInactiveStages(list);
+  }
+
   toggleStatus(item: Stage | Vaccine, event?: Event) {
     if (event) event.stopPropagation();
     this.closeDropdown();
@@ -457,7 +494,19 @@ export class PreventiveCareComponent implements OnInit {
     const stageId = (item as any).id || (item as any).raw?.id;
     if (stageId && ('milestones' in item || 'scans' in item)) {
       const prevStatus = item.status;
-      item.status = item.status === 'Active' ? 'Inactive' : 'Active';
+      const targetStatus: 'Active' | 'Inactive' = item.status === 'Active' ? 'Inactive' : 'Active';
+      const isTargetActive = targetStatus === 'Active';
+
+      // 1. Immediately update UI state
+      item.status = targetStatus;
+      (item as any).isActive = isTargetActive;
+
+      // 2. Persist local cache so it never vanishes from screen
+      if (!isTargetActive) {
+        this.saveSingleInactiveStage(item as Stage);
+      } else {
+        this.removeSingleInactiveStage(stageId);
+      }
 
       this.api.TogglePregnancyStageStatus(stageId).subscribe({
         next: (res: any) => {
@@ -465,12 +514,27 @@ export class PreventiveCareComponent implements OnInit {
             const isAct = res.data.isActive !== undefined ? res.data.isActive : (res.data.status?.toLowerCase() === 'active');
             item.status = isAct ? 'Active' : 'Inactive';
             (item as any).isActive = isAct;
+            if (isAct) {
+              this.removeSingleInactiveStage(stageId);
+            } else {
+              this.saveSingleInactiveStage(item as Stage);
+            }
           }
-          this.loadPreventiveCareData(false);
+          // Only re-fetch backend list if reactivated to Active.
+          // Never re-fetch immediately on Inactive because backend API filters out inactive items!
+          if (item.status === 'Active') {
+            this.loadPreventiveCareData(false);
+          }
         },
         error: (err: any) => {
           console.error('Error toggling pregnancy stage status:', err);
           item.status = prevStatus;
+          (item as any).isActive = prevStatus === 'Active';
+          if (prevStatus === 'Inactive') {
+            this.saveSingleInactiveStage(item as Stage);
+          } else {
+            this.removeSingleInactiveStage(stageId);
+          }
         }
       });
     } else {
@@ -782,7 +846,7 @@ export class PreventiveCareComponent implements OnInit {
           if (Array.isArray(res.data.pregnancyStages)) {
             const stages = res.data.pregnancyStages;
             stages.sort((a: any, b: any) => (a.weekRangeStart || a.weekStart || 0) - (b.weekRangeStart || b.weekStart || 0));
-            this.stagesList = stages.map((s: any) => {
+            const activeMapped: Stage[] = stages.map((s: any) => {
               const weekRangeStr = s.weekRange
                 ? (s.weekRange.toLowerCase().startsWith('week') ? s.weekRange : `Week ${s.weekRange}`)
                 : (s.weekRangeStart && s.weekRangeEnd ? (s.weekRangeStart === s.weekRangeEnd ? `Week ${s.weekRangeStart}` : `Week ${s.weekRangeStart}-${s.weekRangeEnd}`) : (s.weekStart ? `Week ${s.weekStart}` : '—'));
@@ -813,8 +877,21 @@ export class PreventiveCareComponent implements OnInit {
                 raw: s
               };
             });
+
+            // Preserve inactive stages that backend might omit from its active-only response
+            const storedInactive = this.getStoredInactiveStages();
+            const activeIds = new Set(activeMapped.map(s => s.id));
+            const validInactive = storedInactive.filter(s => s.id && !activeIds.has(s.id));
+            this.saveStoredInactiveStages(validInactive);
+
+            this.stagesList = [...activeMapped, ...validInactive];
+            this.stagesList.sort((a: any, b: any) => {
+              const aStart = a.raw?.weekRangeStart || a.raw?.weekStart || 0;
+              const bStart = b.raw?.weekRangeStart || b.raw?.weekStart || 0;
+              return aStart - bStart;
+            });
           } else {
-            this.stagesList = [];
+            this.stagesList = this.getStoredInactiveStages();
           }
 
           // 2. Map pregnancy vaccines from API
