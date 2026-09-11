@@ -542,6 +542,62 @@ export class PreventiveCareComponent implements OnInit {
     }
   }
 
+  private getStoredInactivePV(): Vaccine[] {
+    try {
+      const raw = localStorage.getItem('inactive_pregnancy_vaccines');
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  private saveStoredInactivePV(vaccines: Vaccine[]): void {
+    try {
+      localStorage.setItem('inactive_pregnancy_vaccines', JSON.stringify(vaccines));
+    } catch (e) {
+      console.error('Error saving inactive pregnancy vaccines:', e);
+    }
+  }
+
+  private getStoredInactiveCV(): Vaccine[] {
+    try {
+      const raw = localStorage.getItem('inactive_child_vaccines');
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  private saveStoredInactiveCV(vaccines: Vaccine[]): void {
+    try {
+      localStorage.setItem('inactive_child_vaccines', JSON.stringify(vaccines));
+    } catch (e) {
+      console.error('Error saving inactive child vaccines:', e);
+    }
+  }
+
+  toggleVaccineStatus(vaccine: Vaccine, type: 'pregnancyVaccine' | 'childVaccine', event?: Event) {
+    if (event) event.stopPropagation();
+    this.closeDropdown();
+
+    const targetStatus = vaccine.status === 'Active' ? 'Inactive' : 'Active';
+    vaccine.status = targetStatus;
+
+    if (type === 'pregnancyVaccine') {
+      const list = this.getStoredInactivePV().filter(v => v.id !== vaccine.id);
+      if (targetStatus === 'Inactive') {
+        list.push({ ...vaccine, status: 'Inactive' });
+      }
+      this.saveStoredInactivePV(list);
+    } else {
+      const list = this.getStoredInactiveCV().filter(v => v.id !== vaccine.id);
+      if (targetStatus === 'Inactive') {
+        list.push({ ...vaccine, status: 'Inactive' });
+      }
+      this.saveStoredInactiveCV(list);
+    }
+  }
+
   openEditModal(item: any, type: 'stage' | 'pregnancyVaccine' | 'childVaccine', event?: Event) {
     if (event) event.stopPropagation();
     this.closeDropdown();
@@ -897,7 +953,7 @@ export class PreventiveCareComponent implements OnInit {
           // 2. Map pregnancy vaccines from API
           if (Array.isArray(res.data.pregnancyVaccines)) {
             const pVaccines = res.data.pregnancyVaccines;
-            this.pregnancyVaccines = pVaccines.map((v: any) => ({
+            const activePV = pVaccines.map((v: any) => ({
               id: v.id,
               vaccineName: v.vaccineName || '',
               recommendedTiming: v.recommendedTiming || '',
@@ -905,18 +961,23 @@ export class PreventiveCareComponent implements OnInit {
               timing: v.recommendedTiming ? `Timing: ${v.recommendedTiming}` : 'Timing: Any trimester',
               description: v.description || '—',
               priority: 'High',
-              status: v.status ? (v.status.toUpperCase() === 'ACTIVE' ? 'Active' : 'Inactive') : '',
+              status: v.status ? (v.status.toUpperCase() === 'ACTIVE' ? 'Active' : 'Inactive') : 'Active',
               raw: v
             }));
+            const storedInactive = this.getStoredInactivePV();
+            const activeIds = new Set(activePV.map((v: any) => v.id));
+            const validInactive = storedInactive.filter((v: any) => v.id && !activeIds.has(v.id));
+            this.saveStoredInactivePV(validInactive);
+            this.pregnancyVaccines = [...activePV, ...validInactive];
           } else {
-            this.pregnancyVaccines = [];
+            this.pregnancyVaccines = this.getStoredInactivePV();
           }
 
           // 3. Map child vaccines from API
           if (Array.isArray(res.data.childVaccines)) {
             const cVaccines = res.data.childVaccines;
             cVaccines.sort((a: any, b: any) => (a.recommendedAgeMonths || 0) - (b.recommendedAgeMonths || 0));
-            this.childVaccines = cVaccines.map((v: any) => ({
+            const activeCV = cVaccines.map((v: any) => ({
               id: v.id,
               vaccineName: v.vaccineName || '',
               recommendedAge: v.recommendedAge || (v.recommendedAgeMonths !== undefined && v.recommendedAgeMonths !== null ? `${v.recommendedAgeMonths} months` : ''),
@@ -925,11 +986,16 @@ export class PreventiveCareComponent implements OnInit {
               timing: v.recommendedAgeMonths === 0 || v.recommendedAgeMonths === null ? 'Timing: At birth' : (v.recommendedAge ? `Recommended Age: ${v.recommendedAge}` : `Recommended Age: ${v.recommendedAgeMonths} months`),
               description: v.description || '—',
               priority: 'High',
-              status: v.status ? (v.status.toUpperCase() === 'ACTIVE' ? 'Active' : 'Inactive') : '',
+              status: v.status ? (v.status.toUpperCase() === 'ACTIVE' ? 'Active' : 'Inactive') : 'Active',
               raw: v
             }));
+            const storedInactive = this.getStoredInactiveCV();
+            const activeIds = new Set(activeCV.map((v: any) => v.id));
+            const validInactive = storedInactive.filter((v: any) => v.id && !activeIds.has(v.id));
+            this.saveStoredInactiveCV(validInactive);
+            this.childVaccines = [...activeCV, ...validInactive];
           } else {
-            this.childVaccines = [];
+            this.childVaccines = this.getStoredInactiveCV();
           }
 
           // 4. Dynamic counts strictly calculated from API data
