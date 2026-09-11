@@ -191,21 +191,19 @@ import { WebapiService } from '../../../services/webapi.service';
     .login-card-custom {
       width: 448px !important;
       max-width: 448px !important;
-      height: 509px !important;
       min-height: 509px !important;
+      height: auto !important;
       transform: rotate(0deg) !important;
       opacity: 1 !important;
       display: flex !important;
       flex-direction: column !important;
       gap: 24px !important;
       border-radius: 14px !important;
-      padding: 32px !important;
+      padding: 32px 32px 28px 32px !important;
       background: #FFFFFFF2 !important;
       box-shadow: 0px 25px 50px -12px #00000040 !important;
       border: none !important;
       box-sizing: border-box !important;
-      backdrop-filter: blur(12px) !important;
-      -webkit-backdrop-filter: blur(12px) !important;
     }
 
     /* "Welcome back" heading */
@@ -595,8 +593,8 @@ import { WebapiService } from '../../../services/webapi.service';
     }
 
     .ssl-footer {
-      margin-top: 24px;
-      padding-top: 16px;
+      margin-top: 18px;
+      padding-top: 14px;
       border-top: 1px solid #F1F5F9;
     }
 
@@ -648,7 +646,7 @@ import { WebapiService } from '../../../services/webapi.service';
       font-size: 12.5px !important;
       font-weight: 400 !important;
       padding: 9px 14px !important;
-      margin-bottom: 18px !important;
+      margin-bottom: 0 !important;
       text-align: center !important;
       line-height: 1.4 !important;
     }
