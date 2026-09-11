@@ -220,17 +220,26 @@ export class WebapiService {
     return this.Http.post<any>(url, filters, { headers });
   }
 
-  public ContentStatus(id: number) {
+  public ContentStatus(id: number, isActive?: boolean) {
     const token = localStorage.getItem('accessToken');
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${token}`
     });
     const url = `${this.WebApi}/api/v1/content/status?contentId=${id}`;
-    return this.Http.post<any>(url, { contentId: id, id }, { headers });
+    const payload: any = {
+      contentId: id,
+      id: id
+    };
+    if (isActive !== undefined) {
+      payload.isActive = isActive;
+      payload.status = isActive ? 'ACTIVE' : 'DISABLED';
+      payload.action = isActive ? 'ENABLE' : 'DISABLE';
+    }
+    return this.Http.post<any>(url, payload, { headers });
   }
 
-  public ToggleContentStatus(id: number) {
-    return this.ContentStatus(id);
+  public ToggleContentStatus(id: number, isActive?: boolean) {
+    return this.ContentStatus(id, isActive);
   }
 
   public SendOtp(email: string, resendOtp: boolean = false) {

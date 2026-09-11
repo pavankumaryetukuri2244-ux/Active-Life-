@@ -395,30 +395,34 @@ export class ContentManagementComponent implements OnInit {
       this.openUpdateModal(item);
     } else if (action === 'disable' || action === 'status') {
       const numericId = item.rawId || parseInt(String(item.id).replace(/\D/g, ''), 10);
+      const prevStatus = item.status;
+      const prevIsActive = item.isActive;
+      const targetIsActive = item.status === 'Active' ? false : true;
+
+      // Optimistic update
+      item.status = targetIsActive ? 'Active' : 'Disabled';
+      item.isActive = targetIsActive;
+      this.applyFrontendFilters();
+
       if (numericId) {
-        this.webApiService.ContentStatus(numericId).subscribe({
+        this.webApiService.ContentStatus(numericId, targetIsActive).subscribe({
           next: (res: any) => {
-            if (res && res.success && res.data) {
-              const newIsActive = res.data.isActive;
+            if (res && res.data) {
+              const newIsActive = res.data.isActive !== undefined ? res.data.isActive : (res.data.status ? res.data.status.toLowerCase() === 'active' : targetIsActive);
               item.isActive = newIsActive;
               item.status = newIsActive ? 'Active' : 'Disabled';
-            } else {
-              item.status = item.status === 'Active' ? 'Disabled' : 'Active';
-              item.isActive = item.status === 'Active';
             }
             this.applyFrontendFilters();
           },
           error: (err: any) => {
-            console.error('Error updating content status:', err);
-            item.status = item.status === 'Active' ? 'Disabled' : 'Active';
-            item.isActive = item.status === 'Active';
+            console.error('Error updating content status on server:', err);
+            // Revert state if backend call failed so UI matches database reality
+            item.status = prevStatus;
+            item.isActive = prevIsActive;
             this.applyFrontendFilters();
+            alert('Failed to update content status on the server. Please check backend connection.');
           }
         });
-      } else {
-        item.status = item.status === 'Active' ? 'Disabled' : 'Active';
-        item.isActive = item.status === 'Active';
-        this.applyFrontendFilters();
       }
     } else if (action === 'delete') {
       // Keep button visible in UI
