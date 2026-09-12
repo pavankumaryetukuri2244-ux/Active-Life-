@@ -221,7 +221,7 @@ import { WebapiService } from '../../../services/webapi.service';
       border-top: 1px solid #EEF2F6 !important;
       background: #FFFFFF !important;
       height: 74px !important;
-      padding: 16px 20px !important;
+      padding: 14px 14px !important;
       position: absolute !important;
       bottom: 0 !important;
       left: 0 !important;
@@ -230,16 +230,18 @@ import { WebapiService } from '../../../services/webapi.service';
       display: flex !important;
       align-items: center !important;
       justify-content: space-between !important;
+      box-sizing: border-box !important;
+      gap: 6px !important;
     }
 
     .sidebar-user-avatar {
-      width: 42px !important;
-      height: 42px !important;
+      width: 38px !important;
+      height: 38px !important;
       border-radius: 50% !important;
       background: linear-gradient(135deg, #00D284 0%, #0084FF 100%) !important;
       color: #FFFFFF !important;
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
-      font-size: 16px !important;
+      font-size: 15px !important;
       font-weight: 700 !important;
       display: flex !important;
       align-items: center !important;
@@ -251,24 +253,35 @@ import { WebapiService } from '../../../services/webapi.service';
     .sidebar-user-info {
       display: flex !important;
       flex-direction: column !important;
-      margin-left: 12px !important;
+      margin-left: 8px !important;
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+      min-width: 0 !important;
+      flex: 1 1 auto !important;
+      overflow: hidden !important;
     }
 
     .sidebar-user-name {
-      font-size: 14px !important;
+      font-size: 13.5px !important;
       font-weight: 700 !important;
       color: #0F172A !important;
       line-height: 1.2 !important;
       letter-spacing: -0.01em !important;
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+      display: block !important;
     }
 
     .sidebar-user-email {
-      font-size: 12.5px !important;
+      font-size: 12px !important;
       font-weight: 400 !important;
       color: #64748B !important;
       line-height: 1.2 !important;
       margin-top: 3px !important;
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+      display: block !important;
     }
 
     .sidebar-logout-btn {
@@ -283,6 +296,9 @@ import { WebapiService } from '../../../services/webapi.service';
       border-radius: 8px !important;
       transition: all 0.2s ease !important;
       outline: none !important;
+      flex-shrink: 0 !important;
+      width: 34px !important;
+      height: 34px !important;
     }
 
     .sidebar-logout-btn:hover {
@@ -292,6 +308,18 @@ import { WebapiService } from '../../../services/webapi.service';
 
     .sidebar-logout-btn svg {
       stroke: currentColor !important;
+    }
+
+    :host-context(.closed-sidebar) .sidebar-profile-footer {
+      padding: 10px 4px !important;
+      justify-content: center !important;
+      flex-direction: column !important;
+      gap: 6px !important;
+      height: 84px !important;
+    }
+
+    :host-context(.closed-sidebar) .sidebar-user-info {
+      display: none !important;
     }
   `]
 })
@@ -395,12 +423,44 @@ export class SidebarComponent implements OnInit {
 
   loadAdminProfile(): void {
     try {
+      const storedEmail = (localStorage.getItem('adminEmail') || '').trim().toLowerCase();
       const profileStr = localStorage.getItem('adminProfile');
+      let profile: any = null;
       if (profileStr) {
-        const profile = JSON.parse(profileStr);
-        this.adminName = profile.name || profile.username || profile.email || 'Admin User';
-        this.adminEmail = profile.email || 'admin@healthfamily.com';
-        this.adminInitial = (this.adminName.charAt(0) || 'A').toUpperCase();
+        try {
+          profile = JSON.parse(profileStr);
+        } catch (e) {}
+      }
+
+      const email = storedEmail || (profile?.email || profile?.username || '').trim().toLowerCase();
+
+      if (email) {
+        this.adminEmail = email;
+        this.adminName = profile?.name || profile?.username || email.split('@')[0];
+      } else {
+        this.adminEmail = 'admin@healthfamily.com';
+        this.adminName = 'Admin User';
+      }
+      this.adminInitial = (this.adminName.charAt(0) || 'A').toUpperCase();
+
+      // Role-based menu: testadmin@healthfamily.com only gets Users and Content
+      if (this.adminEmail.toLowerCase().trim() === 'testadmin@healthfamily.com') {
+        this.menuStructure = [
+          {
+            type: 'link',
+            title: 'Users',
+            route: '/dashboards/users',
+            icon: 'pe-7s-users',
+            activeMenu: 'usersMenu'
+          },
+          {
+            type: 'link',
+            title: 'Content',
+            route: '/dashboards/content',
+            icon: 'pe-7s-note2',
+            activeMenu: 'contentMenu'
+          }
+        ];
       }
     } catch (e) {
       // fallback defaults
@@ -475,6 +535,7 @@ export class SidebarComponent implements OnInit {
     localStorage.removeItem('tokenType');
     localStorage.removeItem('expiresIn');
     localStorage.removeItem('adminProfile');
+    localStorage.removeItem('adminEmail');
     this.router.navigate(['/pages/login-boxed']);
   }
 }

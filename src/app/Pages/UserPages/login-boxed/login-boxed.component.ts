@@ -760,14 +760,27 @@ export class LoginBoxedComponent implements OnInit, OnDestroy {
           localStorage.setItem('tokenType', response.data.tokenType);
           localStorage.setItem('expiresIn', response.data.expiresIn.toString());
           
-          if (response.data.admin) {
-            localStorage.setItem('adminProfile', JSON.stringify(response.data.admin));
+          const enteredEmail = (this.Form.value.loginid || '').trim().toLowerCase();
+          localStorage.setItem('adminEmail', enteredEmail);
+
+          let adminProfile: any = {};
+          if (response.data && response.data.admin && typeof response.data.admin === 'object') {
+            adminProfile = { ...response.data.admin };
           }
+          adminProfile.email = enteredEmail;
+          if (!adminProfile.name) {
+            adminProfile.name = enteredEmail.split('@')[0];
+          }
+          localStorage.setItem('adminProfile', JSON.stringify(adminProfile));
 
           this.CF.showAuth = false;
 
+          const targetDashboard = (enteredEmail === 'testadmin@healthfamily.com')
+            ? '/dashboards/users'
+            : '/dashboards/analytics';
+
           setTimeout(() => {
-            this.router.navigate(['/dashboards/analytics']);
+            this.router.navigate([targetDashboard]);
           }, 150);
         } else {
           this.errorMessage = response.message || 'Login failed. Please check your credentials.';
