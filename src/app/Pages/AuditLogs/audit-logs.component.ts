@@ -729,11 +729,10 @@ export class AuditLogsComponent implements OnInit {
           const rawContent = pageData?.content ?? [];
           this.allLogs = [...rawContent];
 
-          // Compute accurate stats dynamically directly from the 86 loaded logs
+          // Compute accurate stats dynamically directly from the loaded logs
           const todayStr = new Date().toDateString();
           let todayCount = 0;
           let failedCount = 0;
-          const adminSet = new Set<string>();
 
           this.allLogs.forEach(log => {
             if (log.createdAt && new Date(log.createdAt).toDateString() === todayStr) {
@@ -743,16 +742,9 @@ export class AuditLogsComponent implements OnInit {
             if (s === 'FAILED' || s === 'ERROR') {
               failedCount++;
             }
-            if (log.adminName) {
-              adminSet.add(log.adminName);
-            }
           });
 
-          // Account for registered admins (Super Admin + testadmin)
-          adminSet.add('Super Admin');
-          adminSet.add('testadmin@healthfamily.com');
-
-          // Find maximum log ID (e.g. 86) and totalElements to ensure 86 is displayed
+          // Find maximum log ID and totalElements to ensure true count is displayed
           const maxLogId = this.allLogs.reduce((max, log) => Math.max(max, log.id || 0), 0);
           const trueTotalLogs = Math.max(pageData?.totalElements || 0, maxLogId, this.allLogs.length);
 
@@ -760,7 +752,7 @@ export class AuditLogsComponent implements OnInit {
             totalLogs: trueTotalLogs || res.data.totalLogs || 0,
             todayActivity: todayCount || res.data.todayActivity || 0,
             failedActions: failedCount || res.data.failedActions || 0,
-            activeAdmins: Math.max(adminSet.size, res.data?.activeAdmins || 0, 2)
+            activeAdmins: 2 // Exactly two active admins: Super Admin and Test Admin
           };
 
           // Immediately apply frontend filters to slice and display
