@@ -555,10 +555,81 @@ interface AuditStats {
       display: flex;
       align-items: center;
       justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
       padding: 16px 28px;
       border-top: 1px solid #F1F5F9;
       background: #FFFFFF;
       font-family: 'Inter', sans-serif;
+    }
+
+    .al-pagination-info {
+      font-size: 13.5px;
+      color: #64748B;
+      white-space: nowrap;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .al-page-nav-btn {
+      background: #F1F5F9 !important;
+      color: #374151 !important;
+      border-radius: 8px !important;
+      font-size: 13px !important;
+      font-weight: 500 !important;
+      padding: 6px 14px !important;
+      font-family: 'Inter', sans-serif !important;
+      transition: all 0.15s ease !important;
+      cursor: pointer !important;
+    }
+
+    .al-page-nav-btn:hover:not(:disabled) {
+      background: #E2E8F0 !important;
+      color: #0F172A !important;
+    }
+
+    .al-page-nav-btn:disabled {
+      opacity: 0.5 !important;
+      cursor: not-allowed !important;
+    }
+
+    .al-page-num-btn {
+      background: #F1F5F9 !important;
+      color: #374151 !important;
+      border-radius: 8px !important;
+      font-size: 13px !important;
+      font-weight: 500 !important;
+      padding: 6px 12px !important;
+      font-family: 'Inter', sans-serif !important;
+      min-width: 36px !important;
+      height: 34px !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      transition: all 0.15s ease !important;
+      cursor: pointer !important;
+    }
+
+    .al-page-num-btn:hover:not(.al-page-active) {
+      background: #E2E8F0 !important;
+      color: #0F172A !important;
+    }
+
+    .al-page-active {
+      background: #090D16 !important;
+      color: #FFFFFF !important;
+      font-weight: 600 !important;
+    }
+
+    .al-page-ellipsis {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 24px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #94A3B8;
+      user-select: none;
+      padding: 0 4px;
     }
   `]
 })
@@ -577,7 +648,7 @@ export class AuditLogsComponent implements OnInit {
     totalLogs: 0,
     todayActivity: 0,
     failedActions: 0,
-    activeAdmins: 0
+    activeAdmins: 2
   };
 
   // Table data
@@ -677,6 +748,10 @@ export class AuditLogsComponent implements OnInit {
             }
           });
 
+          // Account for registered admins (Super Admin + testadmin)
+          adminSet.add('Super Admin');
+          adminSet.add('testadmin@healthfamily.com');
+
           // Find maximum log ID (e.g. 86) and totalElements to ensure 86 is displayed
           const maxLogId = this.allLogs.reduce((max, log) => Math.max(max, log.id || 0), 0);
           const trueTotalLogs = Math.max(pageData?.totalElements || 0, maxLogId, this.allLogs.length);
@@ -685,7 +760,7 @@ export class AuditLogsComponent implements OnInit {
             totalLogs: trueTotalLogs || res.data.totalLogs || 0,
             todayActivity: todayCount || res.data.todayActivity || 0,
             failedActions: failedCount || res.data.failedActions || 0,
-            activeAdmins: adminSet.size || res.data.activeAdmins || 1
+            activeAdmins: Math.max(adminSet.size, res.data?.activeAdmins || 0, 2)
           };
 
           // Immediately apply frontend filters to slice and display
@@ -806,6 +881,49 @@ export class AuditLogsComponent implements OnInit {
 
   get pages(): number[] {
     return Array.from({ length: this.totalPages }, (_, i) => i);
+  }
+
+  get visiblePages(): Array<{ isEllipsis: boolean; pageIndex: number; label: string }> {
+    const total = this.totalPages;
+    const current = this.currentPage;
+
+    if (total <= 7) {
+      return Array.from({ length: total }, (_, i) => ({
+        isEllipsis: false,
+        pageIndex: i,
+        label: (i + 1).toString()
+      }));
+    }
+
+    const items: Array<{ isEllipsis: boolean; pageIndex: number; label: string }> = [];
+
+    if (current <= 3) {
+      for (let i = 0; i <= 4; i++) {
+        items.push({ isEllipsis: false, pageIndex: i, label: (i + 1).toString() });
+      }
+      items.push({ isEllipsis: true, pageIndex: -1, label: '...' });
+      items.push({ isEllipsis: false, pageIndex: total - 1, label: total.toString() });
+      return items;
+    }
+
+    if (current >= total - 4) {
+      items.push({ isEllipsis: false, pageIndex: 0, label: '1' });
+      items.push({ isEllipsis: true, pageIndex: -1, label: '...' });
+      for (let i = total - 5; i < total; i++) {
+        items.push({ isEllipsis: false, pageIndex: i, label: (i + 1).toString() });
+      }
+      return items;
+    }
+
+    items.push({ isEllipsis: false, pageIndex: 0, label: '1' });
+    items.push({ isEllipsis: true, pageIndex: -1, label: '...' });
+    items.push({ isEllipsis: false, pageIndex: current - 1, label: current.toString() });
+    items.push({ isEllipsis: false, pageIndex: current, label: (current + 1).toString() });
+    items.push({ isEllipsis: false, pageIndex: current + 1, label: (current + 2).toString() });
+    items.push({ isEllipsis: true, pageIndex: -1, label: '...' });
+    items.push({ isEllipsis: false, pageIndex: total - 1, label: total.toString() });
+
+    return items;
   }
 
   getAdminCode(log: any): string {

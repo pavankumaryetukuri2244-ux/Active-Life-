@@ -252,22 +252,26 @@
       </div>
 
       <!-- Pagination -->
-      <div *ngIf="totalPages > 1" class="d-flex align-items-center justify-content-between px-4 py-3"
-        style="border-top: 1px solid #F1F5F9; background: #FFFFFF;">
-        <span class="text-muted" style="font-family: 'Inter', sans-serif; font-size: 0.85rem;">
+      <div *ngIf="totalPages > 1" class="d-flex align-items-center justify-content-between flex-wrap px-4 py-3"
+        style="border-top: 1px solid #F1F5F9; background: #FFFFFF; gap: 12px;">
+        <span class="text-muted" style="font-family: 'Inter', sans-serif; font-size: 0.85rem; white-space: nowrap;">
           Showing {{ usersList.length }} of {{ totalElements | number }} users
         </span>
-        <div class="d-flex align-items-center" style="gap: 6px;">
+        <div class="d-flex align-items-center flex-wrap" style="gap: 6px;">
           <button class="btn btn-sm border-0" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 0"
             style="background: #f1f5f9; color: #334155; border-radius: 6px; font-size: 0.85rem; padding: 5px 12px; font-family: 'Inter', sans-serif;">
             ← Prev
           </button>
-          <button *ngFor="let p of pages" class="btn btn-sm border-0" (click)="goToPage(p)"
-            [style.background]="p === currentPage ? '#0F172A' : '#f1f5f9'"
-            [style.color]="p === currentPage ? '#ffffff' : '#334155'"
-            style="border-radius: 6px; font-size: 0.85rem; padding: 5px 11px; font-family: 'Inter', sans-serif; min-width: 34px;">
-            {{ p + 1 }}
-          </button>
+          <ng-container *ngFor="let item of visiblePages">
+            <span *ngIf="item.isEllipsis" class="px-2 text-muted" style="font-size: 14px; font-weight: 600; user-select: none;">...</span>
+            <button *ngIf="!item.isEllipsis" class="btn btn-sm border-0" (click)="goToPage(item.pageIndex)"
+              [style.background]="item.pageIndex === currentPage ? '#0F172A' : '#f1f5f9'"
+              [style.color]="item.pageIndex === currentPage ? '#ffffff' : '#334155'"
+              [style.font-weight]="item.pageIndex === currentPage ? '600' : '500'"
+              style="border-radius: 6px; font-size: 0.85rem; padding: 5px 11px; font-family: 'Inter', sans-serif; min-width: 34px;">
+              {{ item.label }}
+            </button>
+          </ng-container>
           <button class="btn btn-sm border-0" (click)="goToPage(currentPage + 1)"
             [disabled]="currentPage >= totalPages - 1"
             style="background: #f1f5f9; color: #334155; border-radius: 6px; font-size: 0.85rem; padding: 5px 12px; font-family: 'Inter', sans-serif;">

@@ -264,6 +264,49 @@ export class UserManagementComponent implements OnInit, OnDestroy {
     return Array.from({ length: this.totalPages }, (_, i) => i);
   }
 
+  get visiblePages(): Array<{ isEllipsis: boolean; pageIndex: number; label: string }> {
+    const total = this.totalPages;
+    const current = this.currentPage;
+
+    if (total <= 7) {
+      return Array.from({ length: total }, (_, i) => ({
+        isEllipsis: false,
+        pageIndex: i,
+        label: (i + 1).toString()
+      }));
+    }
+
+    const items: Array<{ isEllipsis: boolean; pageIndex: number; label: string }> = [];
+
+    if (current <= 3) {
+      for (let i = 0; i <= 4; i++) {
+        items.push({ isEllipsis: false, pageIndex: i, label: (i + 1).toString() });
+      }
+      items.push({ isEllipsis: true, pageIndex: -1, label: '...' });
+      items.push({ isEllipsis: false, pageIndex: total - 1, label: total.toString() });
+      return items;
+    }
+
+    if (current >= total - 4) {
+      items.push({ isEllipsis: false, pageIndex: 0, label: '1' });
+      items.push({ isEllipsis: true, pageIndex: -1, label: '...' });
+      for (let i = total - 5; i < total; i++) {
+        items.push({ isEllipsis: false, pageIndex: i, label: (i + 1).toString() });
+      }
+      return items;
+    }
+
+    items.push({ isEllipsis: false, pageIndex: 0, label: '1' });
+    items.push({ isEllipsis: true, pageIndex: -1, label: '...' });
+    items.push({ isEllipsis: false, pageIndex: current - 1, label: current.toString() });
+    items.push({ isEllipsis: false, pageIndex: current, label: (current + 1).toString() });
+    items.push({ isEllipsis: false, pageIndex: current + 1, label: (current + 2).toString() });
+    items.push({ isEllipsis: true, pageIndex: -1, label: '...' });
+    items.push({ isEllipsis: false, pageIndex: total - 1, label: total.toString() });
+
+    return items;
+  }
+
   /** Generate avatar initials from fullName or contact */
   getInitials(user: User): string {
     if (user.fullName) {

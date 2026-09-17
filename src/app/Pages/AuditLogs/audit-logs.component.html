@@ -213,23 +213,24 @@
 
   <!-- Pagination & Total Count Footer -->
   <div *ngIf="totalElements > 0" class="al-pagination-wrap">
-    <span style="font-size: 13.5px; color: #64748B;">
+    <span class="al-pagination-info">
       Showing {{ logsList.length }} of {{ totalElements }} logs
     </span>
-    <div *ngIf="totalPages > 1" class="d-flex align-items-center" style="gap: 6px;">
-      <button class="btn btn-sm border-0" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 0"
-        style="background: #F1F5F9; color: #374151; border-radius: 8px; font-size: 13px; font-weight: 500; padding: 6px 14px; font-family: 'Inter', sans-serif;">
+    <div *ngIf="totalPages > 1" class="d-flex align-items-center flex-wrap" style="gap: 6px;">
+      <button class="btn btn-sm border-0 al-page-nav-btn" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 0">
         Previous
       </button>
-      <button *ngFor="let p of pages" class="btn btn-sm border-0" (click)="goToPage(p)"
-        [style.background]="p === currentPage ? '#090D16' : '#F1F5F9'"
-        [style.color]="p === currentPage ? '#FFFFFF' : '#374151'"
-        [style.font-weight]="p === currentPage ? '600' : '500'"
-        style="border-radius: 8px; font-size: 13px; padding: 6px 12px; font-family: 'Inter', sans-serif; min-width: 36px;">
-        {{ p + 1 }}
-      </button>
-      <button class="btn btn-sm border-0" (click)="goToPage(currentPage + 1)" [disabled]="currentPage >= totalPages - 1"
-        style="background: #F1F5F9; color: #374151; border-radius: 8px; font-size: 13px; font-weight: 500; padding: 6px 14px; font-family: 'Inter', sans-serif;">
+
+      <ng-container *ngFor="let item of visiblePages">
+        <span *ngIf="item.isEllipsis" class="al-page-ellipsis">...</span>
+        <button *ngIf="!item.isEllipsis" class="btn btn-sm border-0 al-page-num-btn"
+          (click)="goToPage(item.pageIndex)"
+          [class.al-page-active]="item.pageIndex === currentPage">
+          {{ item.label }}
+        </button>
+      </ng-container>
+
+      <button class="btn btn-sm border-0 al-page-nav-btn" (click)="goToPage(currentPage + 1)" [disabled]="currentPage >= totalPages - 1">
         Next
       </button>
     </div>
