@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { Subscription } from 'rxjs';
 import { WebapiService } from '../../services/webapi.service';
 
@@ -306,6 +307,19 @@ interface ContentItem {
       letter-spacing: -0.31px !important;
       color: #0F172A !important;
       margin: 0 !important;
+      transition: color 0.15s ease !important;
+    }
+    .cm-media-title:hover {
+      color: #2563EB !important;
+    }
+
+    .cm-thumbnail-box {
+      cursor: pointer;
+      position: relative;
+    }
+    .cm-thumbnail-box:hover .cm-play-circle {
+      transform: scale(1.12) !important;
+      background: rgba(15, 23, 42, 0.9) !important;
     }
   `]
 })
@@ -349,7 +363,10 @@ export class ContentManagementComponent implements OnInit {
 
   private contentSubscription?: Subscription;
 
-  constructor(private webApiService: WebapiService) {
+  constructor(
+    private webApiService: WebapiService,
+    private sanitizer: DomSanitizer
+  ) {
     document.addEventListener('click', () => this.closeDropdown());
   }
 
@@ -390,7 +407,7 @@ export class ContentManagementComponent implements OnInit {
     this.closeDropdown();
     this.selectedContent = item;
     if (action === 'preview') {
-      // Keep button visible in UI
+      this.viewContent(item);
     } else if (action === 'update') {
       this.openUpdateModal(item);
     } else if (action === 'disable' || action === 'status') {
@@ -536,6 +553,77 @@ export class ContentManagementComponent implements OnInit {
     });
   }
 
+  viewContent(item: ContentItem) {
+    this.selectedContent = item;
+    this.showPreviewModal = true;
+    this.incrementView(item);
+  }
+
+  incrementView(item: ContentItem) {
+    const numericId = item.rawId || parseInt(String(item.id).replace(/\D/g, ''), 10);
+    if (!numericId) return;
+
+    // Call POST /api/v1/content/upload with { id: numericId, incrementView: true }
+    this.webApiService.UploadContent({ id: numericId, incrementView: true }).subscribe({
+      next: (res: any) => {
+        let newViews = (item.viewsRaw || 0) + 1;
+        if (res && res.data) {
+          const retViews = res.data.viewCount !== undefined ? res.data.viewCount
+            : (res.data.views !== undefined ? res.data.views
+            : (res.data.totalViews !== undefined ? res.data.totalViews : undefined));
+          if (retViews !== undefined && typeof retViews === 'number') {
+            newViews = retViews;
+          }
+        }
+        item.viewsRaw = newViews;
+        item.views = `${newViews.toLocaleString()} views`;
+
+        if (this.selectedContent && (this.selectedContent.id === item.id || this.selectedContent.rawId === item.rawId)) {
+          this.selectedContent.viewsRaw = newViews;
+          this.selectedContent.views = `${newViews.toLocaleString()} views`;
+        }
+
+        this.recalculateStats();
+      },
+      error: (err: any) => {
+        console.error('Error incrementing view count:', err);
+        // Optimistically increment on UI
+        item.viewsRaw = (item.viewsRaw || 0) + 1;
+        item.views = `${item.viewsRaw.toLocaleString()} views`;
+        if (this.selectedContent && (this.selectedContent.id === item.id || this.selectedContent.rawId === item.rawId)) {
+          this.selectedContent.viewsRaw = item.viewsRaw;
+          this.selectedContent.views = item.views;
+        }
+        this.recalculateStats();
+      }
+    });
+  }
+
+  recalculateStats() {
+    const gymCount = this.contentList.filter(c => c.category === 'Gym').length;
+    const meditationCount = this.contentList.filter(c => c.category === 'Meditation').length;
+    const sumViews = this.contentList.reduce((acc, c) => acc + (c.viewsRaw || 0), 0);
+
+    this.stats.totalContent = this.contentList.length;
+    this.stats.gymVideos = gymCount;
+    this.stats.meditation = meditationCount;
+    this.stats.totalViews = `${sumViews.toLocaleString()}`;
+  }
+
+  getSafeEmbedUrl(path?: string): SafeResourceUrl | null {
+    if (!path) return null;
+    const match = path.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
+    if (match && match[1]) {
+      return this.sanitizer.bypassSecurityTrustResourceUrl(`https://www.youtube.com/embed/${match[1]}?autoplay=1`);
+    }
+    return null;
+  }
+
+  isDirectVideoUrl(path?: string): boolean {
+    if (!path) return false;
+    return /\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(path);
+  }
+
   closePreviewModal() {
     this.showPreviewModal = false;
     this.selectedContent = null;
@@ -596,12 +684,17 @@ export class ContentManagementComponent implements OnInit {
               tagList = [item.level];
             }
 
-            let levelStr = 'Beginner';
+            let levelStr = 'BEGINNER';
             if (item.level) {
-              const l = item.level.toUpperCase();
-              if (l === 'INTERMEDIATE') levelStr = 'Intermediate';
-              else if (l === 'ADVANCED') levelStr = 'Advanced';
-              else levelStr = 'Beginner';
+              const l = String(item.level).toUpperCase();
+              if (l.includes('INTERMEDIATE')) levelStr = 'INTERMEDIATE';
+              else if (l.includes('ADVANCED')) levelStr = 'ADVANCED';
+              else levelStr = 'BEGINNER';
+            } else {
+              const foundLevel = tagList.find(t => ['BEGINNER', 'INTERMEDIATE', 'ADVANCED'].includes(t.toUpperCase()));
+              if (foundLevel) {
+                levelStr = foundLevel.toUpperCase();
+              }
             }
 
             const rawIdNum = typeof item.id === 'number' ? item.id : parseInt(String(item.id).replace(/\D/g, ''), 10);
@@ -614,8 +707,8 @@ export class ContentManagementComponent implements OnInit {
               category: cat,
               status: item.isActive !== false ? 'Active' : 'Disabled',
               tags: tagList,
-              views: `${item.viewCount || 0} views`,
-              viewsRaw: item.viewCount || 0,
+              views: `${(item.viewCount ?? item.views ?? item.viewsCount ?? item.totalViews ?? 0).toLocaleString()} views`,
+              viewsRaw: (item.viewCount ?? item.views ?? item.viewsCount ?? item.totalViews ?? 0),
               created: item.createdAt ? item.createdAt.split('T')[0] : '',
               path: item.path || '',
               isActive: item.isActive !== false,
@@ -631,7 +724,16 @@ export class ContentManagementComponent implements OnInit {
           this.stats.totalContent = apiStats.totalContent !== undefined ? Math.max(apiStats.totalContent, this.contentList.length) : this.contentList.length;
           this.stats.gymVideos = gymCount || (apiStats.gymVideos !== undefined ? apiStats.gymVideos : 0);
           this.stats.meditation = meditationCount || (apiStats.meditation !== undefined ? apiStats.meditation : 0);
-          this.stats.totalViews = (apiStats.totalViews !== undefined && apiStats.totalViews > 0) ? `${apiStats.totalViews}` : (sumViews ? `${sumViews}` : '0');
+
+          let backendTotalViews: number | undefined = undefined;
+          if (apiStats.totalViews !== undefined && apiStats.totalViews !== null) {
+            backendTotalViews = typeof apiStats.totalViews === 'number' ? apiStats.totalViews : parseInt(String(apiStats.totalViews).replace(/\D/g, ''), 10) || 0;
+          } else if (apiStats.views !== undefined && apiStats.views !== null) {
+            backendTotalViews = typeof apiStats.views === 'number' ? apiStats.views : parseInt(String(apiStats.views).replace(/\D/g, ''), 10) || 0;
+          }
+
+          const effectiveTotalViews = Math.max(backendTotalViews || 0, sumViews);
+          this.stats.totalViews = `${effectiveTotalViews.toLocaleString()}`;
 
           // Apply frontend filters to display
           this.applyFrontendFilters();
@@ -662,7 +764,8 @@ export class ContentManagementComponent implements OnInit {
         const categoryMatch = (item.category || '').toLowerCase().includes(q);
         const idMatch = (item.id || '').toLowerCase().includes(q);
         const tagsMatch = Array.isArray(item.tags) && item.tags.some(t => (t || '').toLowerCase().includes(q));
-        return titleMatch || categoryMatch || idMatch || tagsMatch;
+        const levelMatch = (item.level || '').toLowerCase().includes(q);
+        return titleMatch || categoryMatch || idMatch || tagsMatch || levelMatch;
       });
     }
 
@@ -721,12 +824,13 @@ export class ContentManagementComponent implements OnInit {
     this.uploadErrorMessage = '';
     this.uploadSuccessMessage = '';
 
+    const selectedLevel = (this.uploadLevel || 'BEGINNER').toUpperCase();
     const payload = {
-      title: this.uploadTitle,
+      title: this.uploadTitle.trim(),
       category: this.uploadCategory.toUpperCase(),
-      path: this.uploadPath,
-      level: (this.uploadLevel || 'BEGINNER').toUpperCase(),
-      tags: this.uploadTags
+      path: this.uploadPath.trim(),
+      level: selectedLevel,
+      tags: this.uploadTags.trim() || selectedLevel
     };
 
     this.webApiService.UploadContent(payload).subscribe({

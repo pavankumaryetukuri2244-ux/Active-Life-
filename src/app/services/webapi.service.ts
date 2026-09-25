@@ -181,11 +181,14 @@ export class WebapiService {
 
   public UploadContent(body: {
     id?: number;
-    title: string;
-    category: string;
-    path: string;
-    level: string;
-    tags: string;
+    title?: string;
+    category?: string;
+    path?: string;
+    level?: string;
+    tags?: string;
+    incrementView?: boolean;
+    viewCount?: number;
+    views?: number;
   }) {
     const token = localStorage.getItem('accessToken');
     const headers = new HttpHeaders({
@@ -197,11 +200,14 @@ export class WebapiService {
 
   public UpdateContent(body: {
     id: number;
-    title: string;
-    category: string;
-    path: string;
-    level: string;
-    tags: string;
+    title?: string;
+    category?: string;
+    path?: string;
+    level?: string;
+    tags?: string;
+    incrementView?: boolean;
+    viewCount?: number;
+    views?: number;
   }) {
     const token = localStorage.getItem('accessToken');
     const headers = new HttpHeaders({
@@ -209,6 +215,10 @@ export class WebapiService {
     });
     const url = `${this.WebApi}/api/v1/content/upload`;
     return this.Http.post<any>(url, body, { headers });
+  }
+
+  public IncrementContentView(id: number) {
+    return this.UploadContent({ id: Number(id), incrementView: true });
   }
 
   public GetAllContent(filters: any = {}) {

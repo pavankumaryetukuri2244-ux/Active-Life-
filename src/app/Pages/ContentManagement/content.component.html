@@ -87,9 +87,9 @@
             <button (click)="setTab('Meditation')" class="cm-tab-btn" [class.active]="activeTab === 'Meditation'">
               Meditation
             </button>
-            <button (click)="setTab('Videos')" class="cm-tab-btn" [class.active]="activeTab === 'Videos'">
+            <!-- <button (click)="setTab('Videos')" class="cm-tab-btn" [class.active]="activeTab === 'Videos'">
               Videos
-            </button>
+            </button> -->
           </div>
         </div>
       </div>
@@ -105,14 +105,22 @@
       [style.z-index]="openDropdownId === item.id ? '1000' : '1'"
       style="border-radius: 14px; background: #FFFFFF; border: 1px solid rgba(0, 0, 0, 0.1); overflow: visible !important; transform: rotate(0deg); opacity: 1; position: relative;">
 
-      <!-- Video Thumbnail Placeholder -->
-      <div class="cm-thumbnail-box"
-        style="width: 100%; height: 165px; background: #D6E0EA; display: flex; align-items: center; justify-content: center; position: relative; border-top-left-radius: 14px; border-top-right-radius: 14px; overflow: hidden;">
-        <!-- Play icon -->
-        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2"
-          stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.95;">
-          <polygon points="5 3 19 12 5 21 5 3"></polygon>
-        </svg>
+      <!-- Video Thumbnail Placeholder & Play Action -->
+      <div class="cm-thumbnail-box" (click)="viewContent(item)"
+        style="width: 100%; height: 165px; background: #0F172A; display: flex; align-items: center; justify-content: center; position: relative; border-top-left-radius: 14px; border-top-right-radius: 14px; overflow: hidden; cursor: pointer;">
+        <img *ngIf="getThumbnailUrl(item.path)" [src]="getThumbnailUrl(item.path)"
+          style="width: 100%; height: 100%; object-fit: cover;" />
+        <div *ngIf="!getThumbnailUrl(item.path)"
+          style="width: 100%; height: 100%; background: #D6E0EA; display: flex; align-items: center; justify-content: center;">
+        </div>
+        <!-- Play Icon Overlay -->
+        <div class="cm-play-circle"
+          style="position: absolute; width: 48px; height: 48px; border-radius: 50%; background: rgba(15, 23, 42, 0.65); display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); transition: all 0.2s ease;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"
+            stroke-linecap="round" stroke-linejoin="round" style="margin-left: 2px;">
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+          </svg>
+        </div>
       </div>
 
       <!-- Card Body -->
@@ -120,7 +128,7 @@
         <div>
           <!-- Title & Actions -->
           <div class="d-flex align-items-start justify-content-between mb-1" style="position: relative;">
-            <h5 class="m-0 cm-media-title"
+            <h5 class="m-0 cm-media-title" (click)="viewContent(item)" style="cursor: pointer;"
               style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 16px; font-weight: 600; font-style: normal; line-height: 24px; letter-spacing: -0.31px; color: #0F172A;">
               {{ item.title }}
             </h5>
@@ -133,7 +141,7 @@
 
               <!-- Action Dropdown Menu -->
               <div *ngIf="openDropdownId === item.id" (click)="$event.stopPropagation()"
-                style="position: absolute; right: 0; top: 26px; z-index: 9999; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1); min-width: 145px; padding: 6px 0; font-family: 'Inter', sans-serif;">
+                style="position: absolute; right: 0; top: 26px; z-index: 9999; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1); min-width: 155px; padding: 6px 0; font-family: 'Inter', sans-serif;">
 
                 <!-- Update -->
                 <button (click)="onAction('update', item)"
@@ -186,19 +194,33 @@
             </span>
           </div>
 
-          <!-- Tags -->
+          <!-- Level and Tags -->
           <div class="d-flex flex-wrap mb-3" style="gap: 8px;">
-            <span *ngFor="let tag of item.tags" class="badge"
-              style="background: #F1F5F9; color: #475569; border-radius: 8px; font-size: 12px; font-weight: 400; padding: 4px 10px; font-family: 'Inter', sans-serif;">
-              {{ tag }}
+            <!-- Video Level Badge (always displayed on video card) -->
+            <span *ngIf="item.level" class="badge"
+              style="background: #F1F5F9; color: #334155; border-radius: 8px; font-size: 12px; font-weight: 500; padding: 4px 10px; font-family: 'Inter', sans-serif; text-transform: uppercase; letter-spacing: 0.2px;">
+              {{ item.level }}
             </span>
+            <!-- Custom Tags (excluding duplicates of level) -->
+            <ng-container *ngFor="let tag of item.tags">
+              <span *ngIf="tag && tag.trim().toUpperCase() !== (item.level || '').trim().toUpperCase()" class="badge"
+                style="background: #F1F5F9; color: #475569; border-radius: 8px; font-size: 12px; font-weight: 400; padding: 4px 10px; font-family: 'Inter', sans-serif;">
+                {{ tag }}
+              </span>
+            </ng-container>
           </div>
         </div>
 
         <!-- Footer -->
         <div class="d-flex align-items-center justify-content-between pt-2"
           style="font-size: 13px; font-weight: 400; color: #64748B; font-family: 'Inter', sans-serif;">
-          <span>{{ item.views }}</span>
+          <span style="display: inline-flex; align-items: center; gap: 5px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+            {{ item.views }}
+          </span>
           <span>{{ item.created }}</span>
         </div>
       </div>
@@ -265,7 +287,7 @@
               <option value="" disabled selected>Select category</option>
               <option value="Gym">Gym</option>
               <option value="Meditation">Meditation</option>
-              <option value="Videos">Videos</option>
+              <!-- <option value="Videos">Videos</option> -->
             </select>
             <i class="fa fa-chevron-down position-absolute"
               style="right: 12px; top: 13px; font-size: 0.7rem; color: #94A3B8; pointer-events: none;"></i>
@@ -390,7 +412,7 @@
               style="border-radius: 10px; border: none !important; height: 38px; font-size: 0.85rem; padding: 8px 12px; font-family: 'Inter', sans-serif; color: #0F172A; appearance: none; outline: none; background: #F4F5F7; cursor: pointer;">
               <option value="Gym">Gym</option>
               <option value="Meditation">Meditation</option>
-              <option value="Videos">Videos</option>
+              <!-- <option value="Videos">Videos</option> -->
             </select>
             <i class="fa fa-chevron-down position-absolute"
               style="right: 12px; top: 13px; font-size: 0.7rem; color: #94A3B8; pointer-events: none;"></i>
@@ -463,80 +485,113 @@
 }
 
 <!-- Preview Content Details Modal -->
-<div *ngIf="showPreviewModal && selectedContent" class="position-fixed d-flex align-items-center justify-content-center"
-  style="top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.45); z-index: 10000; font-family: 'Inter', -apple-system, sans-serif;">
-  <div class="card border-0 p-4"
-    style="width: 100%; max-width: 500px; border-radius: 16px; background: #ffffff; position: relative; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);">
-    <!-- Close button -->
-    <button (click)="closePreviewModal()" class="position-absolute border-0 bg-transparent text-muted"
-      style="top: 18px; right: 18px; font-size: 1.3rem; outline: none; cursor: pointer;">
-      &times;
-    </button>
+<div *ngIf="showPreviewModal && selectedContent" class="modal-backdrop fade show animate-fade-in"
+  style="background-color: rgba(0, 0, 0, 0.5); z-index: 1040; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;">
+</div>
+<div *ngIf="showPreviewModal && selectedContent" class="modal d-block" tabindex="-1"
+  style="z-index: 1050; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; overflow-y: auto; display: flex; align-items: center; justify-content: center;">
+  <div class="modal-dialog modal-dialog-centered w-100 border-0"
+    style="max-width: 520px; margin: 20px auto; font-family: 'Inter', -apple-system, sans-serif;">
+    <div class="modal-content border-0 p-4"
+      style="border-radius: 16px; background: #ffffff; position: relative; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);">
+      <!-- Close button -->
+      <button (click)="closePreviewModal()" type="button" class="btn-close border-0 bg-transparent p-0 text-muted position-absolute"
+        style="top: 18px; right: 18px; font-size: 1.3rem; outline: none; cursor: pointer; line-height: 1;">
+        &times;
+      </button>
 
-    <!-- Thumbnail Header -->
-    <div class="mb-3 rounded overflow-hidden position-relative"
-      style="height: 180px; background: #0F172A; display: flex; align-items: center; justify-content: center;">
-      <img *ngIf="getThumbnailUrl(selectedContent.path)" [src]="getThumbnailUrl(selectedContent.path)"
-        style="width: 100%; height: 100%; object-fit: cover;" />
-      <div *ngIf="!getThumbnailUrl(selectedContent.path)" class="text-white text-center p-3">
-        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
-          class="mb-2">
-          <polygon points="5 3 19 12 5 21 5 3"></polygon>
-        </svg>
-        <div style="font-weight: 500; font-size: 14px;">{{ selectedContent.title }}</div>
+      <!-- Video Player / Thumbnail Header -->
+      <div class="mb-3 rounded overflow-hidden position-relative"
+        style="height: 240px; background: #0F172A; display: flex; align-items: center; justify-content: center; border-radius: 12px;">
+        <iframe *ngIf="getSafeEmbedUrl(selectedContent.path)" [src]="getSafeEmbedUrl(selectedContent.path)"
+          style="width: 100%; height: 100%; border: none;"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen>
+        </iframe>
+        <video *ngIf="!getSafeEmbedUrl(selectedContent.path) && isDirectVideoUrl(selectedContent.path)"
+          [src]="selectedContent.path" controls autoplay
+          style="width: 100%; height: 100%; object-fit: contain;">
+        </video>
+        <img *ngIf="!getSafeEmbedUrl(selectedContent.path) && !isDirectVideoUrl(selectedContent.path) && getThumbnailUrl(selectedContent.path)"
+          [src]="getThumbnailUrl(selectedContent.path)"
+          style="width: 100%; height: 100%; object-fit: cover;" />
+        <div *ngIf="!getSafeEmbedUrl(selectedContent.path) && !isDirectVideoUrl(selectedContent.path) && !getThumbnailUrl(selectedContent.path)"
+          class="text-white text-center p-3">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+            class="mb-2">
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+          </svg>
+          <div style="font-weight: 500; font-size: 14px;">{{ selectedContent.title }}</div>
+        </div>
+        <span class="badge position-absolute"
+          style="top: 12px; left: 12px; background: rgba(15, 23, 42, 0.85); color: #ffffff; padding: 4px 10px; border-radius: 12px; font-size: 11px;">
+          {{ selectedContent.category }}
+        </span>
       </div>
-      <span class="badge position-absolute"
-        style="top: 12px; left: 12px; background: rgba(15, 23, 42, 0.85); color: #ffffff; padding: 4px 10px; border-radius: 12px; font-size: 11px;">
-        {{ selectedContent.category }}
-      </span>
-    </div>
 
-    <!-- Title & Status -->
-    <div class="d-flex align-items-center justify-content-between mb-3">
-      <h5 class="m-0 font-weight-bold text-dark" style="font-size: 1.1rem;">{{ selectedContent.title }}</h5>
-      <span class="badge" [style.background]="selectedContent.status === 'Active' ? '#DCFCE7' : '#FEE2E2'"
-        [style.color]="selectedContent.status === 'Active' ? '#16A34A' : '#DC2626'"
-        style="font-size: 0.75rem; font-weight: 600; padding: 4px 10px; border-radius: 12px;">
-        {{ selectedContent.status }}
-      </span>
-    </div>
+      <!-- Title & Status -->
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h5 class="m-0 font-weight-bold text-dark" style="font-size: 1.15rem;">{{ selectedContent.title }}</h5>
+        <span class="badge" [style.background]="selectedContent.status === 'Active' ? '#DCFCE7' : '#FEE2E2'"
+          [style.color]="selectedContent.status === 'Active' ? '#16A34A' : '#DC2626'"
+          style="font-size: 0.75rem; font-weight: 600; padding: 4px 10px; border-radius: 12px;">
+          {{ selectedContent.status }}
+        </span>
+      </div>
 
-    <!-- Content Details Grid -->
-    <div class="d-flex flex-column" style="gap: 12px; font-size: 0.9rem;">
-      <div class="d-flex justify-content-between pb-2" style="border-bottom: 1px solid #f1f5f9;">
-        <span class="text-muted">Content ID</span>
-        <span class="font-weight-600 text-dark">{{ selectedContent.id }}</span>
-      </div>
-      <div class="d-flex justify-content-between pb-2" style="border-bottom: 1px solid #f1f5f9;">
-        <span class="text-muted">Category</span>
-        <span class="font-weight-600 text-dark">{{ selectedContent.category }}</span>
-      </div>
-      <div class="d-flex justify-content-between pb-2" style="border-bottom: 1px solid #f1f5f9;">
-        <span class="text-muted">Total Views</span>
-        <span class="font-weight-600 text-dark">{{ selectedContent.views }}</span>
-      </div>
-      <div class="d-flex justify-content-between pb-2" style="border-bottom: 1px solid #f1f5f9;">
-        <span class="text-muted">Tags / Level</span>
-        <div class="d-flex gap-1 flex-wrap">
-          <span *ngFor="let tag of selectedContent.tags" class="badge"
-            style="background: #F1F5F9; color: #334155; font-size: 11px; padding: 3px 8px; border-radius: 10px;">
-            {{ tag }}
+      <!-- Content Details Grid -->
+      <div class="d-flex flex-column" style="gap: 12px; font-size: 0.9rem;">
+        <div class="d-flex justify-content-between pb-2" style="border-bottom: 1px solid #f1f5f9;">
+          <span class="text-muted">Content ID</span>
+          <span class="font-weight-600 text-dark">{{ selectedContent.id }}</span>
+        </div>
+        <div class="d-flex justify-content-between pb-2" style="border-bottom: 1px solid #f1f5f9;">
+          <span class="text-muted">Category</span>
+          <span class="font-weight-600 text-dark">{{ selectedContent.category }}</span>
+        </div>
+        <div class="d-flex justify-content-between pb-2" style="border-bottom: 1px solid #f1f5f9;">
+          <span class="text-muted">Total Views</span>
+          <span class="font-weight-600" style="color: #EA580C; display: inline-flex; align-items: center; gap: 6px;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#EA580C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+            {{ selectedContent.views }}
           </span>
         </div>
+        <div class="d-flex justify-content-between pb-2" style="border-bottom: 1px solid #f1f5f9;">
+          <span class="text-muted">Tags / Level</span>
+          <div class="d-flex gap-1 flex-wrap">
+            <span *ngFor="let tag of selectedContent.tags" class="badge"
+              style="background: #F1F5F9; color: #334155; font-size: 11px; padding: 3px 8px; border-radius: 10px;">
+              {{ tag }}
+            </span>
+          </div>
+        </div>
+        <div *ngIf="selectedContent.created" class="d-flex justify-content-between pb-2"
+          style="border-bottom: 1px solid #f1f5f9;">
+          <span class="text-muted">Upload Date</span>
+          <span class="font-weight-600 text-dark">{{ selectedContent.created }}</span>
+        </div>
       </div>
-      <div *ngIf="selectedContent.created" class="d-flex justify-content-between pb-2"
-        style="border-bottom: 1px solid #f1f5f9;">
-        <span class="text-muted">Upload Date</span>
-        <span class="font-weight-600 text-dark">{{ selectedContent.created }}</span>
-      </div>
-    </div>
 
-    <!-- Modal Footer -->
-    <div class="mt-4 pt-2 text-right">
-      <button (click)="closePreviewModal()" class="btn btn-secondary border-0 px-4"
-        style="border-radius: 8px; font-size: 0.875rem; background: #0F172A; color: #ffffff;">
-        Close
-      </button>
+      <!-- Modal Footer -->
+      <div class="mt-4 pt-2 d-flex justify-content-between align-items-center">
+        <!-- Manual Increment View Trigger -->
+        <button (click)="incrementView(selectedContent)" type="button" class="btn btn-sm btn-outline-primary"
+          style="border-radius: 8px; font-size: 0.85rem; font-weight: 500; display: inline-flex; align-items: center; gap: 6px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+          Increment View (+1)
+        </button>
+
+        <button (click)="closePreviewModal()" class="btn btn-secondary border-0 px-4"
+          style="border-radius: 8px; font-size: 0.875rem; background: #0F172A; color: #ffffff;">
+          Close
+        </button>
+      </div>
     </div>
   </div>
 </div>

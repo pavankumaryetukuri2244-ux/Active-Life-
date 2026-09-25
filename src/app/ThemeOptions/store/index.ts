@@ -5,7 +5,8 @@
 // - config.service.ts (service layer)
 
 // Re-export for backwards compatibility
-export { AppState, ConfigState, initialConfigState } from './config.state';
+export type { AppState, ConfigState } from './config.state';
+export { initialConfigState } from './config.state';
 export * from './config.actions.ngrx';
 export { configReducer } from './config.reducer.ngrx';
 
