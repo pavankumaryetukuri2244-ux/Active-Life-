@@ -556,7 +556,6 @@ export class ContentManagementComponent implements OnInit {
   viewContent(item: ContentItem) {
     this.selectedContent = item;
     this.showPreviewModal = true;
-    this.incrementView(item);
   }
 
   incrementView(item: ContentItem) {
