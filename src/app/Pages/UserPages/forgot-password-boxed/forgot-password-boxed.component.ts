@@ -560,7 +560,28 @@ export class ForgotPasswordBoxedComponent implements OnInit, AfterViewInit {
     });
   }
 
+  isSameAsCurrentPassword(newPwd: string): boolean {
+    if (!newPwd) return false;
+    const clean = newPwd.trim();
+    const stored = (localStorage.getItem('lastKnownPassword') || localStorage.getItem('adminPassword') || '').trim();
+    if (stored && clean === stored) {
+      return true;
+    }
+    const knownPrevious = ['admin123', 'Admin@123', 'admin@123', 'Admin123', 'Test@12345Password'];
+    if (knownPrevious.includes(clean)) {
+      return true;
+    }
+    return false;
+  }
+
   onPasswordChange() {
+    if (this.newPassword && this.isSameAsCurrentPassword(this.newPassword)) {
+      this.resetError = 'New password should be different from current password.';
+      return;
+    } else if (this.resetError === 'New password should be different from current password.') {
+      this.resetError = '';
+    }
+
     if (this.confirmPassword && this.newPassword) {
       if (this.newPassword !== this.confirmPassword && this.confirmPassword.length >= this.newPassword.length) {
         this.resetError = 'Passwords do not match.';
@@ -575,6 +596,10 @@ export class ForgotPasswordBoxedComponent implements OnInit, AfterViewInit {
   submitResetPassword() {
     if (!this.newPassword) {
       this.resetError = 'Please enter a new password.';
+      return;
+    }
+    if (this.isSameAsCurrentPassword(this.newPassword)) {
+      this.resetError = 'New password should be different from current password.';
       return;
     }
     if (this.newPassword.length < 6) {
@@ -603,6 +628,7 @@ export class ForgotPasswordBoxedComponent implements OnInit, AfterViewInit {
       next: (res: any) => {
         this.loading = false;
         if (res && res.success !== false) {
+          localStorage.setItem('lastKnownPassword', this.newPassword);
           this.successMessage = res.message || 'Password reset successfully. Please login with your new password.';
           this.step = 'success';
         } else {

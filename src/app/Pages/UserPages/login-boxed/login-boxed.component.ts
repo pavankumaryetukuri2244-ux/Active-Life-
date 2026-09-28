@@ -762,6 +762,9 @@ export class LoginBoxedComponent implements OnInit, OnDestroy {
           
           const enteredEmail = (this.Form.value.loginid || '').trim().toLowerCase();
           localStorage.setItem('adminEmail', enteredEmail);
+          if (this.Form.value.password) {
+            localStorage.setItem('lastKnownPassword', this.Form.value.password);
+          }
 
           let adminProfile: any = {};
           if (response.data && response.data.admin && typeof response.data.admin === 'object') {
