@@ -10,6 +10,10 @@ import {
   UserManagementComponent,
   ContentManagementComponent,
   PreventiveCareComponent,
+  HealthAwarenessComponent,
+  HealthcareChampionsComponent,
+  HomeRemediesComponent,
+  SupportGroupsComponent,
   AuditLogsComponent,
   ForgotPasswordBoxedComponent,
   LoginBoxedComponent
@@ -28,6 +32,10 @@ const routes: Routes = [
       { path: 'dashboards/users', component: UserManagementComponent, data: { extraParameter: 'usersMenu' } },
       { path: 'dashboards/content', component: ContentManagementComponent, data: { extraParameter: 'contentMenu' } },
       { path: 'dashboards/preventive-care', component: PreventiveCareComponent, data: { extraParameter: 'preventiveCareMenu' } },
+      { path: 'dashboards/health-awareness', component: HealthAwarenessComponent, data: { extraParameter: 'healthAwarenessMenu' } },
+      { path: 'dashboards/healthcare-champions', component: HealthcareChampionsComponent, data: { extraParameter: 'healthcareChampionsMenu' } },
+      { path: 'dashboards/home-remedies', component: HomeRemediesComponent, data: { extraParameter: 'homeRemediesMenu' } },
+      { path: 'dashboards/support-groups', component: SupportGroupsComponent, data: { extraParameter: 'supportGroupsMenu' } },
       { path: 'dashboards/audit-logs', component: AuditLogsComponent, data: { extraParameter: 'auditLogsMenu' } }
     ]
   },

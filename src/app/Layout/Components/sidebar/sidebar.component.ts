@@ -366,6 +366,34 @@ export class SidebarComponent implements OnInit {
     },
     {
       type: 'link',
+      title: 'Health Awareness',
+      route: '/dashboards/health-awareness',
+      icon: 'pe-7s-speaker',
+      activeMenu: 'healthAwarenessMenu'
+    },
+    {
+      type: 'link',
+      title: 'Healthcare Champions',
+      route: '/dashboards/healthcare-champions',
+      icon: 'pe-7s-medal',
+      activeMenu: 'healthcareChampionsMenu'
+    },
+    {
+      type: 'link',
+      title: 'Home Remedies',
+      route: '/dashboards/home-remedies',
+      icon: 'pe-7s-leaf',
+      activeMenu: 'homeRemediesMenu'
+    },
+    {
+      type: 'link',
+      title: 'Support Groups',
+      route: '/dashboards/support-groups',
+      icon: 'pe-7s-chat',
+      activeMenu: 'supportGroupsMenu'
+    },
+    {
+      type: 'link',
       title: 'Audit Logs',
       route: '/dashboards/audit-logs',
       icon: 'pe-7s-search',

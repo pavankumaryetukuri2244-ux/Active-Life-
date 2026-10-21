@@ -281,4 +281,239 @@ export class WebapiService {
     });
     return this.Http.post<any>(url, token, { headers });
   }
+
+  // ==========================================
+  // Health Awareness API Methods
+  // ==========================================
+  public GetHealthAwareness(filters: any = {}) {
+    const token = localStorage.getItem('accessToken');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+    const url = `${this.WebApi}/admin/api/health-content/list`;
+    return this.Http.post<any>(url, filters, { headers });
+  }
+
+  public CreateHealthAwareness(body: {
+    title: string;
+    category: string;
+    description: string;
+    id?: number | string;
+  }) {
+    const token = localStorage.getItem('accessToken');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+    const url = `${this.WebApi}/admin/api/health-content/create`;
+    const payload: any = {
+      title: body.title,
+      category: body.category,
+      description: body.description
+    };
+    if (body.id !== undefined && body.id !== null && body.id !== '') {
+      payload.id = body.id;
+    }
+    return this.Http.post<any>(url, payload, { headers });
+  }
+
+  public SaveHealthAwareness(body: any) {
+    return this.CreateHealthAwareness(body);
+  }
+
+  public ToggleHealthAwarenessStatus(id: number | string, isActive: boolean) {
+    const token = localStorage.getItem('accessToken');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+    const url = `${this.WebApi}/admin/api/health-content/toggle-status`;
+    const payload = {
+      id: Number(id),
+      isActive: Boolean(isActive)
+    };
+    return this.Http.post<any>(url, payload, { headers });
+  }
+
+  public DeleteHealthAwareness(id: number | string) {
+    return this.ToggleHealthAwarenessStatus(Number(id), false);
+  }
+
+  public GetHealthCategories(body: any = {}) {
+    return this.GetMedicalCategories(body);
+  }
+
+  public GetMedicalCategories(body: any = {}) {
+    const token = localStorage.getItem('accessToken');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+    const url = `${this.WebApi}/admin/api/masterdata/categories`;
+    return this.Http.post<any>(url, body, { headers });
+  }
+
+  public GetCategories(body: any = {}) {
+    return this.GetMedicalCategories(body);
+  }
+
+  // ==========================================
+  // Healthcare Champions API Methods
+  // ==========================================
+  public GetHealthcareChampions(filters: any = {}) {
+    const token = localStorage.getItem('accessToken');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+    const url = `${this.WebApi}/admin/api/healthcare-champions/list`;
+    return this.Http.post<any>(url, filters, { headers });
+  }
+
+  public CreateHealthcareChampion(body: any) {
+    const token = localStorage.getItem('accessToken');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+    const url = `${this.WebApi}/admin/api/healthcare-champions/create`;
+    return this.Http.post<any>(url, body, { headers });
+  }
+
+  public SaveHealthcareChampion(body: any) {
+    return this.CreateHealthcareChampion(body);
+  }
+
+  public ToggleHealthcareChampionStatus(id: number | string, isActive: boolean) {
+    const token = localStorage.getItem('accessToken');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+    const url = `${this.WebApi}/admin/api/healthcare-champions/toggle-status`;
+    const payload = {
+      id: Number(id),
+      isActive: Boolean(isActive)
+    };
+    return this.Http.post<any>(url, payload, { headers });
+  }
+
+  public DeleteHealthcareChampion(id: number | string) {
+    return this.ToggleHealthcareChampionStatus(Number(id), false);
+  }
+
+  // ==========================================
+  // Home Remedies API Methods
+  // ==========================================
+  public GetHomeRemedies(filters: any = {}) {
+    const token = localStorage.getItem('accessToken');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+    const url = `${this.WebApi}/admin/api/home-remedies/list`;
+    return this.Http.post<any>(url, filters, { headers });
+  }
+
+  public CreateHomeRemedy(body: any) {
+    const token = localStorage.getItem('accessToken');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+    const url = `${this.WebApi}/admin/api/home-remedies/create`;
+    return this.Http.post<any>(url, body, { headers });
+  }
+
+  public UpdateHomeRemedy(body: any) {
+    const token = localStorage.getItem('accessToken');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+    const url = `${this.WebApi}/admin/api/home-remedies/create`;
+    return this.Http.post<any>(url, body, { headers });
+  }
+
+  public SaveHomeRemedy(body: any) {
+    return this.CreateHomeRemedy(body);
+  }
+
+  public ToggleHomeRemedyStatus(id: number | string, isActive: boolean) {
+    const token = localStorage.getItem('accessToken');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+    const url = `${this.WebApi}/admin/api/home-remedies/toggle-status`;
+    const payload = {
+      id: Number(id),
+      isActive: Boolean(isActive)
+    };
+    return this.Http.post<any>(url, payload, { headers });
+  }
+
+  public DeleteHomeRemedy(id: number | string) {
+    return this.ToggleHomeRemedyStatus(Number(id), false);
+  }
+
+  public GetHomeRemedyCategories(body: any = {}) {
+    const token = localStorage.getItem('accessToken');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+    const url = `${this.WebApi}/admin/api/masterdata/home-remedy-categories`;
+    return this.Http.post<any>(url, body, { headers });
+  }
+
+  // ==========================================
+  // Support Groups API Methods
+  // ==========================================
+  public GetSupportGroups(filters: any = {}) {
+    const token = localStorage.getItem('accessToken');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+    const url = `${this.WebApi}/admin/api/support-groups/list`;
+    return this.Http.post<any>(url, filters, { headers });
+  }
+
+  public CreateSupportGroup(body: any) {
+    const token = localStorage.getItem('accessToken');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+    const url = `${this.WebApi}/admin/api/support-groups/save`;
+    return this.Http.post<any>(url, body, { headers });
+  }
+
+  public UpdateSupportGroup(body: any) {
+    const token = localStorage.getItem('accessToken');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+    const url = `${this.WebApi}/admin/api/support-groups/save`;
+    return this.Http.post<any>(url, body, { headers });
+  }
+
+  public SaveSupportGroup(body: any) {
+    return this.CreateSupportGroup(body);
+  }
+
+  public ToggleSupportGroupStatus(id: number | string, isActive: boolean) {
+    const token = localStorage.getItem('accessToken');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+    const url = `${this.WebApi}/admin/api/support-groups/toggle-status`;
+    const payload = {
+      id: Number(id),
+      isActive: Boolean(isActive)
+    };
+    return this.Http.post<any>(url, payload, { headers });
+  }
+
+  public DeleteSupportGroup(id: number | string) {
+    return this.ToggleSupportGroupStatus(Number(id), false);
+  }
+
+  public JoinSupportGroupMember(groupId: string, memberData: any) {
+    const token = localStorage.getItem('accessToken');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+    const url = `${this.WebApi}/api/v1/support-groups/join`;
+    return this.Http.post<any>(url, { groupId, ...memberData }, { headers });
+  }
 }
+

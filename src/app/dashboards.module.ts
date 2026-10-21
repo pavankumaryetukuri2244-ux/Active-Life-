@@ -7,6 +7,10 @@ import { AnalyticsComponent } from './Pages/Dashboards/analytics/analytics.compo
 import { UserManagementComponent } from './Pages/UserManagement/user-management.component';
 import { ContentManagementComponent } from './Pages/ContentManagement/content.component';
 import { PreventiveCareComponent } from './Pages/PreventiveCare/preventive-care.component';
+import { HealthAwarenessComponent } from './Pages/HealthAwareness/health-awareness.component';
+import { HealthcareChampionsComponent } from './Pages/HealthcareChampions/healthcare-champions.component';
+import { HomeRemediesComponent } from './Pages/HomeRemedies/home-remedies.component';
+import { SupportGroupsComponent } from './Pages/SupportGroups/support-groups.component';
 import { AuditLogsComponent } from './Pages/AuditLogs/audit-logs.component';
 
 @NgModule({
@@ -15,6 +19,10 @@ import { AuditLogsComponent } from './Pages/AuditLogs/audit-logs.component';
     UserManagementComponent,
     ContentManagementComponent,
     PreventiveCareComponent,
+    HealthAwarenessComponent,
+    HealthcareChampionsComponent,
+    HomeRemediesComponent,
+    SupportGroupsComponent,
     AuditLogsComponent
   ],
   imports: [
@@ -26,6 +34,10 @@ import { AuditLogsComponent } from './Pages/AuditLogs/audit-logs.component';
     UserManagementComponent,
     ContentManagementComponent,
     PreventiveCareComponent,
+    HealthAwarenessComponent,
+    HealthcareChampionsComponent,
+    HomeRemediesComponent,
+    SupportGroupsComponent,
     AuditLogsComponent
   ]
 })

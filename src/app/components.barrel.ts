@@ -6,8 +6,13 @@ export { AnalyticsComponent } from './Pages/Dashboards/analytics/analytics.compo
 export { UserManagementComponent } from './Pages/UserManagement/user-management.component';
 export { ContentManagementComponent } from './Pages/ContentManagement/content.component';
 export { PreventiveCareComponent } from './Pages/PreventiveCare/preventive-care.component';
+export { HealthAwarenessComponent } from './Pages/HealthAwareness/health-awareness.component';
+export { HealthcareChampionsComponent } from './Pages/HealthcareChampions/healthcare-champions.component';
+export { HomeRemediesComponent } from './Pages/HomeRemedies/home-remedies.component';
+export { SupportGroupsComponent } from './Pages/SupportGroups/support-groups.component';
 export { AuditLogsComponent } from './Pages/AuditLogs/audit-logs.component';
 
 // User pages components
 export { ForgotPasswordBoxedComponent } from './Pages/UserPages/forgot-password-boxed/forgot-password-boxed.component';
 export { LoginBoxedComponent } from './Pages/UserPages/login-boxed/login-boxed.component';
+

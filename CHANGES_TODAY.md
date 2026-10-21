@@ -130,6 +130,53 @@ Today's updates covered full UI redesigns, end-to-end functionality implementati
 
 ---
 
+## 11. 📢 Health Awareness Module
+
+### [`src/app/Pages/HealthAwareness/`](file:///c:/Users/Y.PAVAN%20CHOWDARY/Downloads/src%201/src/app/Pages/HealthAwareness/)
+- **Campaign & Protocol Management**: Directory for preventive health campaigns (cardiovascular protection, maternal anemia, monsoon disease containment, low-glycemic diabetes lifestyle).
+- **KPI Metrics Cards**: Total Campaigns, Active Initiatives, Community Reach, and Detailed Protocols.
+- **Search & Filtering**: Debounced search bar, category tabs (Maternal, Heart, Chronic, Seasonal, Nutrition, Mental Health), and status filters.
+- **Grid & Table Views**: Responsive campaign cards with action protocol checklists, read times, and audience metrics.
+- **Modals**: Full campaign creation/edit modal and interactive Clinical Advisory reader.
+
+---
+
+## 12. 🏅 Healthcare Champions Module
+
+### [`src/app/Pages/HealthcareChampions/`](file:///c:/Users/Y.PAVAN%20CHOWDARY/Downloads/src%201/src/app/Pages/HealthcareChampions/)
+- **Community Health Leader Directory**: Dedicated registry for medical mentors, certified doulas, clinical nutritionists, and health educators.
+- **KPI Metrics Cards**: Total Champions, Active In Field, Coverage Districts/Zones, and Families Mentored.
+- **Search & Filtering**: Search by name, specialty, district, and contact with domain category tabs.
+- **Champion Cards & Table**: High-fidelity cards featuring initials avatars, verified badges, rating stars, contact details, and mentoring statistics.
+- **Modals**: Champion registration/edit modal and comprehensive Impact Profile modal.
+
+---
+
+## 13. 🌿 Home Remedies Module
+
+### [`src/app/Pages/HomeRemedies/`](file:///c:/Users/Y.PAVAN%20CHOWDARY/Downloads/src%201/src/app/Pages/HomeRemedies/)
+- **Evidence-Based Natural Remedies**: Curated remedies for everyday ailments (cough, acid reflux, eczema, joint stiffness, sleep tension).
+- **KPI Metrics Cards**: Total Remedies, Doctor Verified, Common Ailments Covered, and Community Views.
+- **Search & Filtering**: Search by remedy, ailment, or ingredient keywords with category tabs and Doctor Verified filtering.
+- **Remedy Cards & Table**: Detailed recipe cards with difficulty tags, prep time, ingredient chips, and therapeutic mechanism summary.
+- **Modals**: Add/Edit remedy modal with ingredient checklist, step-by-step instructions, dosage timing, precautions, and doctor verification. Interactive Remedy Preparation Protocol guide modal.
+
+---
+
+## 14. 🤝 Support Groups Module
+
+### [`src/app/Pages/SupportGroups/`](file:///c:/Users/Y.PAVAN%20CHOWDARY/Downloads/src%201/src/app/Pages/SupportGroups/)
+- **Doctor-Guided Peer Circles & Recovery Cohorts**: Comprehensive hub for specialized support circles (Postpartum & New Mothers, Type 2 Diabetes Lifestyle, Anxiety & Burnout Resilience, Breast Cancer Warriors, Cardiac Rehab, Caregivers of Senior Dementia, Mindful Sobriety, and Gut Health/IBS).
+- **KPI Metrics Cards**: Total Support Circles, Enrolled Members, Active / Upcoming Sessions, and Doctor Moderated percentage.
+- **Search & Filtering**: Real-time debounced keyword search (name, facilitator, ailment, topic tag), category tabs, meeting format filter (Online, In-Person, Hybrid), and status filter (Active, Upcoming, Full, Paused).
+- **Grid & Table Views**: High-fidelity circle cards featuring category pill, format indicator, facilitator avatar & doctor verification badge, schedule & next session date, interactive capacity tracker progress bar, and topic tags.
+- **Modals**:
+  - **Create / Edit Support Circle**: Modal for scheduling circles, facilitator credentials, maximum capacity, discussion ground rules, and contact info.
+  - **Circle Protocol & Guidelines**: Comprehensive modal with direct meeting link copy, discussion ground rules checklist, explored themes, and active participant roster.
+  - **Participant RSVP & Enrollment**: Clean registration modal with seat capacity verification and confirmation alert.
+
+---
+
 ## 🚀 Git Commits Made Today
 
 | Commit Hash | Message | Description |
@@ -137,3 +184,4 @@ Today's updates covered full UI redesigns, end-to-end functionality implementati
 | `9f86039` | `feat: update UI components, forgot-password flow, API proxy, and services` | Added API proxy, full forgot-password flow, services, and updated all demo pages |
 | `20c9aa6` | `refactor: UI design updates, loader removals, and Figma layout styling` | Refactored layouts, removed obsolete loaders, enhanced design aesthetics |
 | `bbb5cde` | `feat: user management styling and sidebar fixes` | Initial baseline for user management and navigation updates |
+

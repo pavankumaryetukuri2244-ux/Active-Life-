@@ -1,0 +1,15 @@
+{
+  "version": "1.0.0",
+  "project": "active-life",
+  "root": ".",
+  "specificationDir": ".specify",
+  "templatesDir": ".specify/templates",
+  "memoryDir": ".specify/memory",
+  "activeFeature": null,
+  "standards": {
+    "framework": "Angular 19",
+    "language": "TypeScript 5.7",
+    "styling": "SCSS",
+    "designSystem": "Bootstrap 5.3"
+  }
+}

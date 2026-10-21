@@ -4,5 +4,11 @@
     "secure": false,
     "changeOrigin": true,
     "logLevel": "debug"
+  },
+  "/admin": {
+    "target": "http://20.193.140.173:8085",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
   }
 }
