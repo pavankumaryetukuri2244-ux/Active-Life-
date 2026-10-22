@@ -227,8 +227,9 @@
 
               <!-- Remedy Content Preview Box -->
               @if (item.remedyContent) {
-                <div style="background: #F8FAFC; border: 1px solid #EEF2F6; border-radius: 8px; padding: 10px 12px; font-size: 12.5px; color: #334155; line-height: 1.5; margin-bottom: 12px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
-                  <strong class="text-dark">Preparation & Usage:</strong> {{ item.remedyContent }}
+                <div style="background: #F8FAFC; border: 1px solid #EEF2F6; border-radius: 8px; padding: 10px 12px; font-size: 12.5px; color: #334155; line-height: 1.5; margin-bottom: 12px; max-height: 170px; overflow-y: auto;">
+                  <strong class="text-dark d-block mb-1">Remedy Content:</strong>
+                  <div [innerHTML]="renderRemedyContent(item.remedyContent)"></div>
                 </div>
               }
             </div>
@@ -305,16 +306,107 @@
 
         <!-- Description -->
         <div class="mb-3">
-          <label class="form-label small fw-semibold text-dark">Short Summary / Description <span class="text-danger">*</span></label>
+          <label class="form-label small fw-semibold text-dark">Description <span class="text-danger">*</span></label>
           <textarea class="form-control" rows="2" [(ngModel)]="formModel.description" name="description"
             placeholder="Brief overview of targeted ailment and primary health benefit..." required></textarea>
         </div>
 
-        <!-- Remedy Content (Detailed instructions / preparation) -->
+        <!-- Remedy Content with Table Toolbar and Live Preview -->
         <div class="mb-4">
-          <label class="form-label small fw-semibold text-dark">Preparation & Therapeutic Usage <span class="text-danger">*</span></label>
-          <textarea class="form-control" rows="3" [(ngModel)]="formModel.remedyContent" name="remedyContent"
-            placeholder="Instructions on preparation, usage, dosage, and recommendations..." required></textarea>
+          <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap" style="gap: 8px;">
+            <label class="form-label small fw-semibold text-dark m-0">
+              Remedy Content <span class="text-danger">*</span>
+            </label>
+            <div class="d-flex align-items-center" style="gap: 6px;">
+              <!-- Insert Table Dropdown Button -->
+              <div class="dropdown" style="position: relative;">
+                <button type="button" class="btn btn-sm btn-outline-secondary d-flex align-items-center"
+                  (click)="toggleTableMenu($event)"
+                  style="font-size: 12px; padding: 3px 10px; border-radius: 6px; gap: 5px; font-weight: 500;">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="3" y1="9" x2="21" y2="9"></line>
+                    <line x1="3" y1="15" x2="21" y2="15"></line>
+                    <line x1="9" y1="3" x2="9" y2="21"></line>
+                    <line x1="15" y1="3" x2="15" y2="21"></line>
+                  </svg>
+                  <span>+ Insert Table</span>
+                  <span style="font-size: 9px; margin-left: 2px;">▼</span>
+                </button>
+
+                @if (showTableMenu) {
+                  <div (click)="$event.stopPropagation()"
+                    style="position: absolute; right: 0; top: 32px; z-index: 1050; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 10px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.15); width: 230px; padding: 6px 0;">
+                    <button type="button" class="dropdown-item py-2 px-3 small d-flex align-items-center justify-content-between text-start border-0 bg-transparent"
+                      (click)="insertTableTemplate('ingredients')">
+                      <div>
+                        <div class="fw-semibold text-dark" style="font-size: 12.5px;">Ingredients & Dosage</div>
+                        <div class="text-muted" style="font-size: 11px;">Ingredient, Quantity, Notes</div>
+                      </div>
+                      <span class="badge bg-light text-secondary border">3 cols</span>
+                    </button>
+                    <button type="button" class="dropdown-item py-2 px-3 small d-flex align-items-center justify-content-between text-start border-0 bg-transparent"
+                      (click)="insertTableTemplate('steps')">
+                      <div>
+                        <div class="fw-semibold text-dark" style="font-size: 12.5px;">Preparation Steps</div>
+                        <div class="text-muted" style="font-size: 11px;">Step, Action, Timing</div>
+                      </div>
+                      <span class="badge bg-light text-secondary border">3 cols</span>
+                    </button>
+                    <button type="button" class="dropdown-item py-2 px-3 small d-flex align-items-center justify-content-between text-start border-0 bg-transparent"
+                      (click)="insertTableTemplate('schedule')">
+                      <div>
+                        <div class="fw-semibold text-dark" style="font-size: 12.5px;">Intake Schedule</div>
+                        <div class="text-muted" style="font-size: 11px;">Time of Day, Dose, Notes</div>
+                      </div>
+                      <span class="badge bg-light text-secondary border">3 cols</span>
+                    </button>
+                    <div class="dropdown-divider my-1"></div>
+                    <button type="button" class="dropdown-item py-2 px-3 small d-flex align-items-center justify-content-between text-start border-0 bg-transparent text-primary fw-semibold"
+                      (click)="openCustomTableModal()">
+                      <span style="font-size: 12px;">⚙️ Custom Table Builder...</span>
+                      <span>+</span>
+                    </button>
+                  </div>
+                }
+              </div>
+
+              <!-- Write / Preview Mode Toggle -->
+              <div class="btn-group btn-group-sm" role="group">
+                <button type="button" class="btn btn-sm"
+                  [ngClass]="contentTab === 'write' ? 'btn-dark' : 'btn-outline-secondary'"
+                  (click)="contentTab = 'write'"
+                  style="font-size: 11.5px; padding: 2px 10px; font-weight: 500;">
+                  Write
+                </button>
+                <button type="button" class="btn btn-sm"
+                  [ngClass]="contentTab === 'preview' ? 'btn-dark' : 'btn-outline-secondary'"
+                  (click)="contentTab = 'preview'"
+                  style="font-size: 11.5px; padding: 2px 10px; font-weight: 500;">
+                  Preview
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Write Mode -->
+          @if (contentTab === 'write') {
+            <textarea class="form-control font-monospace" rows="4" [(ngModel)]="formModel.remedyContent" name="remedyContent"
+              placeholder="Instructions, therapeutic usage, or click '+ Insert Table' above to add a table..." required
+              style="font-size: 13px; line-height: 1.5;"></textarea>
+            <div class="form-text text-muted small mt-1" style="font-size: 11.5px;">
+              💡 <strong>Tip:</strong> Click <strong>+ Insert Table</strong> above to add table templates or type markdown/HTML tables directly.
+            </div>
+          } @else {
+            <!-- Live Preview Mode -->
+            <div class="border rounded p-3" style="min-height: 110px; max-height: 220px; overflow-y: auto; background: #F8FAFC; font-size: 13px;">
+              @if (formModel.remedyContent && formModel.remedyContent.trim().length > 0) {
+                <div [innerHTML]="renderRemedyContent(formModel.remedyContent)"></div>
+              } @else {
+                <span class="text-muted fst-italic">Nothing to preview yet. Switch to Write tab to add content or click '+ Insert Table'.</span>
+              }
+            </div>
+          }
         </div>
 
         <!-- Actions -->
@@ -330,6 +422,40 @@
           </button>
         </div>
       </form>
+    </div>
+  </div>
+}
+
+<!-- Custom Table Builder Modal -->
+@if (showCustomTableModal) {
+  <div (click)="closeCustomTableModal()"
+    style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.45); z-index: 1060; display: flex; align-items: center; justify-content: center; padding: 20px;">
+    <div (click)="$event.stopPropagation()"
+      style="background: #FFFFFF; border-radius: 12px; width: 100%; max-width: 440px; padding: 22px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); font-family: 'Inter', sans-serif;">
+
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h5 class="m-0 fw-bold text-dark" style="font-size: 16px;">Insert Custom Table</h5>
+        <button type="button" class="btn-close" (click)="closeCustomTableModal()"></button>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label small fw-semibold text-dark">Column Headers (comma-separated)</label>
+        <input type="text" class="form-control form-control-sm" [(ngModel)]="customTableColumns"
+          placeholder="e.g. Ingredient, Quantity, Preparation Notes">
+        <div class="form-text text-muted" style="font-size: 11.5px;">Enter column titles separated by commas.</div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label small fw-semibold text-dark">Number of Empty Rows</label>
+        <input type="number" class="form-control form-control-sm" [(ngModel)]="customTableRows" min="1" max="15">
+      </div>
+
+      <div class="d-flex align-items-center justify-content-end" style="gap: 10px;">
+        <button type="button" class="btn btn-sm btn-light" (click)="closeCustomTableModal()">Cancel</button>
+        <button type="button" class="btn btn-sm btn-success" (click)="insertCustomTable()">
+          Insert Table
+        </button>
+      </div>
     </div>
   </div>
 }

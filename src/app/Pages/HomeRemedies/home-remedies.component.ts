@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 import { WebapiService } from '../../services/webapi.service';
@@ -333,6 +334,34 @@ export interface HomeRemedyForm {
       opacity: 0.6 !important;
       cursor: not-allowed !important;
     }
+
+    /* Content Table Styles */
+    .ha-content-table {
+      width: 100% !important;
+      border-collapse: collapse !important;
+      font-size: 12px !important;
+      background: #FFFFFF !important;
+      margin: 6px 0 !important;
+      border: 1px solid #CBD5E1 !important;
+    }
+    .ha-content-table th {
+      background: #F1F5F9 !important;
+      color: #0F172A !important;
+      font-weight: 600 !important;
+      padding: 6px 10px !important;
+      border: 1px solid #CBD5E1 !important;
+      text-align: left !important;
+      white-space: nowrap !important;
+    }
+    .ha-content-table td {
+      padding: 6px 10px !important;
+      border: 1px solid #E2E8F0 !important;
+      color: #334155 !important;
+      vertical-align: middle !important;
+    }
+    .ha-content-table tbody tr:nth-child(even) {
+      background: #F8FAFC !important;
+    }
   `]
 })
 export class HomeRemediesComponent implements OnInit, OnDestroy {
@@ -377,12 +406,22 @@ export class HomeRemediesComponent implements OnInit, OnDestroy {
   public isLoading: boolean = false;
   public isSaving: boolean = false;
 
+  // Table & Content Formatting state
+  public showTableMenu: boolean = false;
+  public showCustomTableModal: boolean = false;
+  public customTableColumns: string = 'Ingredient, Quantity, Preparation Notes';
+  public customTableRows: number = 2;
+  public contentTab: 'write' | 'preview' = 'write';
+
   // Toast feedback
   public toastMessage: string = '';
   public toastType: 'success' | 'error' = 'success';
   private toastTimer: any = null;
 
-  constructor(private webApiService: WebapiService) {}
+  constructor(
+    private webApiService: WebapiService,
+    private sanitizer: DomSanitizer
+  ) {}
 
   @HostListener('document:click')
   public onDocumentClick(): void {
@@ -436,6 +475,7 @@ export class HomeRemediesComponent implements OnInit, OnDestroy {
 
   public closeDropdown(): void {
     this.openDropdownId = null;
+    this.showTableMenu = false;
   }
 
   private initSearchDebounce(): void {
@@ -619,6 +659,9 @@ export class HomeRemediesComponent implements OnInit, OnDestroy {
     this.isEditing = false;
     this.formModel = this.getEmptyForm();
     this.formError = '';
+    this.showTableMenu = false;
+    this.showCustomTableModal = false;
+    this.contentTab = 'write';
     this.isCreateModalOpen = true;
   }
 
@@ -632,6 +675,9 @@ export class HomeRemediesComponent implements OnInit, OnDestroy {
       remedyContent: remedy.remedyContent
     };
     this.formError = '';
+    this.showTableMenu = false;
+    this.showCustomTableModal = false;
+    this.contentTab = 'write';
     this.isCreateModalOpen = true;
   }
 
@@ -639,6 +685,9 @@ export class HomeRemediesComponent implements OnInit, OnDestroy {
     this.isCreateModalOpen = false;
     this.formError = '';
     this.isSaving = false;
+    this.showTableMenu = false;
+    this.showCustomTableModal = false;
+    this.contentTab = 'write';
   }
 
   public saveRemedy(): void {
@@ -657,7 +706,7 @@ export class HomeRemediesComponent implements OnInit, OnDestroy {
       return;
     }
     if (!this.formModel.remedyContent || !this.formModel.remedyContent.trim()) {
-      this.formError = 'Please provide preparation & therapeutic usage instructions.';
+      this.formError = 'Please provide remedy content.';
       return;
     }
 
@@ -803,6 +852,140 @@ export class HomeRemediesComponent implements OnInit, OnDestroy {
     this.toastTimer = setTimeout(() => {
       this.toastMessage = '';
     }, 4000);
+  }
+
+  // ==========================================
+  // Table Insertion & Remedy Content Formatting
+  // ==========================================
+  public toggleTableMenu(event: MouseEvent): void {
+    event.stopPropagation();
+    this.showTableMenu = !this.showTableMenu;
+  }
+
+  public insertTableTemplate(type: 'ingredients' | 'steps' | 'schedule'): void {
+    let template = '';
+    if (type === 'ingredients') {
+      template = '\n| Ingredient | Quantity | Preparation Notes |\n| :--- | :--- | :--- |\n| Garlic Cloves | 2-3 raw cloves | Crush and take in the morning |\n| Raw Honey | 1 tablespoon | Mix with warm water |\n';
+    } else if (type === 'steps') {
+      template = '\n| Step | Action | Timing / Duration |\n| :--- | :--- | :--- |\n| Step 1 | Wash and crush the fresh herbs | 2 mins |\n| Step 2 | Steep in boiling water | 10 mins |\n| Step 3 | Strain and serve warm | Immediate |\n';
+    } else if (type === 'schedule') {
+      template = '\n| Time of Day | Dosage | Instructions |\n| :--- | :--- | :--- |\n| Morning | 1 cup | Take on an empty stomach |\n| Evening | 1 cup | 30 minutes before bed |\n';
+    }
+    this.appendContent(template);
+    this.showTableMenu = false;
+  }
+
+  public openCustomTableModal(): void {
+    this.showTableMenu = false;
+    this.showCustomTableModal = true;
+  }
+
+  public closeCustomTableModal(): void {
+    this.showCustomTableModal = false;
+  }
+
+  public insertCustomTable(): void {
+    const cols = (this.customTableColumns || '')
+      .split(',')
+      .map(c => c.trim())
+      .filter(c => c.length > 0);
+    if (cols.length === 0) return;
+
+    const headerRow = '| ' + cols.join(' | ') + ' |';
+    const dividerRow = '| ' + cols.map(() => ':---').join(' | ') + ' |';
+    let dataRows = '';
+    const rowsCount = Math.max(1, Math.min(this.customTableRows || 2, 20));
+    for (let i = 1; i <= rowsCount; i++) {
+      dataRows += '| ' + cols.map((col) => `Sample ${col}`).join(' | ') + ' |\n';
+    }
+
+    const customTemplate = `\n${headerRow}\n${dividerRow}\n${dataRows}`;
+    this.appendContent(customTemplate);
+    this.showCustomTableModal = false;
+    this.showTableMenu = false;
+  }
+
+  public appendContent(text: string): void {
+    if (!this.formModel.remedyContent || !this.formModel.remedyContent.trim()) {
+      this.formModel.remedyContent = text.trim();
+    } else {
+      this.formModel.remedyContent = this.formModel.remedyContent.trimEnd() + '\n' + text.trim();
+    }
+  }
+
+  public renderRemedyContent(raw: string): SafeHtml {
+    if (!raw) return '';
+
+    // If already raw HTML table
+    if (raw.includes('<table') && raw.includes('</table>')) {
+      return this.sanitizer.bypassSecurityTrustHtml(raw);
+    }
+
+    const lines = raw.split(/\r?\n/);
+    let inTable = false;
+    let tableHtml = '';
+    let resultHtml = '';
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+
+      // Check if line looks like markdown table row: has >= 2 pipes
+      if (line.includes('|') && line.split('|').length >= 3) {
+        // Is separator row like | :--- | ---: | or |---|---|?
+        const isSeparator = /^\|?(\s*:?-{2,}:?\s*\|)+\s*:?-{2,}:?\s*\|?$/.test(line);
+        if (isSeparator) {
+          continue;
+        }
+
+        const rawCells = line.split('|');
+        if (line.startsWith('|')) rawCells.shift();
+        if (line.endsWith('|')) rawCells.pop();
+        const cells = rawCells.map(c => c.trim());
+
+        if (!inTable) {
+          inTable = true;
+          tableHtml = '<div class="table-responsive my-2"><table class="table table-bordered table-sm ha-content-table mb-0"><thead><tr>';
+          cells.forEach(c => {
+            tableHtml += `<th>${this.escapeAndFormat(c)}</th>`;
+          });
+          tableHtml += '</tr></thead><tbody>';
+        } else {
+          tableHtml += '<tr>';
+          cells.forEach(c => {
+            tableHtml += `<td>${this.escapeAndFormat(c)}</td>`;
+          });
+          tableHtml += '</tr>';
+        }
+      } else {
+        if (inTable) {
+          inTable = false;
+          tableHtml += '</tbody></table></div>';
+          resultHtml += tableHtml;
+          tableHtml = '';
+        }
+        if (line.length > 0) {
+          resultHtml += `<div class="mb-1">${this.escapeAndFormat(line)}</div>`;
+        }
+      }
+    }
+
+    if (inTable) {
+      tableHtml += '</tbody></table></div>';
+      resultHtml += tableHtml;
+    }
+
+    return this.sanitizer.bypassSecurityTrustHtml(resultHtml);
+  }
+
+  private escapeAndFormat(text: string): string {
+    if (!text) return '';
+    let s = text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+    s = s.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    s = s.replace(/\*(.*?)\*/g, '<em>$1</em>');
+    return s;
   }
 
   private getEmptyForm(): HomeRemedyForm {
