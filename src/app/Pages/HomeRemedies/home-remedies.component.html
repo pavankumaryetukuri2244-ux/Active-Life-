@@ -312,9 +312,9 @@
 
         <!-- Remedy Content (Detailed instructions / preparation) -->
         <div class="mb-4">
-          <label class="form-label small fw-semibold text-dark">Preparation & Therapeutic Usage <span class="text-muted">(Optional)</span></label>
+          <label class="form-label small fw-semibold text-dark">Preparation & Therapeutic Usage <span class="text-danger">*</span></label>
           <textarea class="form-control" rows="3" [(ngModel)]="formModel.remedyContent" name="remedyContent"
-            placeholder="Instructions on preparation, usage, dosage, and recommendations (defaults to summary if omitted)..."></textarea>
+            placeholder="Instructions on preparation, usage, dosage, and recommendations..." required></textarea>
         </div>
 
         <!-- Actions -->

@@ -324,7 +324,7 @@ export class SupportGroupsComponent implements OnInit, OnDestroy {
   public inactiveCount: number = 0;
   public categoriesCount: number = 0;
 
-  // Master Medical Categories from API
+  // Master Medical Categories (Used by Health Content, Healthcare Champions, and Support Groups)
   public masterCategories: string[] = [];
   public selectableCategories: string[] = [
     'Cardiology',
@@ -349,7 +349,7 @@ export class SupportGroupsComponent implements OnInit, OnDestroy {
     'Anesthesiology'
   ];
 
-  // Categories list
+  // Categories list - strictly only these 20 categories
   public categories: string[] = ['All', ...this.selectableCategories];
 
   // Loading & Action States
@@ -504,7 +504,7 @@ export class SupportGroupsComponent implements OnInit, OnDestroy {
         this.groups = rawList.map((item: any) => ({
           id: Number(item.id),
           groupName: item.groupName || item.group_name || item.name || '',
-          category: item.category || item.categoryName || item.category_name || 'General Support',
+          category: item.category || item.categoryName || item.category_name || '',
           description: item.description || item.desc || '',
           isActive: item.isActive !== undefined ? Boolean(item.isActive) : true,
           createdAt: item.createdAt || '',
@@ -580,12 +580,10 @@ export class SupportGroupsComponent implements OnInit, OnDestroy {
   }
 
   public updateCategories(): void {
-    const present = Array.from(new Set(this.groups.map(g => g.category).filter(c => c && c.trim())));
     const base = this.masterCategories.length > 0
       ? this.masterCategories
       : this.selectableCategories;
-    const merged = Array.from(new Set(['All', ...base, ...present]));
-    this.categories = merged;
+    this.categories = ['All', ...base];
   }
 
   private saveToStorage(): void {
@@ -739,17 +737,18 @@ export class SupportGroupsComponent implements OnInit, OnDestroy {
 
   public getCategoryBg(cat: string): string {
     const map: Record<string, string> = {
-      'Oncology': '#FEF2F2',
-      'Mental Health': '#EFF6FF',
-      'Psychiatry': '#EFF6FF',
-      'Cardiology': '#EFF6FF',
-      'Pediatrics': '#FEF3C7',
-      'Dermatology': '#FFF7ED',
+      'Cardiology': '#FEF2F2',
+      'Psychiatry': '#ECFDF5',
+      'Endocrinology': '#FFFBEB',
+      'Pediatrics': '#F0FDF4',
+      'Oncology': '#FDF2F8',
+      'Neurology': '#F5F3FF',
       'Orthopedics': '#F0FDF4',
-      'Neurology': '#FAF5FF',
-      'Endocrinology': '#FDF2F8',
+      'Dermatology': '#FFF7ED',
+      'ENT': '#ECFEFF',
       'Gastroenterology': '#FFFBEB',
-      'Urology': '#F5F3FF',
+      'Urology': '#EFF6FF',
+      'Gynecology': '#FDF2F8',
       'Pulmonology': '#ECFEFF',
       'Nephrology': '#F0FDFA',
       'Rheumatology': '#FDF4FF',
@@ -764,17 +763,18 @@ export class SupportGroupsComponent implements OnInit, OnDestroy {
 
   public getCategoryColor(cat: string): string {
     const map: Record<string, string> = {
-      'Oncology': '#DC2626',
-      'Mental Health': '#2563EB',
-      'Psychiatry': '#2563EB',
-      'Cardiology': '#2563EB',
-      'Pediatrics': '#D97706',
-      'Dermatology': '#EA580C',
+      'Cardiology': '#DC2626',
+      'Psychiatry': '#059669',
+      'Endocrinology': '#D97706',
+      'Pediatrics': '#16A34A',
+      'Oncology': '#DB2777',
+      'Neurology': '#7C3AED',
       'Orthopedics': '#16A34A',
-      'Neurology': '#9333EA',
-      'Endocrinology': '#DB2777',
+      'Dermatology': '#EA580C',
+      'ENT': '#0891B2',
       'Gastroenterology': '#B45309',
-      'Urology': '#7C3AED',
+      'Urology': '#2563EB',
+      'Gynecology': '#DB2777',
       'Pulmonology': '#0891B2',
       'Nephrology': '#0D9488',
       'Rheumatology': '#A21CAF',
@@ -801,7 +801,7 @@ export class SupportGroupsComponent implements OnInit, OnDestroy {
   private getEmptyForm(): SupportGroupForm {
     return {
       groupName: '',
-      category: (this.masterCategories && this.masterCategories.length > 0) ? this.masterCategories[0] : 'Oncology',
+      category: '',
       description: ''
     };
   }

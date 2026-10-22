@@ -91,10 +91,10 @@
             placeholder="Search health content by title, category, or description..." class="cm-search-input">
         </div>
 
-        <!-- Filter Controls Row (Category Tabs + Status Filter + View Toggle) -->
+        <!-- Filter Controls Row (Category Tabs + Status Filter) -->
         <div class="d-flex align-items-center justify-content-between flex-wrap" style="gap: 12px;">
-          <!-- Category Tabs -->
-          <div class="d-flex flex-wrap align-items-center" style="gap: 8px; max-height: 82px; overflow-y: auto;">
+          <!-- Category Tabs (Full display of all medical categories) -->
+          <div class="d-flex flex-wrap align-items-center" style="gap: 8px;">
             @for (cat of categories; track cat) {
               <button type="button" class="cm-tab-btn" [class.active]="selectedCategory === cat" (click)="selectCategory(cat)">
                 {{ cat }}
@@ -109,6 +109,11 @@
               <option value="Active">Active Only</option>
               <option value="Inactive">Inactive Only</option>
             </select>
+            @if (searchQuery || selectedCategory !== 'All' || selectedStatus !== 'All') {
+              <button type="button" class="btn btn-sm btn-link text-decoration-none text-muted p-1" (click)="resetAllFilters()" style="font-size: 12.5px;">
+                Reset
+              </button>
+            }
           </div>
         </div>
       </div>

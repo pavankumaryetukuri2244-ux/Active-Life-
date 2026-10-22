@@ -101,7 +101,7 @@
         <!-- Filter Controls Row (Category Tabs + Status Filter + View Toggle) -->
         <div class="d-flex align-items-center justify-content-between flex-wrap" style="gap: 12px;">
           <!-- Category Tabs -->
-          <div class="d-flex flex-wrap align-items-center" style="gap: 8px; max-height: 82px; overflow-y: auto;">
+          <div class="d-flex flex-wrap align-items-center" style="gap: 8px;">
             @for (cat of categories; track cat) {
               <button type="button" class="cm-tab-btn" [class.active]="activeTab === cat" (click)="setTab(cat)">
                 {{ cat }}
@@ -290,8 +290,8 @@
         <div class="mb-3">
           <label class="form-label small fw-semibold text-dark">Category <span class="text-danger">*</span></label>
           <select class="form-select" [(ngModel)]="formModel.category" name="category" required style="border-radius: 8px; font-size: 13.5px;">
-            <option value="" disabled>-- Select Medical Category --</option>
-            @for (cat of (masterCategories.length > 0 ? masterCategories : selectableCategories); track cat) {
+            <option value="" disabled selected>-- Select Medical Category --</option>
+            @for (cat of selectableCategories; track cat) {
               <option [value]="cat">{{ cat }}</option>
             }
           </select>

@@ -382,19 +382,19 @@ export class HealthAwarenessComponent implements OnInit, OnDestroy {
   // Dropdown menu state
   public openDropdownId: number | null = null;
 
-  // Categories list
+  // Categories list - strictly only these 20 categories
   public selectableCategories: string[] = [
-    'Urology',
+    'Cardiology',
+    'Psychiatry',
+    'Endocrinology',
+    'Pediatrics',
     'Oncology',
     'Neurology',
-    'Cardiology',
-    'Endocrinology',
-    'Psychiatry',
-    'Pediatrics',
     'Orthopedics',
     'Dermatology',
     'ENT',
     'Gastroenterology',
+    'Urology',
     'Gynecology',
     'Pulmonology',
     'Nephrology',
@@ -589,6 +589,14 @@ export class HealthAwarenessComponent implements OnInit, OnDestroy {
     this.applyFilters();
   }
 
+  public resetAllFilters(): void {
+    this.searchQuery = '';
+    this.searchSubject.next('');
+    this.selectedCategory = 'All';
+    this.selectedStatus = 'All';
+    this.applyFilters();
+  }
+
   public updateStats(totalElements?: number): void {
     this.totalContentCount = totalElements !== undefined ? totalElements : this.articles.length;
     this.activeCount = this.articles.filter(a => a.isActive).length;
@@ -598,9 +606,7 @@ export class HealthAwarenessComponent implements OnInit, OnDestroy {
   }
 
   public updateCategories(): void {
-    const presentCats = Array.from(new Set(this.articles.map(a => a.category).filter(c => c && c.trim())));
-    const merged = Array.from(new Set(['All', ...presentCats, ...this.selectableCategories.slice(0, 8)]));
-    this.categories = merged;
+    this.categories = ['All', ...this.selectableCategories];
   }
 
   private saveToStorage(): void {
@@ -739,30 +745,52 @@ export class HealthAwarenessComponent implements OnInit, OnDestroy {
 
   public getCategoryBg(cat: string): string {
     const map: Record<string, string> = {
-      'Urology': '#EFF6FF',
+      'Cardiology': '#FEF2F2',
+      'Psychiatry': '#ECFDF5',
+      'Endocrinology': '#FFFBEB',
+      'Pediatrics': '#F0FDF4',
       'Oncology': '#FDF2F8',
       'Neurology': '#F5F3FF',
-      'Cardiology': '#FEF2F2',
-      'Endocrinology': '#FFFBEB',
-      'Psychiatry': '#ECFDF5',
-      'Pediatrics': '#F0FDF4',
+      'Orthopedics': '#F0FDF4',
       'Dermatology': '#FFF7ED',
-      'General Medicine': '#F1F5F9'
+      'ENT': '#ECFEFF',
+      'Gastroenterology': '#FFFBEB',
+      'Urology': '#EFF6FF',
+      'Gynecology': '#FDF2F8',
+      'Pulmonology': '#ECFEFF',
+      'Nephrology': '#F0FDFA',
+      'Rheumatology': '#FDF4FF',
+      'Ophthalmology': '#F0F9FF',
+      'Dentistry': '#F8FAFC',
+      'General Medicine': '#F1F5F9',
+      'Surgery': '#FFF1F2',
+      'Anesthesiology': '#F8FAFC'
     };
     return map[cat] || '#F1F5F9';
   }
 
   public getCategoryColor(cat: string): string {
     const map: Record<string, string> = {
-      'Urology': '#2563EB',
+      'Cardiology': '#DC2626',
+      'Psychiatry': '#059669',
+      'Endocrinology': '#D97706',
+      'Pediatrics': '#16A34A',
       'Oncology': '#DB2777',
       'Neurology': '#7C3AED',
-      'Cardiology': '#DC2626',
-      'Endocrinology': '#D97706',
-      'Psychiatry': '#059669',
-      'Pediatrics': '#16A34A',
+      'Orthopedics': '#16A34A',
       'Dermatology': '#EA580C',
-      'General Medicine': '#334155'
+      'ENT': '#0891B2',
+      'Gastroenterology': '#B45309',
+      'Urology': '#2563EB',
+      'Gynecology': '#DB2777',
+      'Pulmonology': '#0891B2',
+      'Nephrology': '#0D9488',
+      'Rheumatology': '#A21CAF',
+      'Ophthalmology': '#0284C7',
+      'Dentistry': '#475569',
+      'General Medicine': '#334155',
+      'Surgery': '#E11D48',
+      'Anesthesiology': '#475569'
     };
     return map[cat] || '#334155';
   }

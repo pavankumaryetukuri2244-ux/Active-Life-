@@ -358,19 +358,19 @@ export class HealthcareChampionsComponent implements OnInit, OnDestroy {
   public openDropdownId: number | null = null;
   public isTogglingId: number | null = null;
 
-  // Specializations
+  // Specializations - strictly only these 20 categories
   public selectableSpecializations: string[] = [
-    'Urology',
     'Cardiology',
+    'Psychiatry',
+    'Endocrinology',
+    'Pediatrics',
     'Oncology',
     'Neurology',
-    'Endocrinology',
-    'Psychiatry',
-    'Pediatrics',
     'Orthopedics',
     'Dermatology',
     'ENT',
     'Gastroenterology',
+    'Urology',
     'Gynecology',
     'Pulmonology',
     'Nephrology',
@@ -503,15 +503,15 @@ export class HealthcareChampionsComponent implements OnInit, OnDestroy {
           id: Number(item.id),
           name: item.name || '',
           photo: item.photo || '',
-          specialization: item.specialization || 'General Medicine',
+          specialization: item.specialization || '',
           hospitalName: item.hospitalName || '',
           verificationDate: item.verificationDate || item.createdAt || '',
           isMedicallyReviewed: Boolean(item.isMedicallyReviewed),
           about: item.about || '',
-          practitionerType: item.practitionerType || 'Doctor',
+          practitionerType: item.practitionerType || '',
           treatmentTherapy: item.treatmentTherapy || '',
-          gender: item.gender || 'Not Specified',
-          languagesSpoken: item.languagesSpoken || 'English',
+          gender: item.gender || '',
+          languagesSpoken: item.languagesSpoken || '',
           availability: item.availability || '',
           areasOfTreatment: item.areasOfTreatment || '',
           qualification: item.qualification || '',
@@ -584,12 +584,28 @@ export class HealthcareChampionsComponent implements OnInit, OnDestroy {
       const targetKey = activeCategory.toLowerCase();
       result = result.filter(c => {
         const rawSpec = (c.specialization || '').trim().toLowerCase();
-        if (targetKey === 'general practice') {
+        if (targetKey === 'general medicine' || targetKey === 'general practice') {
           return rawSpec === 'string' || rawSpec === 'general practice' || rawSpec === 'general medicine' || !rawSpec;
         }
         if (targetKey === 'dermatology' && rawSpec.includes('dermatol')) return true;
         if (targetKey === 'cardiology' && rawSpec.includes('cardio')) return true;
         if (targetKey === 'pulmonology' && rawSpec.includes('pulmon')) return true;
+        if (targetKey === 'psychiatry' && rawSpec.includes('psychiat')) return true;
+        if (targetKey === 'endocrinology' && rawSpec.includes('endocrin')) return true;
+        if (targetKey === 'pediatrics' && rawSpec.includes('pediatr')) return true;
+        if (targetKey === 'oncology' && rawSpec.includes('oncol')) return true;
+        if (targetKey === 'neurology' && rawSpec.includes('neurol')) return true;
+        if (targetKey === 'orthopedics' && rawSpec.includes('orthoped')) return true;
+        if (targetKey === 'ent' && (rawSpec === 'ent' || rawSpec.includes('ent'))) return true;
+        if (targetKey === 'gastroenterology' && rawSpec.includes('gastro')) return true;
+        if (targetKey === 'urology' && rawSpec.includes('urol')) return true;
+        if (targetKey === 'gynecology' && rawSpec.includes('gynec')) return true;
+        if (targetKey === 'nephrology' && rawSpec.includes('nephro')) return true;
+        if (targetKey === 'rheumatology' && rawSpec.includes('rheumat')) return true;
+        if (targetKey === 'ophthalmology' && rawSpec.includes('ophthalm')) return true;
+        if (targetKey === 'dentistry' && rawSpec.includes('dent')) return true;
+        if (targetKey === 'surgery' && rawSpec.includes('surg')) return true;
+        if (targetKey === 'anesthesiology' && rawSpec.includes('anesthe')) return true;
         return rawSpec === targetKey || rawSpec.includes(targetKey) || targetKey.includes(rawSpec);
       });
     }
@@ -662,43 +678,62 @@ export class HealthcareChampionsComponent implements OnInit, OnDestroy {
     this.applyFilters();
   }
 
-  // Value Formatters for Display
+  // Value Formatters for Display - Dynamic data only, no hardcoded mock fallbacks
   public formatSpecialization(spec?: string): string {
-    if (!spec || spec.trim().toLowerCase() === 'string') return 'General Practice';
-    const s = spec.trim();
-    if (s.toLowerCase() === 'cardiology') return 'Cardiology';
-    if (s.toLowerCase() === 'pulmonology') return 'Pulmonology';
-    if (s.toLowerCase().includes('dermatol')) return 'Dermatology';
-    return s.charAt(0).toUpperCase() + s.slice(1);
+    if (!spec || spec.trim().toLowerCase() === 'string') return '';
+    const s = spec.trim().toLowerCase();
+    const match = this.selectableSpecializations.find(cat => cat.toLowerCase() === s);
+    if (match) return match;
+    if (s.includes('cardio')) return 'Cardiology';
+    if (s.includes('pulmon')) return 'Pulmonology';
+    if (s.includes('dermatol')) return 'Dermatology';
+    if (s.includes('psychiat')) return 'Psychiatry';
+    if (s.includes('endocrin')) return 'Endocrinology';
+    if (s.includes('pediatr')) return 'Pediatrics';
+    if (s.includes('oncol')) return 'Oncology';
+    if (s.includes('neurol')) return 'Neurology';
+    if (s.includes('orthoped')) return 'Orthopedics';
+    if (s === 'ent') return 'ENT';
+    if (s.includes('gastro')) return 'Gastroenterology';
+    if (s.includes('urol')) return 'Urology';
+    if (s.includes('gynec')) return 'Gynecology';
+    if (s.includes('nephro')) return 'Nephrology';
+    if (s.includes('rheumat')) return 'Rheumatology';
+    if (s.includes('ophthalm')) return 'Ophthalmology';
+    if (s.includes('dent')) return 'Dentistry';
+    if (s.includes('general')) return 'General Medicine';
+    if (s.includes('surg')) return 'Surgery';
+    if (s.includes('anesthe')) return 'Anesthesiology';
+    return spec.trim();
   }
 
   public formatHospital(h?: string): string {
-    if (!h || h.trim().toLowerCase() === 'string') return 'City Medical Center';
+    if (!h || h.trim().toLowerCase() === 'string') return '';
     return h.trim();
   }
 
   public formatAbout(a?: string, fallback?: string): string {
-    if (!a || a.trim().toLowerCase() === 'string') {
-      if (fallback && fallback.trim().toLowerCase() !== 'string' && fallback.trim().toLowerCase() !== 'stringstri') {
-        return fallback.trim();
-      }
-      return 'Dedicated healthcare practitioner providing comprehensive patient consultations and evidence-based clinical treatments.';
+    if (a && a.trim().toLowerCase() !== 'string' && a.trim().toLowerCase() !== 'stringstri') {
+      return a.trim();
     }
-    return a.trim();
+    if (fallback && fallback.trim().toLowerCase() !== 'string' && fallback.trim().toLowerCase() !== 'stringstri') {
+      return fallback.trim();
+    }
+    return '';
   }
 
   public formatPractitionerType(p?: string): string {
-    if (!p || p.trim().toLowerCase() === 'string') return 'Specialist Doctor';
+    if (!p || p.trim().toLowerCase() === 'string') return '';
     return p.trim();
   }
 
   public formatTherapy(t?: string): string {
-    if (!t || t.trim().toLowerCase() === 'string') return 'Clinical Therapy & Consultations';
+    if (!t || t.trim().toLowerCase() === 'string') return '';
     return t.trim();
   }
 
   public formatExperience(e?: string): string {
-    if (!e || e.trim().toLowerCase() === 'string') return '10+ Years Experience';
+    if (!e || e.trim().toLowerCase() === 'string') return '';
     const trimmed = e.trim();
     if (/^\d+$/.test(trimmed)) return `${trimmed} Years Experience`;
     return trimmed;
@@ -708,34 +743,12 @@ export class HealthcareChampionsComponent implements OnInit, OnDestroy {
     this.totalChampionsCount = totalElements !== undefined ? totalElements : this.champions.length;
     this.activeCount = this.champions.filter(c => c.isActive).length;
     this.inactiveCount = this.champions.filter(c => !c.isActive).length;
-    const specSet = new Set(this.champions.map(c => this.formatSpecialization(c.specialization)));
+    const specSet = new Set(this.champions.map(c => this.formatSpecialization(c.specialization)).filter(s => s.length > 0));
     this.specializationsCount = specSet.size;
   }
 
   public updateSpecializations(): void {
-    const specMap = new Map<string, string>();
-    this.champions.forEach(c => {
-      const raw = (c.specialization || '').trim();
-      if (!raw) return;
-      const normalized = this.formatSpecialization(raw);
-      const key = normalized.toLowerCase();
-      if (!specMap.has(key)) {
-        specMap.set(key, normalized);
-      }
-    });
-
-    const base = this.selectableSpecializations.length > 0
-      ? this.selectableSpecializations
-      : ['Cardiology', 'Dermatology', 'Pulmonology', 'General Practice', 'Neurology', 'Oncology'];
-
-    base.forEach(d => {
-      const key = d.toLowerCase();
-      if (!specMap.has(key)) {
-        specMap.set(key, d);
-      }
-    });
-
-    this.specializations = ['All', ...Array.from(specMap.values())];
+    this.specializations = ['All', ...this.selectableSpecializations];
   }
 
   private saveToStorage(): void {
@@ -812,34 +825,34 @@ export class HealthcareChampionsComponent implements OnInit, OnDestroy {
     }
     const phoneRegex = /^\+91[6-9][0-9]{9}$/;
     if (!phoneRegex.test(phone)) {
-      this.formError = 'Please enter a valid Indian phone number starting with +91 (e.g. +918611676468).';
+      this.formError = 'Please enter a valid Indian phone number starting with +91 (e.g. +919876543210).';
       return;
     }
 
     this.isSaving = true;
 
-    // Conforms strictly to SaveHealthcareChampionRequest
+    // Conforms strictly to SaveHealthcareChampionRequest with dynamic values only
     const requestBody: any = {
       name: this.formModel.name.trim(),
-      photo: this.formModel.photo?.trim() || 'string',
+      photo: this.formModel.photo?.trim() || '',
       specialization: this.formModel.specialization.trim(),
       hospitalName: this.formModel.hospitalName.trim(),
       isMedicallyReviewed: Boolean(this.formModel.isMedicallyReviewed),
-      about: this.formModel.about?.trim() || 'Experienced medical practitioner dedicated to exceptional patient care.',
-      practitionerType: this.formModel.practitionerType?.trim() || 'Specialist Doctor',
-      treatmentTherapy: this.formModel.treatmentTherapy?.trim() || 'Comprehensive clinical therapeutic protocol',
+      about: this.formModel.about?.trim() || '',
+      practitionerType: this.formModel.practitionerType?.trim() || '',
+      treatmentTherapy: this.formModel.treatmentTherapy?.trim() || '',
       gender: this.formModel.gender?.trim() || 'Male',
-      languagesSpoken: this.formModel.languagesSpoken?.trim() || 'English, Hindi',
-      availability: this.formModel.availability?.trim() || 'Mon-Sat 09:00 AM - 05:00 PM',
-      areasOfTreatment: this.formModel.areasOfTreatment?.trim() || 'Clinical consultations, diagnostics, and preventative care',
-      qualification: this.formModel.qualification?.trim() || 'MBBS, MD',
-      experience: this.formModel.experience?.trim() || '10 Years Experience',
+      languagesSpoken: this.formModel.languagesSpoken?.trim() || '',
+      availability: this.formModel.availability?.trim() || '',
+      areasOfTreatment: this.formModel.areasOfTreatment?.trim() || '',
+      qualification: this.formModel.qualification?.trim() || '',
+      experience: this.formModel.experience?.trim() || '',
       phoneNumber: phone,
-      email: this.formModel.email?.trim() || 'doctor@example.com',
-      website: this.formModel.website?.trim() || 'https://example.com',
-      aboutTheTreatment: this.formModel.aboutTheTreatment?.trim() || 'Standardized clinical protocols adhering to verified medical guidelines.',
-      treatmentMethods: this.formModel.treatmentMethods?.trim() || 'Comprehensive diagnosis and personalized outpatient treatment.',
-      fullAddress: this.formModel.fullAddress?.trim() || 'Medical Center, Healthcare District'
+      email: this.formModel.email?.trim() || '',
+      website: this.formModel.website?.trim() || '',
+      aboutTheTreatment: this.formModel.aboutTheTreatment?.trim() || '',
+      treatmentMethods: this.formModel.treatmentMethods?.trim() || '',
+      fullAddress: this.formModel.fullAddress?.trim() || ''
     };
 
     if (this.isEditing && this.formModel.id !== undefined && this.formModel.id !== null && this.formModel.id !== '') {
@@ -958,33 +971,57 @@ export class HealthcareChampionsComponent implements OnInit, OnDestroy {
   }
 
   public getSpecialtyBg(spec: string): string {
+    const s = this.formatSpecialization(spec);
     const map: Record<string, string> = {
-      'Urology': '#EFF6FF',
+      'Cardiology': '#FEF2F2',
+      'Psychiatry': '#ECFDF5',
+      'Endocrinology': '#FFFBEB',
+      'Pediatrics': '#F0FDF4',
       'Oncology': '#FDF2F8',
       'Neurology': '#F5F3FF',
-      'Cardiology': '#FEF2F2',
-      'Endocrinology': '#FFFBEB',
-      'Psychiatry': '#ECFDF5',
-      'Pediatrics': '#F0FDF4',
+      'Orthopedics': '#F0FDF4',
       'Dermatology': '#FFF7ED',
-      'General Medicine': '#F1F5F9'
+      'ENT': '#ECFEFF',
+      'Gastroenterology': '#FFFBEB',
+      'Urology': '#EFF6FF',
+      'Gynecology': '#FDF2F8',
+      'Pulmonology': '#ECFEFF',
+      'Nephrology': '#F0FDFA',
+      'Rheumatology': '#FDF4FF',
+      'Ophthalmology': '#F0F9FF',
+      'Dentistry': '#F8FAFC',
+      'General Medicine': '#F1F5F9',
+      'Surgery': '#FFF1F2',
+      'Anesthesiology': '#F8FAFC'
     };
-    return map[spec] || '#F1F5F9';
+    return map[s] || '#F1F5F9';
   }
 
   public getSpecialtyColor(spec: string): string {
+    const s = this.formatSpecialization(spec);
     const map: Record<string, string> = {
-      'Urology': '#2563EB',
+      'Cardiology': '#DC2626',
+      'Psychiatry': '#059669',
+      'Endocrinology': '#D97706',
+      'Pediatrics': '#16A34A',
       'Oncology': '#DB2777',
       'Neurology': '#7C3AED',
-      'Cardiology': '#DC2626',
-      'Endocrinology': '#D97706',
-      'Psychiatry': '#059669',
-      'Pediatrics': '#16A34A',
+      'Orthopedics': '#16A34A',
       'Dermatology': '#EA580C',
-      'General Medicine': '#334155'
+      'ENT': '#0891B2',
+      'Gastroenterology': '#B45309',
+      'Urology': '#2563EB',
+      'Gynecology': '#DB2777',
+      'Pulmonology': '#0891B2',
+      'Nephrology': '#0D9488',
+      'Rheumatology': '#A21CAF',
+      'Ophthalmology': '#0284C7',
+      'Dentistry': '#475569',
+      'General Medicine': '#334155',
+      'Surgery': '#E11D48',
+      'Anesthesiology': '#475569'
     };
-    return map[spec] || '#334155';
+    return map[s] || '#334155';
   }
 
   public showToast(message: string, type: 'success' | 'error' = 'success'): void {
@@ -1001,25 +1038,25 @@ export class HealthcareChampionsComponent implements OnInit, OnDestroy {
   private getEmptyForm(): HealthcareChampionForm {
     return {
       name: '',
-      photo: 'string',
-      specialization: 'Urology',
-      hospitalName: 'City Care Hospital',
+      photo: '',
+      specialization: '',
+      hospitalName: '',
       isMedicallyReviewed: true,
-      about: 'Senior healthcare professional dedicated to comprehensive wellness and evidence-based patient recovery.',
-      practitionerType: 'Doctor',
-      treatmentTherapy: 'Minimally Invasive Therapy & Preventive Care',
+      about: '',
+      practitionerType: '',
+      treatmentTherapy: '',
       gender: 'Male',
-      languagesSpoken: 'English, Hindi',
-      availability: 'Mon - Sat (09:00 AM - 05:00 PM)',
-      areasOfTreatment: 'Specialized clinical assessment, treatments, and follow-ups',
-      qualification: 'MBBS, MD',
-      experience: '8 Years Experience',
-      phoneNumber: '+918611676468',
-      email: 'doctor@example.com',
-      website: 'https://example.com',
-      aboutTheTreatment: 'Comprehensive outpatient clinical procedures adhering to global medical guidelines.',
-      treatmentMethods: 'Evidence-based diagnosis, symptom assessment, and routine treatment procedures.',
-      fullAddress: 'Healthcare Hub, Main Clinic Road'
+      languagesSpoken: '',
+      availability: '',
+      areasOfTreatment: '',
+      qualification: '',
+      experience: '',
+      phoneNumber: '',
+      email: '',
+      website: '',
+      aboutTheTreatment: '',
+      treatmentMethods: '',
+      fullAddress: ''
     };
   }
 }

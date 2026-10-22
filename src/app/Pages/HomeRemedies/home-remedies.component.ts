@@ -656,6 +656,10 @@ export class HomeRemediesComponent implements OnInit, OnDestroy {
       this.formError = 'Please provide a description.';
       return;
     }
+    if (!this.formModel.remedyContent || !this.formModel.remedyContent.trim()) {
+      this.formError = 'Please provide preparation & therapeutic usage instructions.';
+      return;
+    }
 
     this.isSaving = true;
 
@@ -663,7 +667,7 @@ export class HomeRemediesComponent implements OnInit, OnDestroy {
       title: this.formModel.title.trim(),
       description: this.formModel.description.trim(),
       category: this.formModel.category.trim(),
-      remedyContent: this.formModel.remedyContent?.trim() || this.formModel.description.trim() || 'string'
+      remedyContent: this.formModel.remedyContent.trim()
     };
 
     if (this.isEditing && this.formModel.id !== undefined && this.formModel.id !== null && this.formModel.id !== '') {
