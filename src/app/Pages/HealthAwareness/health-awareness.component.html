@@ -264,13 +264,6 @@
           <div class="alert alert-danger py-2 px-3 small mb-3 rounded-3">{{ formError }}</div>
         }
 
-        <!-- ID field (visible when updating) -->
-        @if (isEditing && formModel.id) {
-          <div class="mb-3">
-            <label class="form-label fw-semibold small text-dark">Article ID</label>
-            <input type="text" class="form-control bg-light" [value]="'#' + formModel.id" disabled readonly>
-          </div>
-        }
 
         <!-- Title field -->
         <div class="mb-3">
