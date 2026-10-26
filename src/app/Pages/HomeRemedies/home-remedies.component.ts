@@ -395,6 +395,14 @@ export class HomeRemediesComponent implements OnInit, OnDestroy {
     'Digestion'
   ];
 
+  public get dynamicCategories(): string[] {
+    const present = this.remedies
+      .map(r => r.category ? r.category.trim() : '')
+      .filter((c): c is string => c.length > 0 && c !== 'All');
+    const unique = Array.from(new Set(present)).sort();
+    return unique.length > 0 ? unique : this.categories.filter(c => c !== 'All');
+  }
+
   private searchSubject: Subject<string> = new Subject<string>();
   private destroy$: Subject<void> = new Subject<void>();
 

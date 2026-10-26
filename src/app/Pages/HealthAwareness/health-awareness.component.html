@@ -95,9 +95,9 @@
         <div class="d-flex align-items-center justify-content-between flex-wrap" style="gap: 12px;">
           <div class="d-flex align-items-center flex-wrap" style="gap: 10px;">
             <!-- Category Dropdown displayed cleanly like All Statuses -->
-            <select class="form-select form-select-sm" style="width: auto; min-width: 170px; border-radius: 8px; font-size: 13px; font-weight: 500;" [ngModel]="selectedCategory" (ngModelChange)="selectCategory($event)">
+            <select class="form-select form-select-sm" style="width: auto; min-width: 150px; border-radius: 8px; font-size: 13px; font-weight: 500;" [ngModel]="selectedCategory" (ngModelChange)="selectCategory($event)">
               <option value="All">All Categories</option>
-              @for (cat of selectableCategories; track cat) {
+              @for (cat of dynamicCategories; track cat) {
                 <option [value]="cat">{{ cat }}</option>
               }
             </select>

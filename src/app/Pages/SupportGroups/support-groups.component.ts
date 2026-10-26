@@ -356,6 +356,14 @@ export class SupportGroupsComponent implements OnInit, OnDestroy {
   // Categories list - strictly only these 20 categories
   public categories: string[] = ['All', ...this.selectableCategories];
 
+  public get dynamicCategories(): string[] {
+    const present = this.groups
+      .map(g => g.category ? g.category.trim() : '')
+      .filter((c): c is string => c.length > 0 && c !== 'All');
+    const unique = Array.from(new Set(present)).sort();
+    return unique.length > 0 ? unique : this.selectableCategories;
+  }
+
   // Loading & Action States
   public isLoading: boolean = false;
   public isSaving: boolean = false;
