@@ -411,19 +411,27 @@ export interface HealthAwarenessForm {
       font-weight: 400;
       line-height: 1.6;
     }
-    .ha-points-list, .ha-desc-list {
-      margin: 0 0 6px 0;
-      padding-left: 20px;
-      color: #1E293B;
+    .ha-points-list, .ha-desc-list, .ha-card-desc-container ul, .ha-points-wrapper ul {
+      margin: 4px 0 6px 0 !important;
+      padding-left: 20px !important;
+      color: #1E293B !important;
+      list-style-type: disc !important;
     }
-    .ha-point-item, .ha-desc-item {
-      font-size: 13.5px;
-      line-height: 1.6;
-      color: #1E293B;
-      margin-bottom: 4px;
+    .ha-card-desc-container ol, .ha-points-wrapper ol {
+      margin: 4px 0 6px 0 !important;
+      padding-left: 20px !important;
+      color: #1E293B !important;
+      list-style-type: decimal !important;
     }
-    .ha-point-item::marker, .ha-desc-item::marker {
-      color: #1E293B;
+    .ha-point-item, .ha-desc-item, .ha-card-desc-container li, .ha-points-wrapper li {
+      font-size: 13.5px !important;
+      line-height: 1.6 !important;
+      color: #1E293B !important;
+      margin-bottom: 4px !important;
+    }
+    .ha-point-item::marker, .ha-desc-item::marker, .ha-card-desc-container li::marker, .ha-points-wrapper li::marker {
+      color: #1E293B !important;
+      font-size: 12px !important;
     }
     .ha-content-table {
       width: 100% !important;
@@ -1110,7 +1118,14 @@ export class HealthAwarenessComponent implements OnInit, OnDestroy {
     // If it contains HTML tags (spans with colors, p, div, tables, lists, etc.), bypass security
     const hasHtml = /<[a-z][\s\S]*>/i.test(raw);
     if (hasHtml) {
-      return this.sanitizer.bypassSecurityTrustHtml(raw);
+      let processed = raw;
+      if (/[•°✓✔▪▫·–—]/.test(processed)) {
+        processed = processed.replace(/<(?:p|div)[^>]*>\s*[•°✓✔▪▫·–—]\s*(.*?)<\/(?:p|div)>/gi, '<li class="ha-desc-item mb-1">$1</li>');
+        processed = processed.replace(/(<li class="ha-desc-item mb-1">[\s\S]*?<\/li>\s*)+/gi, (match) => {
+          return `<ul class="ha-desc-list mb-1">${match}</ul>`;
+        });
+      }
+      return this.sanitizer.bypassSecurityTrustHtml(processed);
     }
 
     const lines = raw.split(/\r?\n/);
@@ -1181,8 +1196,8 @@ export class HealthAwarenessComponent implements OnInit, OnDestroy {
           continue;
         }
 
-        const isUnordered = /^[•°✓✔▪▫\-\*]\s+/.test(line);
-        const isOrdered = /^\d+[\.\)]\s+/.test(line);
+        const isUnordered = /^(?:[•°✓✔▪▫·–—]\s*|[\-\*]\s+)/.test(line);
+        const isOrdered = /^\d+[\.\)]\s*/.test(line);
 
         if (isUnordered) {
           if (!inList || listType !== 'ul') {
@@ -1191,7 +1206,7 @@ export class HealthAwarenessComponent implements OnInit, OnDestroy {
             listType = 'ul';
             resultHtml += '<ul class="ha-desc-list mb-1">';
           }
-          const cleanText = line.replace(/^[•°✓✔▪▫\-\*]\s+/, '');
+          const cleanText = line.replace(/^(?:[•°✓✔▪▫·–—]\s*|[\-\*]\s+)/, '');
           resultHtml += `<li class="ha-desc-item mb-1">${formatInline(cleanText)}</li>`;
         } else if (isOrdered) {
           if (!inList || listType !== 'ol') {
@@ -1200,7 +1215,7 @@ export class HealthAwarenessComponent implements OnInit, OnDestroy {
             listType = 'ol';
             resultHtml += '<ol class="ha-desc-list mb-1">';
           }
-          const cleanText = line.replace(/^\d+[\.\)]\s+/, '');
+          const cleanText = line.replace(/^\d+[\.\)]\s*/, '');
           resultHtml += `<li class="ha-desc-item mb-1">${formatInline(cleanText)}</li>`;
         } else {
           if (inList) {
