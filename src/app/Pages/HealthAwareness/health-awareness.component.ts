@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 import { WebapiService } from '../../services/webapi.service';
@@ -364,6 +365,57 @@ export interface HealthAwarenessForm {
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
+
+    /* Point-wise Description Container inside Cards */
+    .ha-card-desc-container {
+      font-size: 13px;
+      line-height: 1.55;
+      color: #475569;
+      margin-bottom: 12px;
+      max-height: 140px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: #CBD5E1 transparent;
+      padding-right: 4px;
+    }
+    .ha-card-desc-container::-webkit-scrollbar {
+      width: 5px;
+    }
+    .ha-card-desc-container::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .ha-card-desc-container::-webkit-scrollbar-thumb {
+      background: #CBD5E1;
+      border-radius: 4px;
+    }
+    .ha-card-desc-container::-webkit-scrollbar-thumb:hover {
+      background: #94A3B8;
+    }
+    .ha-points-wrapper {
+      font-size: 13px;
+      line-height: 1.55;
+    }
+    .ha-point-intro {
+      font-size: 13px;
+      color: #1E293B;
+      margin-bottom: 6px;
+      font-weight: 500;
+      line-height: 1.5;
+    }
+    .ha-points-list {
+      margin: 0 0 6px 0;
+      padding-left: 18px;
+      list-style-type: disc;
+    }
+    .ha-point-item {
+      font-size: 12.8px;
+      line-height: 1.5;
+      color: #475569;
+      margin-bottom: 4px;
+    }
+    .ha-point-item::marker {
+      color: #009689;
+    }
   `]
 })
 export class HealthAwarenessComponent implements OnInit, OnDestroy {
@@ -415,6 +467,8 @@ export class HealthAwarenessComponent implements OnInit, OnDestroy {
   // Modals & Selection
   public isCreateModalOpen: boolean = false;
   public isEditing: boolean = false;
+  public isViewModalOpen: boolean = false;
+  public selectedArticle: HealthAwarenessItem | null = null;
 
   // Form Model strictly matching the create/update request body
   public formModel: HealthAwarenessForm = this.getEmptyForm();
@@ -427,7 +481,10 @@ export class HealthAwarenessComponent implements OnInit, OnDestroy {
   public toastType: 'success' | 'error' = 'success';
   private toastTimer: any = null;
 
-  constructor(private webApiService: WebapiService) {}
+  constructor(
+    private webApiService: WebapiService,
+    private sanitizer: DomSanitizer
+  ) {}
 
   @HostListener('document:click')
   public onDocumentClick(): void {
@@ -804,6 +861,82 @@ export class HealthAwarenessComponent implements OnInit, OnDestroy {
     this.toastTimer = setTimeout(() => {
       this.toastMessage = '';
     }, 4000);
+  }
+
+  public openViewModal(article: HealthAwarenessItem): void {
+    this.selectedArticle = article;
+    this.isViewModalOpen = true;
+  }
+
+  public closeViewModal(): void {
+    this.isViewModalOpen = false;
+    this.selectedArticle = null;
+  }
+
+  public insertBullet(prefix: string = '• '): void {
+    if (!this.formModel.description || !this.formModel.description.trim()) {
+      this.formModel.description = prefix;
+    } else {
+      const desc = this.formModel.description;
+      if (desc.endsWith('\n')) {
+        this.formModel.description = desc + prefix;
+      } else {
+        this.formModel.description = desc + '\n' + prefix;
+      }
+    }
+  }
+
+  public renderDescription(raw: string): SafeHtml {
+    if (!raw) return '';
+
+    const escapeHtml = (str: string) =>
+      str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+    const rawLines = raw.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+
+    const processedLines: string[] = [];
+    for (const line of rawLines) {
+      // Split on inline bullets if user typed bullets without newlines (e.g. "Intro •Point 1 °Point 2 ✓ Point 3")
+      const parts = line.split(/(?=[•°✓✔▪▫]|\b\d+[\.\)]\s+)/);
+      for (let p of parts) {
+        p = p.trim();
+        if (p) processedLines.push(p);
+      }
+    }
+
+    const isBullet = (s: string) => /^[•°✓✔▪▫\-\*]\s*/.test(s) || /^\d+[\.\)]\s+/.test(s);
+    const hasBullets = processedLines.some(isBullet);
+
+    if (!hasBullets && processedLines.length <= 1) {
+      return this.sanitizer.bypassSecurityTrustHtml(`<p class="mb-0" style="white-space: pre-line;">${escapeHtml(raw)}</p>`);
+    }
+
+    let html = '<div class="ha-points-wrapper">';
+    let inList = false;
+
+    for (const item of processedLines) {
+      if (isBullet(item)) {
+        if (!inList) {
+          inList = true;
+          html += '<ul class="ha-points-list mb-1">';
+        }
+        const cleanText = item.replace(/^[•°✓✔▪▫\-\*]\s*|^\d+[\.\)]\s*/, '').trim();
+        html += `<li class="ha-point-item mb-1">${escapeHtml(cleanText)}</li>`;
+      } else {
+        if (inList) {
+          html += '</ul>';
+          inList = false;
+        }
+        html += `<p class="ha-point-intro mb-1">${escapeHtml(item)}</p>`;
+      }
+    }
+
+    if (inList) {
+      html += '</ul>';
+    }
+    html += '</div>';
+
+    return this.sanitizer.bypassSecurityTrustHtml(html);
   }
 
   private getEmptyForm(): HealthAwarenessForm {

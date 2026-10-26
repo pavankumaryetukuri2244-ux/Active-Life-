@@ -146,7 +146,7 @@
             <div>
               <!-- Title & 3-dots dropdown Actions Menu -->
               <div class="d-flex align-items-start justify-content-between mb-1" style="position: relative;">
-                <h5 class="m-0 cm-media-title">
+                <h5 class="m-0 cm-media-title" (click)="openViewModal(item)" style="cursor: pointer;" title="Click to view full advisory">
                   {{ item.title }}
                 </h5>
                 <div style="position: relative;">
@@ -160,6 +160,16 @@
                   @if (openDropdownId === item.id) {
                     <div (click)="$event.stopPropagation()"
                       style="position: absolute; right: 0; top: 26px; z-index: 9999; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1); min-width: 155px; padding: 6px 0; font-family: 'Inter', sans-serif;">
+
+                      <!-- View Advisory Action -->
+                      <button type="button" (click)="openViewModal(item); closeDropdown()"
+                        style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 16px; background: none; border: none; cursor: pointer; font-size: 14px; font-weight: 500; color: #2563EB; transition: background 0.15s;">
+                        <svg width="16" height="16" fill="none" stroke="#2563EB" stroke-width="1.8" viewBox="0 0 24 24">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                          <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                        View Advisory
+                      </button>
 
                       <!-- Update Action -->
                       <button type="button" (click)="openEditModal(item); closeDropdown()"
@@ -206,10 +216,8 @@
                 </span>
               </div>
 
-              <!-- Description text with 3-line clamp -->
-              <p style="font-size: 13.5px; line-height: 1.55; color: #475569; margin-bottom: 12px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
-                {{ item.description }}
-              </p>
+              <!-- Point-wise / Formatted Description Container -->
+              <div class="ha-card-desc-container" [innerHTML]="renderDescription(item.description)"></div>
             </div>
 
 
@@ -285,9 +293,26 @@
 
         <!-- Description field -->
         <div class="mb-3">
-          <label class="form-label fw-semibold small text-dark">Description *</label>
-          <textarea class="form-control" rows="5" [(ngModel)]="formModel.description" placeholder="e.g. A comprehensive guide discussing symptoms, balanced diet habits, and essential wellness practices..."></textarea>
-          <div class="form-text small">Detailed health awareness article description.</div>
+          <div class="d-flex align-items-center justify-content-between mb-1">
+            <label class="form-label fw-semibold small text-dark mb-0">Description *</label>
+            <div class="d-flex align-items-center" style="gap: 6px;">
+              <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size: 11.5px; height: 24px; border-radius: 6px;" (click)="insertBullet('• ')">
+                + Bullet (•)
+              </button>
+              <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size: 11.5px; height: 24px; border-radius: 6px;" (click)="insertBullet('1. ')">
+                + Number (1.)
+              </button>
+            </div>
+          </div>
+          <textarea class="form-control" rows="5" [(ngModel)]="formModel.description" placeholder="Type intro, then add points:&#10;• Eat a healthy and balanced diet&#10;• Include fruits and vegetables in daily meals&#10;• Regular medical check-ups"></textarea>
+          <div class="form-text small">Add points on separate lines or click + Bullet. They will display point-wise in the card container.</div>
+
+          @if (formModel.description && formModel.description.trim()) {
+            <div class="mt-2 p-2 rounded-2" style="background: #F8FAFC; border: 1px dashed #CBD5E1;">
+              <span class="text-muted fw-semibold d-block mb-1" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Live Card Container Preview:</span>
+              <div class="ha-card-desc-container mb-0" style="max-height: 100px;" [innerHTML]="renderDescription(formModel.description)"></div>
+            </div>
+          }
         </div>
       </div>
 
@@ -301,6 +326,51 @@
             <span>{{ isEditing ? 'Update Content' : 'Create Content' }}</span>
           }
         </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Modal: View Health Advisory Reader Details -->
+@if (isViewModalOpen && selectedArticle) {
+  <div class="ha-modal-backdrop" (click)="closeViewModal()">
+    <div class="ha-modal-content" (click)="$event.stopPropagation()">
+      <div class="d-flex align-items-center justify-content-between p-4 border-bottom">
+        <div>
+          <div class="d-flex align-items-center mb-2" style="gap: 8px;">
+            <span class="badge"
+              [style.background]="getCategoryBg(selectedArticle.category)"
+              [style.color]="getCategoryColor(selectedArticle.category)"
+              style="border-radius: 8px; font-size: 12px; font-weight: 500; padding: 4px 10px;">
+              {{ selectedArticle.category }}
+            </span>
+            <span class="badge"
+              [style.background]="selectedArticle.isActive ? '#DCFCE7' : '#F1F5F9'"
+              [style.color]="selectedArticle.isActive ? '#16A34A' : '#64748B'"
+              style="border-radius: 8px; font-size: 12px; font-weight: 500; padding: 4px 10px;">
+              {{ selectedArticle.isActive ? 'Active' : 'Inactive' }}
+            </span>
+          </div>
+          <h2 style="font-size: 19px; font-weight: 700; color: #0F172A; margin: 0;">
+            {{ selectedArticle.title }}
+          </h2>
+        </div>
+        <button type="button" class="btn-close" (click)="closeViewModal()"></button>
+      </div>
+
+      <div class="p-4" style="max-height: 60vh; overflow-y: auto;">
+        <h6 class="text-uppercase text-muted fw-bold mb-3" style="font-size: 11.5px; letter-spacing: 0.6px;">Health Awareness Guidelines & Points</h6>
+        <div class="ha-points-wrapper" [innerHTML]="renderDescription(selectedArticle.description)"></div>
+      </div>
+
+      <div class="d-flex align-items-center justify-content-between p-4 border-top" style="background: #F8FAFC;">
+        <span class="text-muted small">Article #{{ selectedArticle.id }}</span>
+        <div class="d-flex" style="gap: 10px;">
+          <button type="button" class="btn btn-outline-secondary btn-sm" (click)="closeViewModal()">Close</button>
+          <button type="button" class="cm-btn-upload" style="height: 34px; padding: 6px 16px; font-size: 13px;" (click)="openEditModal(selectedArticle); closeViewModal()">
+            Edit Content
+          </button>
+        </div>
       </div>
     </div>
   </div>
