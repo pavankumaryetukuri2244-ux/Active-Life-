@@ -395,10 +395,19 @@ export class HomeRemediesComponent implements OnInit, OnDestroy {
     'Digestion'
   ];
 
+  // Full medical master categories (same as other modules)
+  public selectableCategories: string[] = [
+    'Cardiology', 'Psychiatry', 'Endocrinology', 'Pediatrics', 'Oncology',
+    'Neurology', 'Orthopedics', 'Dermatology', 'ENT', 'Gastroenterology',
+    'Urology', 'Gynecology', 'Pulmonology', 'Nephrology', 'Rheumatology',
+    'Ophthalmology', 'Dentistry', 'General Medicine', 'Surgery', 'Anesthesiology'
+  ];
+
   public get allCategories(): string[] {
+    // Prefer master categories from API; fall back to the full medical master list
     const list = this.masterCategories.length > 0
       ? this.masterCategories
-      : ['Respiratory', 'Immunity', 'Pain Relief', 'Heart Health', 'Digestion'];
+      : this.selectableCategories;
     return list.filter(c => c !== 'All');
   }
 
@@ -406,8 +415,10 @@ export class HomeRemediesComponent implements OnInit, OnDestroy {
     const present = this.remedies
       .map(r => r.category ? r.category.trim() : '')
       .filter((c): c is string => c.length > 0 && c !== 'All');
-    const unique = Array.from(new Set(present)).sort();
-    return unique.length > 0 ? unique : this.categories.filter(c => c !== 'All');
+    if (this.activeTab && this.activeTab !== 'All') {
+      present.push(this.activeTab);
+    }
+    return Array.from(new Set(present)).sort();
   }
 
   private searchSubject: Subject<string> = new Subject<string>();

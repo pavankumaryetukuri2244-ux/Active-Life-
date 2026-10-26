@@ -388,6 +388,10 @@ export class HealthcareChampionsComponent implements OnInit, OnDestroy {
     const present = this.champions
       .map(c => ((c.specialization || (c as any).category) || '').trim())
       .filter((s): s is string => s.length > 0 && s !== 'All');
+    const cur = this.activeTab || this.selectedSpecialty;
+    if (cur && cur !== 'All') {
+      present.push(cur);
+    }
     return Array.from(new Set(present)).sort();
   }
 

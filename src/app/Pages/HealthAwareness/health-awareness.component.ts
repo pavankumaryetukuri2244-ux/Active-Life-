@@ -536,6 +536,9 @@ export class HealthAwarenessComponent implements OnInit, OnDestroy {
     const present = this.articles
       .map(a => a.category ? a.category.trim() : '')
       .filter((c): c is string => c.length > 0 && c !== 'All');
+    if (this.selectedCategory && this.selectedCategory !== 'All') {
+      present.push(this.selectedCategory);
+    }
     return Array.from(new Set(present)).sort();
   }
 

@@ -360,6 +360,9 @@ export class SupportGroupsComponent implements OnInit, OnDestroy {
     const present = this.groups
       .map(g => g.category ? g.category.trim() : '')
       .filter((c): c is string => c.length > 0 && c !== 'All');
+    if (this.activeTab && this.activeTab !== 'All') {
+      present.push(this.activeTab);
+    }
     return Array.from(new Set(present)).sort();
   }
 
