@@ -97,7 +97,7 @@
             <!-- Category Dropdown displayed cleanly like All Statuses -->
             <select class="form-select form-select-sm" style="width: auto; min-width: 150px; border-radius: 8px; font-size: 13px; font-weight: 500;" [ngModel]="selectedCategory" (ngModelChange)="selectCategory($event)">
               <option value="All">All Categories</option>
-              @for (cat of dynamicCategories; track cat) {
+              @for (cat of selectableCategories; track cat) {
                 <option [value]="cat">{{ cat }}</option>
               }
             </select>

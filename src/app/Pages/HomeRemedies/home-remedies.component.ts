@@ -395,6 +395,13 @@ export class HomeRemediesComponent implements OnInit, OnDestroy {
     'Digestion'
   ];
 
+  public get allCategories(): string[] {
+    const list = this.masterCategories.length > 0
+      ? this.masterCategories
+      : ['Respiratory', 'Immunity', 'Pain Relief', 'Heart Health', 'Digestion'];
+    return list.filter(c => c !== 'All');
+  }
+
   public get dynamicCategories(): string[] {
     const present = this.remedies
       .map(r => r.category ? r.category.trim() : '')
