@@ -98,41 +98,37 @@
           }
         </div>
 
-        <!-- Filter Controls Row (Specialization Tabs + Status Filter + Practitioner Type + View Toggle) -->
+        <!-- Filter Controls Row (Category Dropdown + Status Filter + Reset) -->
         <div class="d-flex align-items-center justify-content-between flex-wrap" style="gap: 12px;">
-          <!-- Specialization Tabs matching Content Management cm-tab-btn -->
-          <div class="d-flex flex-wrap align-items-center" style="gap: 8px;">
-            @for (spec of specializations; track spec) {
-              <button type="button" class="cm-tab-btn" [class.active]="activeTab === spec" (click)="setTab(spec)">
-                {{ spec }}
-              </button>
-            }
-          </div>
+          <div class="d-flex align-items-center flex-wrap" style="gap: 12px;">
+            <!-- Category / Specialization Dropdown -->
+            <div class="d-flex align-items-center" style="gap: 8px;">
+              <label class="form-label mb-0 small fw-semibold text-muted" style="white-space: nowrap;">Category:</label>
+              <select class="form-select form-select-sm" style="width: auto; min-width: 190px; border-radius: 8px; font-size: 13px; font-weight: 500;" [ngModel]="activeTab" (ngModelChange)="setTab($event)">
+                <option value="All">All Categories</option>
+                @for (spec of selectableSpecializations; track spec) {
+                  <option [value]="spec">{{ spec }}</option>
+                }
+              </select>
+            </div>
 
-          <!-- Controls Right: Status & Type Filters + View Mode -->
-          <div class="d-flex align-items-center flex-wrap" style="gap: 10px;">
             <!-- Status Dropdown -->
-            <select class="form-select form-select-sm" style="width: auto; min-width: 130px; border-radius: 8px; font-size: 13px; font-weight: 500;" (change)="selectStatus($any($event.target).value)">
-              <option value="All">All Statuses</option>
-              <option value="Active">Active Only</option>
-              <option value="Inactive">Inactive Only</option>
-            </select>
-
-            <!-- Practitioner Type Dropdown -->
-            <select class="form-select form-select-sm" style="width: auto; min-width: 130px; border-radius: 8px; font-size: 13px; font-weight: 500;" (change)="selectType($any($event.target).value)">
-              <option value="All">All Types</option>
-              <option value="Specialist">Specialists</option>
-              <option value="Doctor">Doctors</option>
-              <option value="Traditional">Traditional Healers</option>
-            </select>
-
-            <!-- Reset Filters -->
-            @if (searchQuery || activeTab !== 'All' || selectedStatus !== 'All' || selectedType !== 'All') {
-              <button type="button" class="btn btn-sm btn-link text-decoration-none text-muted p-1" (click)="resetAllFilters()" style="font-size: 12.5px;">
-                Reset
-              </button>
-            }
+            <div class="d-flex align-items-center" style="gap: 8px;">
+              <label class="form-label mb-0 small fw-semibold text-muted" style="white-space: nowrap;">Status:</label>
+              <select class="form-select form-select-sm" style="width: auto; min-width: 135px; border-radius: 8px; font-size: 13px; font-weight: 500;" [ngModel]="selectedStatus" (ngModelChange)="selectStatus($event)">
+                <option value="All">All Statuses</option>
+                <option value="Active">Active Only</option>
+                <option value="Inactive">Inactive Only</option>
+              </select>
+            </div>
           </div>
+
+          <!-- Controls Right: Reset -->
+          @if (searchQuery || activeTab !== 'All' || selectedStatus !== 'All') {
+            <button type="button" class="btn btn-sm btn-link text-decoration-none text-muted p-1" (click)="resetAllFilters()" style="font-size: 12.5px;">
+              Reset Filters
+            </button>
+          }
         </div>
       </div>
     </div>
@@ -232,12 +228,7 @@
                   {{ item.isActive ? 'Active' : 'Inactive' }}
                 </button>
 
-                <!-- Practitioner Type -->
-                @if (formatPractitionerType(item.practitionerType)) {
-                  <span class="badge" style="background: #F8FAFC; color: #475569; border-radius: 8px; font-size: 12px; font-weight: 500; padding: 4px 10px;">
-                    {{ formatPractitionerType(item.practitionerType) }}
-                  </span>
-                }
+
 
                 <!-- Medically Reviewed -->
                 @if (item.isMedicallyReviewed) {
@@ -363,21 +354,15 @@
           </div>
         </div>
 
-        <!-- Specialization & Practitioner Type -->
-        <div class="row g-3 mb-3">
-          <div class="col-md-6">
-            <label class="form-label fw-semibold small text-dark">Specialization *</label>
-            <select class="form-select" [(ngModel)]="formModel.specialization">
-              <option value="" disabled selected>Select Specialization</option>
-              @for (spec of selectableSpecializations; track spec) {
-                <option [value]="spec">{{ spec }}</option>
-              }
-            </select>
-          </div>
-          <div class="col-md-6">
-            <label class="form-label fw-semibold small text-dark">Practitioner Type</label>
-            <input type="text" class="form-control" [(ngModel)]="formModel.practitionerType" placeholder="Enter practitioner type (e.g. Doctor, Specialist, Surgeon)">
-          </div>
+        <!-- Specialization / Category -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold small text-dark">Specialization / Category *</label>
+          <select class="form-select" [(ngModel)]="formModel.specialization">
+            <option value="" disabled selected>Select Specialization / Category</option>
+            @for (spec of selectableSpecializations; track spec) {
+              <option [value]="spec">{{ spec }}</option>
+            }
+          </select>
         </div>
 
         <!-- Hospital & Experience -->

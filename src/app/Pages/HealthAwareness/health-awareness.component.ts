@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener, ViewChild, ElementRef } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
@@ -311,7 +311,7 @@ export interface HealthAwarenessForm {
       background: #FFFFFF !important;
       border-radius: 16px !important;
       width: 100% !important;
-      max-width: 620px !important;
+      max-width: 720px !important;
       max-height: 90vh !important;
       overflow-y: auto !important;
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15) !important;
@@ -391,30 +391,94 @@ export interface HealthAwarenessForm {
     .ha-card-desc-container::-webkit-scrollbar-thumb:hover {
       background: #94A3B8;
     }
-    .ha-points-wrapper {
-      font-size: 13px;
-      line-height: 1.55;
+    .ha-card-desc-container {
+      font-size: 13.5px;
+      line-height: 1.6;
+      color: #1E293B;
+      max-height: 120px;
+      overflow-y: auto;
+      padding-right: 4px;
     }
-    .ha-point-intro {
-      font-size: 13px;
+    .ha-points-wrapper {
+      font-size: 13.5px;
+      line-height: 1.6;
+      color: #1E293B;
+    }
+    .ha-point-intro, .ha-desc-para {
+      font-size: 13.5px;
       color: #1E293B;
       margin-bottom: 6px;
-      font-weight: 500;
-      line-height: 1.5;
+      font-weight: 400;
+      line-height: 1.6;
     }
-    .ha-points-list {
+    .ha-points-list, .ha-desc-list {
       margin: 0 0 6px 0;
-      padding-left: 18px;
-      list-style-type: disc;
+      padding-left: 20px;
+      color: #1E293B;
     }
-    .ha-point-item {
-      font-size: 12.8px;
-      line-height: 1.5;
-      color: #475569;
+    .ha-point-item, .ha-desc-item {
+      font-size: 13.5px;
+      line-height: 1.6;
+      color: #1E293B;
       margin-bottom: 4px;
     }
-    .ha-point-item::marker {
-      color: #009689;
+    .ha-point-item::marker, .ha-desc-item::marker {
+      color: #1E293B;
+    }
+    .ha-content-table {
+      width: 100% !important;
+      border-collapse: collapse !important;
+      font-size: 12.5px !important;
+      background: #FFFFFF !important;
+      margin: 8px 0 !important;
+      border: 1px solid #CBD5E1 !important;
+    }
+    .ha-content-table th {
+      background: #F1F5F9 !important;
+      color: #0F172A !important;
+      font-weight: 600 !important;
+      padding: 6px 10px !important;
+      border: 1px solid #CBD5E1 !important;
+      text-align: left !important;
+      white-space: nowrap !important;
+    }
+    .ha-content-table td {
+      padding: 6px 10px !important;
+      border: 1px solid #E2E8F0 !important;
+      color: #1E293B !important;
+      vertical-align: middle !important;
+    }
+    .ha-content-table tbody tr:nth-child(even) {
+      background: #F8FAFC !important;
+    }
+    .ha-visual-editor {
+      min-height: 150px;
+      max-height: 280px;
+      overflow-y: auto;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+      font-size: 13.5px !important;
+      line-height: 1.6 !important;
+      color: #1E293B !important;
+      background: #FFFFFF !important;
+      border: 1px solid #CBD5E1 !important;
+      border-radius: 8px !important;
+      padding: 10px 14px !important;
+      outline: none !important;
+      word-break: break-word !important;
+      transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out !important;
+    }
+    .ha-visual-editor:focus {
+      border-color: #2563EB !important;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1) !important;
+    }
+    .ha-visual-editor:empty:before {
+      content: attr(data-placeholder) !important;
+      color: #94A3B8 !important;
+      pointer-events: none !important;
+      display: block !important;
+    }
+    .ha-card-desc-container p, .ha-points-wrapper p, .ha-visual-editor p {
+      margin-bottom: 6px;
     }
   `]
 })
@@ -481,6 +545,13 @@ export class HealthAwarenessComponent implements OnInit, OnDestroy {
   public toastType: 'success' | 'error' = 'success';
   private toastTimer: any = null;
 
+  // Table & Description State
+  @ViewChild('descEditor') descEditorRef!: ElementRef<HTMLDivElement>;
+  public showTableMenu: boolean = false;
+  public showCustomTableModal: boolean = false;
+  public customTableColumns: string = 'Metric, Normal Range, Clinical Advice';
+  public customTableRows: number = 2;
+
   constructor(
     private webApiService: WebapiService,
     private sanitizer: DomSanitizer
@@ -489,6 +560,7 @@ export class HealthAwarenessComponent implements OnInit, OnDestroy {
   @HostListener('document:click')
   public onDocumentClick(): void {
     this.closeDropdown();
+    this.showTableMenu = false;
   }
 
   ngOnInit(): void {
@@ -675,7 +747,15 @@ export class HealthAwarenessComponent implements OnInit, OnDestroy {
     this.isEditing = false;
     this.formModel = this.getEmptyForm();
     this.formError = '';
+    this.showTableMenu = false;
+    this.showCustomTableModal = false;
     this.isCreateModalOpen = true;
+    setTimeout(() => {
+      if (this.descEditorRef?.nativeElement) {
+        this.descEditorRef.nativeElement.innerHTML = '';
+        this.descEditorRef.nativeElement.focus();
+      }
+    }, 50);
   }
 
   public openEditModal(article: HealthAwarenessItem): void {
@@ -687,20 +767,42 @@ export class HealthAwarenessComponent implements OnInit, OnDestroy {
       description: article.description
     };
     this.formError = '';
+    this.showTableMenu = false;
+    this.showCustomTableModal = false;
     this.isCreateModalOpen = true;
+    setTimeout(() => {
+      if (this.descEditorRef?.nativeElement) {
+        this.descEditorRef.nativeElement.innerHTML = article.description || '';
+      }
+    }, 50);
   }
 
   public closeModal(): void {
     this.isCreateModalOpen = false;
     this.formError = '';
     this.isSaving = false;
+    this.showTableMenu = false;
+    this.showCustomTableModal = false;
+    if (this.descEditorRef?.nativeElement) {
+      this.descEditorRef.nativeElement.innerHTML = '';
+    }
+  }
+
+  public onEditorInput(): void {
+    if (this.descEditorRef?.nativeElement) {
+      this.formModel.description = this.descEditorRef.nativeElement.innerHTML;
+    }
   }
 
   public saveArticle(): void {
     this.formError = '';
+    if (this.descEditorRef?.nativeElement) {
+      this.formModel.description = this.descEditorRef.nativeElement.innerHTML;
+    }
     const title = this.formModel.title ? this.formModel.title.trim() : '';
     const category = this.formModel.category ? this.formModel.category.trim() : '';
-    const description = this.formModel.description ? this.formModel.description.trim() : '';
+    const descriptionHtml = this.formModel.description ? this.formModel.description.trim() : '';
+    const plainText = this.descEditorRef?.nativeElement ? (this.descEditorRef.nativeElement.innerText || '').trim() : '';
 
     if (!title) {
       this.formError = 'Please provide an article title.';
@@ -714,7 +816,7 @@ export class HealthAwarenessComponent implements OnInit, OnDestroy {
       this.formError = 'Please select a category.';
       return;
     }
-    if (!description) {
+    if (!plainText && !descriptionHtml.includes('<table') && !descriptionHtml.includes('<img')) {
       this.formError = 'Please enter an article description.';
       return;
     }
@@ -725,7 +827,7 @@ export class HealthAwarenessComponent implements OnInit, OnDestroy {
     const requestBody: any = {
       title: title,
       category: category,
-      description: description
+      description: descriptionHtml
     };
 
     if (this.isEditing && this.formModel.id !== undefined && this.formModel.id !== null && this.formModel.id !== '') {
@@ -873,70 +975,252 @@ export class HealthAwarenessComponent implements OnInit, OnDestroy {
     this.selectedArticle = null;
   }
 
-  public insertBullet(prefix: string = '• '): void {
-    if (!this.formModel.description || !this.formModel.description.trim()) {
-      this.formModel.description = prefix;
-    } else {
-      const desc = this.formModel.description;
-      if (desc.endsWith('\n')) {
-        this.formModel.description = desc + prefix;
+  public insertList(type: 'bullet' | 'number'): void {
+    if (this.descEditorRef?.nativeElement) {
+      this.descEditorRef.nativeElement.focus();
+      if (type === 'bullet') {
+        document.execCommand('insertUnorderedList', false);
       } else {
-        this.formModel.description = desc + '\n' + prefix;
+        document.execCommand('insertOrderedList', false);
       }
+      this.onEditorInput();
+    }
+  }
+
+  public insertHtmlAtCursor(html: string): void {
+    if (this.descEditorRef?.nativeElement) {
+      this.descEditorRef.nativeElement.focus();
+      const selection = window.getSelection();
+      if (selection && selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        if (this.descEditorRef.nativeElement.contains(range.commonAncestorContainer)) {
+          range.deleteContents();
+          const tempDiv = document.createElement('div');
+          tempDiv.innerHTML = html;
+          const frag = document.createDocumentFragment();
+          let node: ChildNode | null;
+          let lastNode: ChildNode | null = null;
+          while ((node = tempDiv.firstChild)) {
+            lastNode = frag.appendChild(node);
+          }
+          range.insertNode(frag);
+          if (lastNode) {
+            range.setStartAfter(lastNode);
+            range.collapse(true);
+            selection.removeAllRanges();
+            selection.addRange(range);
+          }
+          this.onEditorInput();
+          return;
+        }
+      }
+      this.descEditorRef.nativeElement.innerHTML += html;
+      this.onEditorInput();
+    }
+  }
+
+  public toggleTableMenu(event: MouseEvent): void {
+    event.stopPropagation();
+    this.showTableMenu = !this.showTableMenu;
+  }
+
+  public insertTableTemplate(type: 'metrics' | 'guidelines' | 'schedule'): void {
+    let template = '';
+    if (type === 'metrics') {
+      template = '<div class="table-responsive my-2"><table class="table table-bordered table-sm ha-content-table mb-2"><thead><tr><th>Health Metric</th><th>Normal Range</th><th>Advisory / Action</th></tr></thead><tbody><tr><td>Blood Pressure</td><td>120/80 mmHg</td><td>Check weekly if hypertensive</td></tr><tr><td>Fasting Blood Sugar</td><td>70-100 mg/dL</td><td>Maintain low glycemic diet</td></tr><tr><td>Total Cholesterol</td><td>&lt; 200 mg/dL</td><td>Exercise and reduce saturated fat</td></tr></tbody></table></div><p><br></p>';
+    } else if (type === 'guidelines') {
+      template = '<div class="table-responsive my-2"><table class="table table-bordered table-sm ha-content-table mb-2"><thead><tr><th>Clinical Area</th><th>Recommended Do\'s</th><th>Key Don\'ts</th></tr></thead><tbody><tr><td>Diet &amp; Hydration</td><td>Drink 2-3L water daily</td><td>Avoid excessive sodium</td></tr><tr><td>Physical Activity</td><td>30 mins brisk walking</td><td>Avoid prolonged sedentary hours</td></tr></tbody></table></div><p><br></p>';
+    } else if (type === 'schedule') {
+      template = '<div class="table-responsive my-2"><table class="table table-bordered table-sm ha-content-table mb-2"><thead><tr><th>Time of Day</th><th>Recommended Action</th><th>Notes &amp; Precautions</th></tr></thead><tbody><tr><td>Morning</td><td>Morning walk &amp; light breakfast</td><td>Take prescribed vitamins</td></tr><tr><td>Afternoon</td><td>Balanced meal &amp; hydration</td><td>Take brief stretch breaks</td></tr><tr><td>Evening</td><td>Light dinner &amp; relaxation</td><td>Sleep 7-8 hours uninterrupted</td></tr></tbody></table></div><p><br></p>';
+    }
+    this.insertHtmlAtCursor(template);
+    this.showTableMenu = false;
+  }
+
+  public openCustomTableModal(): void {
+    this.showTableMenu = false;
+    this.showCustomTableModal = true;
+  }
+
+  public closeCustomTableModal(): void {
+    this.showCustomTableModal = false;
+  }
+
+  public insertCustomTable(): void {
+    const cols = (this.customTableColumns || '')
+      .split(',')
+      .map(c => c.trim())
+      .filter(c => c.length > 0);
+    if (cols.length === 0) return;
+
+    let headerThs = cols.map(c => `<th>${c}</th>`).join('');
+    let rowsHtml = '';
+    const rowsCount = Math.max(1, Math.min(this.customTableRows || 2, 15));
+    for (let r = 1; r <= rowsCount; r++) {
+      let tds = cols.map(c => `<td>Sample ${c}</td>`).join('');
+      rowsHtml += `<tr>${tds}</tr>`;
+    }
+
+    const tableHtml = `<div class="table-responsive my-2"><table class="table table-bordered table-sm ha-content-table mb-2"><thead><tr>${headerThs}</tr></thead><tbody>${rowsHtml}</tbody></table></div><p><br></p>`;
+    this.insertHtmlAtCursor(tableHtml);
+    this.showCustomTableModal = false;
+    this.showTableMenu = false;
+  }
+
+  public onEditorPaste(event: ClipboardEvent): void {
+    const clipboardData = event.clipboardData;
+    if (!clipboardData) return;
+
+    const html = clipboardData.getData('text/html');
+    const text = clipboardData.getData('text/plain');
+
+    // If rich HTML is available from another website (with colored spans, formatting, styles)
+    if (html) {
+      event.preventDefault();
+      const fragmentMatch = html.match(/<!--StartFragment-->([\s\S]*?)<!--EndFragment-->/i);
+      let cleanHtml = fragmentMatch ? fragmentMatch[1] : html;
+
+      cleanHtml = cleanHtml.replace(/<!DOCTYPE[\s\S]*?>/gi, '')
+                           .replace(/<html[\s\S]*?>/gi, '')
+                           .replace(/<\/html>/gi, '')
+                           .replace(/<head[\s\S]*?<\/head>/gi, '')
+                           .replace(/<body[\s\S]*?>/gi, '')
+                           .replace(/<\/body>/gi, '')
+                           .replace(/<meta[\s\S]*?>/gi, '')
+                           .replace(/<style[\s\S]*?<\/style>/gi, '')
+                           .replace(/<script[\s\S]*?<\/script>/gi, '')
+                           .replace(/<!--[\s\S]*?-->/g, '')
+                           .trim();
+
+      this.insertHtmlAtCursor(cleanHtml);
+      return;
+    }
+
+    // If the copied text is plain text containing literal HTML tags like <div><p><span>
+    if (text && /<[a-z][\s\S]*>/i.test(text)) {
+      event.preventDefault();
+      this.insertHtmlAtCursor(text);
+      return;
     }
   }
 
   public renderDescription(raw: string): SafeHtml {
     if (!raw) return '';
 
-    const escapeHtml = (str: string) =>
-      str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-
-    const rawLines = raw.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
-
-    const processedLines: string[] = [];
-    for (const line of rawLines) {
-      // Split on inline bullets if user typed bullets without newlines (e.g. "Intro •Point 1 °Point 2 ✓ Point 3")
-      const parts = line.split(/(?=[•°✓✔▪▫]|\b\d+[\.\)]\s+)/);
-      for (let p of parts) {
-        p = p.trim();
-        if (p) processedLines.push(p);
-      }
+    // If it contains HTML tags (spans with colors, p, div, tables, lists, etc.), bypass security
+    const hasHtml = /<[a-z][\s\S]*>/i.test(raw);
+    if (hasHtml) {
+      return this.sanitizer.bypassSecurityTrustHtml(raw);
     }
 
-    const isBullet = (s: string) => /^[•°✓✔▪▫\-\*]\s*/.test(s) || /^\d+[\.\)]\s+/.test(s);
-    const hasBullets = processedLines.some(isBullet);
-
-    if (!hasBullets && processedLines.length <= 1) {
-      return this.sanitizer.bypassSecurityTrustHtml(`<p class="mb-0" style="white-space: pre-line;">${escapeHtml(raw)}</p>`);
-    }
-
-    let html = '<div class="ha-points-wrapper">';
+    const lines = raw.split(/\r?\n/);
+    let inTable = false;
+    let tableHtml = '';
+    let resultHtml = '';
     let inList = false;
+    let listType: 'ul' | 'ol' = 'ul';
 
-    for (const item of processedLines) {
-      if (isBullet(item)) {
-        if (!inList) {
-          inList = true;
-          html += '<ul class="ha-points-list mb-1">';
-        }
-        const cleanText = item.replace(/^[•°✓✔▪▫\-\*]\s*|^\d+[\.\)]\s*/, '').trim();
-        html += `<li class="ha-point-item mb-1">${escapeHtml(cleanText)}</li>`;
-      } else {
+    const formatInline = (text: string): string => {
+      if (!text) return '';
+      let s = text;
+      if (!/<[a-z][\s\S]*>/i.test(s)) {
+        s = s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      }
+      s = s.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+      s = s.replace(/\*(.*?)\*/g, '<em>$1</em>');
+      return s;
+    };
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+
+      // Check if line looks like markdown table row (has pipes)
+      if (line.includes('|') && line.split('|').length >= 3) {
         if (inList) {
-          html += '</ul>';
+          resultHtml += `</${listType}>`;
           inList = false;
         }
-        html += `<p class="ha-point-intro mb-1">${escapeHtml(item)}</p>`;
+
+        const isSeparator = /^\|?(\s*:?-{2,}:?\s*\|)+\s*:?-{2,}:?\s*\|?$/.test(line);
+        if (isSeparator) {
+          continue;
+        }
+
+        const rawCells = line.split('|');
+        if (line.startsWith('|')) rawCells.shift();
+        if (line.endsWith('|')) rawCells.pop();
+        const cells = rawCells.map(c => c.trim());
+
+        if (!inTable) {
+          inTable = true;
+          tableHtml = '<div class="table-responsive my-2"><table class="table table-bordered table-sm ha-content-table mb-0"><thead><tr>';
+          cells.forEach(c => {
+            tableHtml += `<th>${formatInline(c)}</th>`;
+          });
+          tableHtml += '</tr></thead><tbody>';
+        } else {
+          tableHtml += '<tr>';
+          cells.forEach(c => {
+            tableHtml += `<td>${formatInline(c)}</td>`;
+          });
+          tableHtml += '</tr>';
+        }
+      } else {
+        if (inTable) {
+          inTable = false;
+          tableHtml += '</tbody></table></div>';
+          resultHtml += tableHtml;
+          tableHtml = '';
+        }
+
+        if (!line) {
+          if (inList) {
+            resultHtml += `</${listType}>`;
+            inList = false;
+          }
+          continue;
+        }
+
+        const isUnordered = /^[•°✓✔▪▫\-\*]\s+/.test(line);
+        const isOrdered = /^\d+[\.\)]\s+/.test(line);
+
+        if (isUnordered) {
+          if (!inList || listType !== 'ul') {
+            if (inList) resultHtml += `</${listType}>`;
+            inList = true;
+            listType = 'ul';
+            resultHtml += '<ul class="ha-desc-list mb-1">';
+          }
+          const cleanText = line.replace(/^[•°✓✔▪▫\-\*]\s+/, '');
+          resultHtml += `<li class="ha-desc-item mb-1">${formatInline(cleanText)}</li>`;
+        } else if (isOrdered) {
+          if (!inList || listType !== 'ol') {
+            if (inList) resultHtml += `</${listType}>`;
+            inList = true;
+            listType = 'ol';
+            resultHtml += '<ol class="ha-desc-list mb-1">';
+          }
+          const cleanText = line.replace(/^\d+[\.\)]\s+/, '');
+          resultHtml += `<li class="ha-desc-item mb-1">${formatInline(cleanText)}</li>`;
+        } else {
+          if (inList) {
+            resultHtml += `</${listType}>`;
+            inList = false;
+          }
+          resultHtml += `<div class="ha-desc-para mb-1">${formatInline(line)}</div>`;
+        }
       }
     }
 
-    if (inList) {
-      html += '</ul>';
+    if (inTable) {
+      tableHtml += '</tbody></table></div>';
+      resultHtml += tableHtml;
     }
-    html += '</div>';
+    if (inList) {
+      resultHtml += `</${listType}>`;
+    }
 
-    return this.sanitizer.bypassSecurityTrustHtml(html);
+    return this.sanitizer.bypassSecurityTrustHtml(resultHtml);
   }
 
   private getEmptyForm(): HealthAwarenessForm {

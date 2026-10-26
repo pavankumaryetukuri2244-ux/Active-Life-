@@ -283,7 +283,7 @@ export interface HealthcareChampionForm {
       background: #FFFFFF !important;
       border-radius: 16px !important;
       width: 100% !important;
-      max-width: 680px !important;
+      max-width: 780px !important;
       max-height: 90vh !important;
       overflow-y: auto !important;
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15) !important;
@@ -617,11 +617,7 @@ export class HealthcareChampionsComponent implements OnInit, OnDestroy {
       result = result.filter(c => !c.isActive);
     }
 
-    // 4. Practitioner Type Filter (All, Specialist, Traditional Healer, etc.)
-    if (this.selectedType && this.selectedType !== 'All') {
-      const typeKey = this.selectedType.toLowerCase();
-      result = result.filter(c => (c.practitionerType || '').toLowerCase().includes(typeKey));
-    }
+
 
     // 5. Medical Review Filter
     if (this.selectedReview === 'Reviewed') {

@@ -98,31 +98,37 @@
           }
         </div>
 
-        <!-- Filter Controls Row (Category Tabs + Status Filter + View Toggle) -->
+        <!-- Filter Controls Row (Category Dropdown + Status Filter + Reset) -->
         <div class="d-flex align-items-center justify-content-between flex-wrap" style="gap: 12px;">
-          <!-- Category Tabs -->
-          <div class="d-flex flex-wrap align-items-center" style="gap: 8px;">
-            @for (cat of categories; track cat) {
-              <button type="button" class="cm-tab-btn" [class.active]="activeTab === cat" (click)="setTab(cat)">
-                {{ cat }}
-              </button>
-            }
+          <div class="d-flex align-items-center flex-wrap" style="gap: 12px;">
+            <!-- Category Dropdown -->
+            <div class="d-flex align-items-center" style="gap: 8px;">
+              <label class="form-label mb-0 small fw-semibold text-muted" style="white-space: nowrap;">Category:</label>
+              <select class="form-select form-select-sm" style="width: auto; min-width: 190px; border-radius: 8px; font-size: 13px; font-weight: 500;" [ngModel]="activeTab" (ngModelChange)="setTab($event)">
+                <option value="All">All Categories</option>
+                @for (cat of selectableCategories; track cat) {
+                  <option [value]="cat">{{ cat }}</option>
+                }
+              </select>
+            </div>
+
+            <!-- Status Selector -->
+            <div class="d-flex align-items-center" style="gap: 8px;">
+              <label class="form-label mb-0 small fw-semibold text-muted" style="white-space: nowrap;">Status:</label>
+              <select class="form-select form-select-sm" style="width: auto; min-width: 135px; border-radius: 8px; font-size: 13px; font-weight: 500;" [ngModel]="selectedStatus" (ngModelChange)="selectStatus($event)">
+                <option value="All">All Statuses</option>
+                <option value="Active">Active Only</option>
+                <option value="Inactive">Inactive Only</option>
+              </select>
+            </div>
           </div>
 
-          <!-- Controls Right: Status Selector + Reset + View Mode -->
-          <div class="d-flex align-items-center flex-wrap" style="gap: 10px;">
-            <select class="form-select form-select-sm" style="width: auto; min-width: 135px; border-radius: 8px; font-size: 13px; font-weight: 500;" (change)="selectStatus($any($event.target).value)">
-              <option value="All">All Statuses</option>
-              <option value="Active">Active Only</option>
-              <option value="Inactive">Inactive Only</option>
-            </select>
-
-            @if (searchQuery || activeTab !== 'All' || selectedStatus !== 'All') {
-              <button type="button" class="btn btn-sm btn-link text-decoration-none text-muted p-1" (click)="resetAllFilters()" style="font-size: 12.5px;">
-                Reset
-              </button>
-            }
-          </div>
+          <!-- Controls Right: Reset -->
+          @if (searchQuery || activeTab !== 'All' || selectedStatus !== 'All') {
+            <button type="button" class="btn btn-sm btn-link text-decoration-none text-muted p-1" (click)="resetAllFilters()" style="font-size: 12.5px;">
+              Reset Filters
+            </button>
+          }
         </div>
       </div>
     </div>
@@ -278,34 +284,36 @@
       }
 
       <!-- Form Body -->
-      <form (ngSubmit)="saveGroup()" style="font-family: 'Inter', sans-serif;">
-        <!-- Group Name -->
-        <div class="mb-3">
-          <label class="form-label small fw-semibold text-dark">Group Name <span class="text-danger">*</span></label>
-          <input type="text" class="form-control" [(ngModel)]="formModel.groupName" name="groupName"
-            placeholder="e.g. Cancer Support, Postpartum Mothers Circle..." required>
-        </div>
+      <form (ngSubmit)="saveGroup()" style="font-family: 'Inter', sans-serif; display: flex; flex-direction: column; flex: 1; justify-content: space-between;">
+        <div>
+          <!-- Group Name -->
+          <div class="mb-3">
+            <label class="form-label small fw-semibold text-dark">Group Name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" [(ngModel)]="formModel.groupName" name="groupName"
+              placeholder="e.g. Cancer Support, Postpartum Mothers Circle..." required>
+          </div>
 
-        <!-- Category Dropdown Selection using Master Data API -->
-        <div class="mb-3">
-          <label class="form-label small fw-semibold text-dark">Category <span class="text-danger">*</span></label>
-          <select class="form-select" [(ngModel)]="formModel.category" name="category" required style="border-radius: 8px; font-size: 13.5px;">
-            <option value="" disabled selected>-- Select Medical Category --</option>
-            @for (cat of selectableCategories; track cat) {
-              <option [value]="cat">{{ cat }}</option>
-            }
-          </select>
-        </div>
+          <!-- Category Dropdown Selection using Master Data API -->
+          <div class="mb-3">
+            <label class="form-label small fw-semibold text-dark">Category <span class="text-danger">*</span></label>
+            <select class="form-select" [(ngModel)]="formModel.category" name="category" required style="border-radius: 8px; font-size: 13.5px;">
+              <option value="" disabled selected>-- Select Medical Category --</option>
+              @for (cat of selectableCategories; track cat) {
+                <option [value]="cat">{{ cat }}</option>
+              }
+            </select>
+          </div>
 
-        <!-- Description -->
-        <div class="mb-4">
-          <label class="form-label small fw-semibold text-dark">Description <span class="text-danger">*</span></label>
-          <textarea class="form-control" rows="4" [(ngModel)]="formModel.description" name="description"
-            placeholder="Describe the group focus, targeted conditions, member goals, and cohort guidelines..." required></textarea>
+          <!-- Description -->
+          <div class="mb-4">
+            <label class="form-label small fw-semibold text-dark">Description <span class="text-danger">*</span></label>
+            <textarea class="form-control" rows="6" style="min-height: 150px; resize: vertical;" [(ngModel)]="formModel.description" name="description"
+              placeholder="Describe the group focus, targeted conditions, member goals, and cohort guidelines..." required></textarea>
+          </div>
         </div>
 
         <!-- Actions -->
-        <div class="d-flex align-items-center justify-content-end" style="gap: 12px;">
+        <div class="d-flex align-items-center justify-content-end pt-3 border-top" style="gap: 12px;">
           <button type="button" class="btn btn-light" (click)="closeModal()" style="font-size: 14px; font-weight: 500;">
             Cancel
           </button>

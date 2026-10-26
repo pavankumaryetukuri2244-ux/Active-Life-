@@ -270,7 +270,7 @@ export interface HomeRemedyForm {
       background: #FFFFFF !important;
       border-radius: 16px !important;
       width: 100% !important;
-      max-width: 620px !important;
+      max-width: 720px !important;
       max-height: 90vh !important;
       overflow-y: auto !important;
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15) !important;

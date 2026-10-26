@@ -98,31 +98,39 @@
           }
         </div>
 
-        <!-- Filter Controls Row (Category Tabs + Status Filter + View Toggle) -->
+        <!-- Filter Controls Row (Category Dropdown + Status Filter + Reset) -->
         <div class="d-flex align-items-center justify-content-between flex-wrap" style="gap: 12px;">
-          <!-- Category Tabs matching Content Management cm-tab-btn -->
-          <div class="d-flex flex-wrap align-items-center" style="gap: 8px; max-height: 82px; overflow-y: auto;">
-            @for (cat of categories; track cat) {
-              <button type="button" class="cm-tab-btn" [class.active]="activeTab === cat" (click)="setTab(cat)">
-                {{ cat }}
-              </button>
-            }
+          <div class="d-flex align-items-center flex-wrap" style="gap: 12px;">
+            <!-- Category Dropdown -->
+            <div class="d-flex align-items-center" style="gap: 8px;">
+              <label class="form-label mb-0 small fw-semibold text-muted" style="white-space: nowrap;">Category:</label>
+              <select class="form-select form-select-sm" style="width: auto; min-width: 180px; border-radius: 8px; font-size: 13px; font-weight: 500;" [ngModel]="activeTab" (ngModelChange)="setTab($event)">
+                <option value="All">All Categories</option>
+                @for (cat of categories; track cat) {
+                  @if (cat !== 'All') {
+                    <option [value]="cat">{{ cat }}</option>
+                  }
+                }
+              </select>
+            </div>
+
+            <!-- Status Selector -->
+            <div class="d-flex align-items-center" style="gap: 8px;">
+              <label class="form-label mb-0 small fw-semibold text-muted" style="white-space: nowrap;">Status:</label>
+              <select class="form-select form-select-sm" style="width: auto; min-width: 135px; border-radius: 8px; font-size: 13px; font-weight: 500;" [ngModel]="selectedStatus" (ngModelChange)="selectStatus($event)">
+                <option value="All">All Statuses</option>
+                <option value="Active">Active Only</option>
+                <option value="Inactive">Inactive Only</option>
+              </select>
+            </div>
           </div>
 
-          <!-- Controls Right: Status Selector + Reset + View Mode -->
-          <div class="d-flex align-items-center flex-wrap" style="gap: 10px;">
-            <select class="form-select form-select-sm" style="width: auto; min-width: 135px; border-radius: 8px; font-size: 13px; font-weight: 500;" (change)="selectStatus($any($event.target).value)">
-              <option value="All">All Statuses</option>
-              <option value="Active">Active Only</option>
-              <option value="Inactive">Inactive Only</option>
-            </select>
-
-            @if (searchQuery || activeTab !== 'All' || selectedStatus !== 'All') {
-              <button type="button" class="btn btn-sm btn-link text-decoration-none text-muted p-1" (click)="resetAllFilters()" style="font-size: 12.5px;">
-                Reset
-              </button>
-            }
-          </div>
+          <!-- Controls Right: Reset -->
+          @if (searchQuery || activeTab !== 'All' || selectedStatus !== 'All') {
+            <button type="button" class="btn btn-sm btn-link text-decoration-none text-muted p-1" (click)="resetAllFilters()" style="font-size: 12.5px;">
+              Reset Filters
+            </button>
+          }
         </div>
       </div>
     </div>

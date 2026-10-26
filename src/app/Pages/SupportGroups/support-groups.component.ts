@@ -267,11 +267,15 @@ export interface SupportGroupForm {
       background: #FFFFFF !important;
       border-radius: 16px !important;
       width: 100% !important;
-      max-width: 600px !important;
+      max-width: 700px !important;
+      min-height: 520px !important;
       max-height: 90vh !important;
       overflow-y: auto !important;
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15) !important;
       animation: modalFadeIn 0.25s ease-out !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: space-between !important;
     }
     @keyframes modalFadeIn {
       from { opacity: 0; transform: scale(0.96); }
