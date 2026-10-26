@@ -360,8 +360,7 @@ export class SupportGroupsComponent implements OnInit, OnDestroy {
     const present = this.groups
       .map(g => g.category ? g.category.trim() : '')
       .filter((c): c is string => c.length > 0 && c !== 'All');
-    const unique = Array.from(new Set(present)).sort();
-    return unique.length > 0 ? unique : this.selectableCategories;
+    return Array.from(new Set(present)).sort();
   }
 
   // Loading & Action States

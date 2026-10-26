@@ -388,8 +388,7 @@ export class HealthcareChampionsComponent implements OnInit, OnDestroy {
     const present = this.champions
       .map(c => ((c.specialization || (c as any).category) || '').trim())
       .filter((s): s is string => s.length > 0 && s !== 'All');
-    const unique = Array.from(new Set(present)).sort();
-    return unique.length > 0 ? unique : this.selectableSpecializations;
+    return Array.from(new Set(present)).sort();
   }
 
   // Search debouncing

@@ -536,8 +536,7 @@ export class HealthAwarenessComponent implements OnInit, OnDestroy {
     const present = this.articles
       .map(a => a.category ? a.category.trim() : '')
       .filter((c): c is string => c.length > 0 && c !== 'All');
-    const unique = Array.from(new Set(present)).sort();
-    return unique.length > 0 ? unique : this.selectableCategories;
+    return Array.from(new Set(present)).sort();
   }
 
   // Search debouncing
