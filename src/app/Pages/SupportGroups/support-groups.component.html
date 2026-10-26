@@ -100,27 +100,21 @@
 
         <!-- Filter Controls Row (Category Dropdown + Status Filter + Reset) -->
         <div class="d-flex align-items-center justify-content-between flex-wrap" style="gap: 12px;">
-          <div class="d-flex align-items-center flex-wrap" style="gap: 12px;">
+          <div class="d-flex align-items-center flex-wrap" style="gap: 10px;">
             <!-- Category Dropdown -->
-            <div class="d-flex align-items-center" style="gap: 8px;">
-              <label class="form-label mb-0 small fw-semibold text-muted" style="white-space: nowrap;">Category:</label>
-              <select class="form-select form-select-sm" style="width: auto; min-width: 190px; border-radius: 8px; font-size: 13px; font-weight: 500;" [ngModel]="activeTab" (ngModelChange)="setTab($event)">
-                <option value="All">All Categories</option>
-                @for (cat of selectableCategories; track cat) {
-                  <option [value]="cat">{{ cat }}</option>
-                }
-              </select>
-            </div>
+            <select class="form-select form-select-sm" style="width: auto; min-width: 170px; border-radius: 8px; font-size: 13px; font-weight: 500;" [ngModel]="activeTab" (ngModelChange)="setTab($event)">
+              <option value="All">All Categories</option>
+              @for (cat of selectableCategories; track cat) {
+                <option [value]="cat">{{ cat }}</option>
+              }
+            </select>
 
             <!-- Status Selector -->
-            <div class="d-flex align-items-center" style="gap: 8px;">
-              <label class="form-label mb-0 small fw-semibold text-muted" style="white-space: nowrap;">Status:</label>
-              <select class="form-select form-select-sm" style="width: auto; min-width: 135px; border-radius: 8px; font-size: 13px; font-weight: 500;" [ngModel]="selectedStatus" (ngModelChange)="selectStatus($event)">
-                <option value="All">All Statuses</option>
-                <option value="Active">Active Only</option>
-                <option value="Inactive">Inactive Only</option>
-              </select>
-            </div>
+            <select class="form-select form-select-sm" style="width: auto; min-width: 135px; border-radius: 8px; font-size: 13px; font-weight: 500;" [ngModel]="selectedStatus" (ngModelChange)="selectStatus($event)">
+              <option value="All">All Statuses</option>
+              <option value="Active">Active Only</option>
+              <option value="Inactive">Inactive Only</option>
+            </select>
           </div>
 
           <!-- Controls Right: Reset -->

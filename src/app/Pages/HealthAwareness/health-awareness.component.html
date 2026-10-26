@@ -93,27 +93,21 @@
 
         <!-- Filter Controls Row (Category Dropdown + Status Filter + Reset) -->
         <div class="d-flex align-items-center justify-content-between flex-wrap" style="gap: 12px;">
-          <div class="d-flex align-items-center flex-wrap" style="gap: 12px;">
-            <!-- Category Dropdown -->
-            <div class="d-flex align-items-center" style="gap: 8px;">
-              <label class="form-label mb-0 small fw-semibold text-muted" style="white-space: nowrap;">Category:</label>
-              <select class="form-select form-select-sm" style="width: auto; min-width: 190px; border-radius: 8px; font-size: 13px; font-weight: 500;" [ngModel]="selectedCategory" (ngModelChange)="selectCategory($event)">
-                <option value="All">All Categories</option>
-                @for (cat of selectableCategories; track cat) {
-                  <option [value]="cat">{{ cat }}</option>
-                }
-              </select>
-            </div>
+          <div class="d-flex align-items-center flex-wrap" style="gap: 10px;">
+            <!-- Category Dropdown displayed cleanly like All Statuses -->
+            <select class="form-select form-select-sm" style="width: auto; min-width: 170px; border-radius: 8px; font-size: 13px; font-weight: 500;" [ngModel]="selectedCategory" (ngModelChange)="selectCategory($event)">
+              <option value="All">All Categories</option>
+              @for (cat of selectableCategories; track cat) {
+                <option [value]="cat">{{ cat }}</option>
+              }
+            </select>
 
             <!-- Status Dropdown -->
-            <div class="d-flex align-items-center" style="gap: 8px;">
-              <label class="form-label mb-0 small fw-semibold text-muted" style="white-space: nowrap;">Status:</label>
-              <select class="form-select form-select-sm" style="width: auto; min-width: 135px; border-radius: 8px; font-size: 13px; font-weight: 500;" [ngModel]="selectedStatus" (ngModelChange)="selectStatus($event)">
-                <option value="All">All Statuses</option>
-                <option value="Active">Active Only</option>
-                <option value="Inactive">Inactive Only</option>
-              </select>
-            </div>
+            <select class="form-select form-select-sm" style="width: auto; min-width: 135px; border-radius: 8px; font-size: 13px; font-weight: 500;" [ngModel]="selectedStatus" (ngModelChange)="selectStatus($event)">
+              <option value="All">All Statuses</option>
+              <option value="Active">Active Only</option>
+              <option value="Inactive">Inactive Only</option>
+            </select>
           </div>
 
           <!-- Controls Right -->
@@ -153,7 +147,7 @@
             <div>
               <!-- Title & 3-dots dropdown Actions Menu -->
               <div class="d-flex align-items-start justify-content-between mb-1" style="position: relative;">
-                <h5 class="m-0 cm-media-title" (click)="openViewModal(item)" style="cursor: pointer;" title="Click to view full advisory">
+                <h5 class="m-0 cm-media-title">
                   {{ item.title }}
                 </h5>
                 <div style="position: relative;">
@@ -167,16 +161,6 @@
                   @if (openDropdownId === item.id) {
                     <div (click)="$event.stopPropagation()"
                       style="position: absolute; right: 0; top: 26px; z-index: 9999; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1); min-width: 155px; padding: 6px 0; font-family: 'Inter', sans-serif;">
-
-                      <!-- View Advisory Action -->
-                      <button type="button" (click)="openViewModal(item); closeDropdown()"
-                        style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 16px; background: none; border: none; cursor: pointer; font-size: 14px; font-weight: 500; color: #2563EB; transition: background 0.15s;">
-                        <svg width="16" height="16" fill="none" stroke="#2563EB" stroke-width="1.8" viewBox="0 0 24 24">
-                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                          <circle cx="12" cy="12" r="3"></circle>
-                        </svg>
-                        View Advisory
-                      </button>
 
                       <!-- Update Action -->
                       <button type="button" (click)="openEditModal(item); closeDropdown()"
@@ -392,50 +376,7 @@
   </div>
 }
 
-<!-- Modal: View Health Advisory Reader Details -->
-@if (isViewModalOpen && selectedArticle) {
-  <div class="ha-modal-backdrop" (click)="closeViewModal()">
-    <div class="ha-modal-content" (click)="$event.stopPropagation()">
-      <div class="d-flex align-items-center justify-content-between p-4 border-bottom">
-        <div>
-          <div class="d-flex align-items-center mb-2" style="gap: 8px;">
-            <span class="badge"
-              [style.background]="getCategoryBg(selectedArticle.category)"
-              [style.color]="getCategoryColor(selectedArticle.category)"
-              style="border-radius: 8px; font-size: 12px; font-weight: 500; padding: 4px 10px;">
-              {{ selectedArticle.category }}
-            </span>
-            <span class="badge"
-              [style.background]="selectedArticle.isActive ? '#DCFCE7' : '#F1F5F9'"
-              [style.color]="selectedArticle.isActive ? '#16A34A' : '#64748B'"
-              style="border-radius: 8px; font-size: 12px; font-weight: 500; padding: 4px 10px;">
-              {{ selectedArticle.isActive ? 'Active' : 'Inactive' }}
-            </span>
-          </div>
-          <h2 style="font-size: 19px; font-weight: 700; color: #0F172A; margin: 0;">
-            {{ selectedArticle.title }}
-          </h2>
-        </div>
-        <button type="button" class="btn-close" (click)="closeViewModal()"></button>
-      </div>
 
-      <div class="p-4" style="max-height: 60vh; overflow-y: auto;">
-        <h6 class="text-uppercase text-muted fw-bold mb-3" style="font-size: 11.5px; letter-spacing: 0.6px;">Health Awareness Guidelines & Points</h6>
-        <div class="ha-points-wrapper" [innerHTML]="renderDescription(selectedArticle.description)"></div>
-      </div>
-
-      <div class="d-flex align-items-center justify-content-between p-4 border-top" style="background: #F8FAFC;">
-        <span class="text-muted small">Article #{{ selectedArticle.id }}</span>
-        <div class="d-flex" style="gap: 10px;">
-          <button type="button" class="btn btn-outline-secondary btn-sm" (click)="closeViewModal()">Close</button>
-          <button type="button" class="cm-btn-upload" style="height: 34px; padding: 6px 16px; font-size: 13px;" (click)="openEditModal(selectedArticle); closeViewModal()">
-            Edit Content
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-}
 
 <!-- Custom Table Builder Modal -->
 @if (showCustomTableModal) {

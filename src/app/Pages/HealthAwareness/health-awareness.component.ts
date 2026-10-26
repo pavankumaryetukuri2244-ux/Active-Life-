@@ -539,8 +539,6 @@ export class HealthAwarenessComponent implements OnInit, OnDestroy {
   // Modals & Selection
   public isCreateModalOpen: boolean = false;
   public isEditing: boolean = false;
-  public isViewModalOpen: boolean = false;
-  public selectedArticle: HealthAwarenessItem | null = null;
 
   // Form Model strictly matching the create/update request body
   public formModel: HealthAwarenessForm = this.getEmptyForm();
@@ -971,16 +969,6 @@ export class HealthAwarenessComponent implements OnInit, OnDestroy {
     this.toastTimer = setTimeout(() => {
       this.toastMessage = '';
     }, 4000);
-  }
-
-  public openViewModal(article: HealthAwarenessItem): void {
-    this.selectedArticle = article;
-    this.isViewModalOpen = true;
-  }
-
-  public closeViewModal(): void {
-    this.isViewModalOpen = false;
-    this.selectedArticle = null;
   }
 
   public insertList(type: 'bullet' | 'number'): void {
