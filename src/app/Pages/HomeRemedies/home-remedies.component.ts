@@ -719,15 +719,22 @@ export class HomeRemediesComponent implements OnInit, OnDestroy {
   public saveRemedy(): void {
     this.formError = '';
 
-    if (!this.formModel.title || this.formModel.title.trim().length < 2) {
-      this.formError = 'Please enter a valid remedy title.';
+    const title = this.formModel.title ? this.formModel.title.trim() : '';
+    const description = this.formModel.description ? this.formModel.description.trim() : '';
+
+    if (!title || title.length < 1) {
+      this.formError = 'Please enter a remedy title.';
       return;
     }
-    if (/^[0-9]/.test(this.formModel.title.trim())) {
+    if (title.length > 200) {
+      this.formError = 'Remedy title must be between 1 and 200 characters.';
+      return;
+    }
+    if (/^[0-9]/.test(title)) {
       this.formError = 'Remedy title must start with a letter (e.g. Ginger Tea for Cough).';
       return;
     }
-    if (/^\d+$/.test(this.formModel.title.trim())) {
+    if (/^\d+$/.test(title)) {
       this.formError = 'Remedy title cannot contain only numbers.';
       return;
     }
@@ -735,8 +742,12 @@ export class HomeRemediesComponent implements OnInit, OnDestroy {
       this.formError = 'Please select or enter a category.';
       return;
     }
-    if (!this.formModel.description || this.formModel.description.trim().length < 3) {
+    if (!description || description.length < 1) {
       this.formError = 'Please provide a description.';
+      return;
+    }
+    if (description.length > 500) {
+      this.formError = 'Description must be between 1 and 500 characters.';
       return;
     }
     if (!this.formModel.remedyContent || !this.formModel.remedyContent.trim()) {

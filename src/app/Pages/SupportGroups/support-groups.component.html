@@ -278,7 +278,8 @@
           <div class="mb-3">
             <label class="form-label small fw-semibold text-dark">Group Name <span class="text-danger">*</span></label>
             <input type="text" class="form-control" [(ngModel)]="formModel.groupName" name="groupName"
-              placeholder="e.g. Cancer Support, Postpartum Mothers Circle..." required>
+              placeholder="e.g. Cancer Support, Postpartum Mothers Circle..." maxlength="200" required>
+            <div class="form-text small">Group name must be between 1 and 200 characters.</div>
           </div>
 
           <!-- Category Dropdown Selection using Master Data API -->
@@ -296,7 +297,8 @@
           <div class="mb-4">
             <label class="form-label small fw-semibold text-dark">Description <span class="text-danger">*</span></label>
             <textarea class="form-control" rows="6" style="min-height: 150px; resize: vertical;" [(ngModel)]="formModel.description" name="description"
-              placeholder="Describe the group focus, targeted conditions, member goals, and cohort guidelines..." required></textarea>
+              placeholder="Describe the group focus, targeted conditions, member goals, and cohort guidelines..." maxlength="500" required></textarea>
+            <div class="form-text small">Description must be between 1 and 500 characters.</div>
           </div>
         </div>
 

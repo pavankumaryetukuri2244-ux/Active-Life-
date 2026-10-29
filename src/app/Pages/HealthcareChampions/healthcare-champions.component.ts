@@ -806,6 +806,9 @@ export class HealthcareChampionsComponent implements OnInit, OnDestroy {
     if (!trimmed) {
       return 'Practitioner name is required.';
     }
+    if (trimmed.length > 200) {
+      return 'Practitioner name must be between 1 and 200 characters.';
+    }
     if (/^[0-9]/.test(trimmed)) {
       return 'Practitioner name cannot start with a number. Please enter a valid name (e.g. Dr. Sarah Connor).';
     }
@@ -862,6 +865,9 @@ export class HealthcareChampionsComponent implements OnInit, OnDestroy {
     if (!trimmed) {
       return 'Hospital / clinic name is required.';
     }
+    if (trimmed.length > 200) {
+      return 'Hospital or clinic name must be between 1 and 200 characters.';
+    }
     if (/^[0-9]/.test(trimmed)) {
       return 'Hospital or clinic name must start with a letter (e.g. Apollo Clinic).';
     }
@@ -893,10 +899,13 @@ export class HealthcareChampionsComponent implements OnInit, OnDestroy {
   }
 
   // Generic optional text field validator (rejects numbers-only, ensures presence of letters if filled)
-  public validateOptionalTextField(value: string | undefined | null, fieldName: string, allowLeadingNumber: boolean = false): string {
+  public validateOptionalTextField(value: string | undefined | null, fieldName: string, allowLeadingNumber: boolean = false, maxLength: number = 200): string {
     const trimmed = value ? value.trim() : '';
     if (!trimmed) {
       return ''; // Optional field
+    }
+    if (trimmed.length > maxLength) {
+      return `${fieldName} cannot exceed ${maxLength} characters.`;
     }
     if (/^\d+$/.test(trimmed)) {
       return `${fieldName} cannot be numbers only.`;
@@ -914,77 +923,77 @@ export class HealthcareChampionsComponent implements OnInit, OnDestroy {
     const input = event?.target as HTMLInputElement;
     const raw = input ? input.value : (this.formModel.experience || '');
     this.formModel.experience = raw;
-    this.experienceError = this.validateOptionalTextField(raw, 'Experience', true);
+    this.experienceError = this.validateOptionalTextField(raw, 'Experience', true, 200);
   }
 
   public onExperienceBlur(): void {
-    this.experienceError = this.validateOptionalTextField(this.formModel.experience, 'Experience', true);
+    this.experienceError = this.validateOptionalTextField(this.formModel.experience, 'Experience', true, 200);
   }
 
   public onQualificationInput(event?: any): void {
     const input = event?.target as HTMLInputElement;
     const raw = input ? input.value : (this.formModel.qualification || '');
     this.formModel.qualification = raw;
-    this.qualificationError = this.validateOptionalTextField(raw, 'Qualification', false);
+    this.qualificationError = this.validateOptionalTextField(raw, 'Qualification', false, 200);
   }
 
   public onQualificationBlur(): void {
-    this.qualificationError = this.validateOptionalTextField(this.formModel.qualification, 'Qualification', false);
+    this.qualificationError = this.validateOptionalTextField(this.formModel.qualification, 'Qualification', false, 200);
   }
 
   public onLanguagesInput(event?: any): void {
     const input = event?.target as HTMLInputElement;
     const raw = input ? input.value : (this.formModel.languagesSpoken || '');
     this.formModel.languagesSpoken = raw;
-    this.languagesSpokenError = this.validateOptionalTextField(raw, 'Languages spoken', false);
+    this.languagesSpokenError = this.validateOptionalTextField(raw, 'Languages spoken', false, 200);
   }
 
   public onLanguagesBlur(): void {
-    this.languagesSpokenError = this.validateOptionalTextField(this.formModel.languagesSpoken, 'Languages spoken', false);
+    this.languagesSpokenError = this.validateOptionalTextField(this.formModel.languagesSpoken, 'Languages spoken', false, 200);
   }
 
   public onAreasInput(event?: any): void {
     const input = event?.target as HTMLInputElement;
     const raw = input ? input.value : (this.formModel.areasOfTreatment || '');
     this.formModel.areasOfTreatment = raw;
-    this.areasOfTreatmentError = this.validateOptionalTextField(raw, 'Areas of treatment', false);
+    this.areasOfTreatmentError = this.validateOptionalTextField(raw, 'Areas of treatment', false, 200);
   }
 
   public onAreasBlur(): void {
-    this.areasOfTreatmentError = this.validateOptionalTextField(this.formModel.areasOfTreatment, 'Areas of treatment', false);
+    this.areasOfTreatmentError = this.validateOptionalTextField(this.formModel.areasOfTreatment, 'Areas of treatment', false, 200);
   }
 
   public onTherapyInput(event?: any): void {
     const input = event?.target as HTMLInputElement;
     const raw = input ? input.value : (this.formModel.treatmentTherapy || '');
     this.formModel.treatmentTherapy = raw;
-    this.treatmentTherapyError = this.validateOptionalTextField(raw, 'Treatment therapy', false);
+    this.treatmentTherapyError = this.validateOptionalTextField(raw, 'Treatment therapy', false, 200);
   }
 
   public onTherapyBlur(): void {
-    this.treatmentTherapyError = this.validateOptionalTextField(this.formModel.treatmentTherapy, 'Treatment therapy', false);
+    this.treatmentTherapyError = this.validateOptionalTextField(this.formModel.treatmentTherapy, 'Treatment therapy', false, 200);
   }
 
   public onAddressInput(event?: any): void {
     const input = event?.target as HTMLInputElement;
     const raw = input ? input.value : (this.formModel.fullAddress || '');
     this.formModel.fullAddress = raw;
-    this.fullAddressError = this.validateOptionalTextField(raw, 'Clinic address', true);
+    this.fullAddressError = this.validateOptionalTextField(raw, 'Clinic address', true, 500);
   }
 
   public onAddressBlur(): void {
-    this.fullAddressError = this.validateOptionalTextField(this.formModel.fullAddress, 'Clinic address', true);
+    this.fullAddressError = this.validateOptionalTextField(this.formModel.fullAddress, 'Clinic address', true, 500);
   }
 
   public onAboutInput(event?: any): void {
     const input = event?.target as HTMLTextAreaElement;
     const raw = input ? input.value : (this.formModel.about || '');
     this.formModel.about = raw;
-    this.aboutError = this.validateOptionalTextField(raw, 'About practitioner', true);
+    this.aboutError = this.validateOptionalTextField(raw, 'About practitioner', true, 500);
   }
 
   public onAboutBlur(): void {
-    this.aboutError = this.validateOptionalTextField(this.formModel.about, 'About practitioner', true);
+    this.aboutError = this.validateOptionalTextField(this.formModel.about, 'About practitioner', true, 500);
   }
 
   // Phone & Email Validation Helpers
@@ -1501,14 +1510,14 @@ export class HealthcareChampionsComponent implements OnInit, OnDestroy {
     }
 
     // 11. Full Address validation (optional, not numbers only)
-    this.fullAddressError = this.validateOptionalTextField(this.formModel.fullAddress, 'Clinic address', true);
+    this.fullAddressError = this.validateOptionalTextField(this.formModel.fullAddress, 'Clinic address', true, 500);
     if (this.fullAddressError) {
       hasError = true;
       if (!this.formError) this.formError = this.fullAddressError;
     }
 
     // 12. About Practitioner validation (optional, not numbers only)
-    this.aboutError = this.validateOptionalTextField(this.formModel.about, 'About practitioner', true);
+    this.aboutError = this.validateOptionalTextField(this.formModel.about, 'About practitioner', true, 500);
     if (this.aboutError) {
       hasError = true;
       if (!this.formError) this.formError = this.aboutError;

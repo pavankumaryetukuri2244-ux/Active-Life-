@@ -267,8 +267,8 @@
         <!-- Title field -->
         <div class="mb-3">
           <label class="form-label fw-semibold small text-dark">Title *</label>
-          <input type="text" class="form-control" [(ngModel)]="formModel.title" placeholder="e.g. Understanding Heart Health: Prevention & Daily Care" minlength="5" maxlength="500">
-          <div class="form-text small">Article title (minimum 5 characters).</div>
+          <input type="text" class="form-control" [(ngModel)]="formModel.title" placeholder="e.g. Understanding Heart Health: Prevention & Daily Care" maxlength="200">
+          <div class="form-text small">Article title (1 to 200 characters).</div>
         </div>
 
         <!-- Category field -->
@@ -358,6 +358,7 @@
             (paste)="onEditorPaste($event)"
             data-placeholder="Type or paste description here...">
           </div>
+          <div class="form-text small">Article description (1 to 500 characters).</div>
         </div>
       </div>
 

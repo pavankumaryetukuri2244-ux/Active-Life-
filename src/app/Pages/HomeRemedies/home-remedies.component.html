@@ -284,7 +284,8 @@
         <div class="mb-3">
           <label class="form-label small fw-semibold text-dark">Remedy Title <span class="text-danger">*</span></label>
           <input type="text" class="form-control" [(ngModel)]="formModel.title" name="title"
-            placeholder="e.g. Garlic for Blood Pressure, Ginger & Honey Tea..." required>
+            placeholder="e.g. Garlic for Blood Pressure, Ginger & Honey Tea..." maxlength="200" required>
+          <div class="form-text small">Title must be between 1 and 200 characters.</div>
         </div>
 
         <!-- Category Dropdown Selection using Master Data API -->
@@ -302,7 +303,8 @@
         <div class="mb-3">
           <label class="form-label small fw-semibold text-dark">Description <span class="text-danger">*</span></label>
           <textarea class="form-control" rows="2" [(ngModel)]="formModel.description" name="description"
-            placeholder="Brief overview of targeted ailment and primary health benefit..." required></textarea>
+            placeholder="Brief overview of targeted ailment and primary health benefit..." maxlength="500" required></textarea>
+          <div class="form-text small">Description must be between 1 and 500 characters.</div>
         </div>
 
         <!-- Remedy Content with Table Toolbar and Live Preview -->

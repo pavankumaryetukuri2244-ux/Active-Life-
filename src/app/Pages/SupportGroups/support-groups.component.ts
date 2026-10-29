@@ -633,15 +633,22 @@ export class SupportGroupsComponent implements OnInit, OnDestroy {
   public saveGroup(): void {
     this.formError = '';
 
-    if (!this.formModel.groupName || this.formModel.groupName.trim().length < 2) {
-      this.formError = 'Please enter a valid group name.';
+    const groupName = this.formModel.groupName ? this.formModel.groupName.trim() : '';
+    const description = this.formModel.description ? this.formModel.description.trim() : '';
+
+    if (!groupName || groupName.length < 1) {
+      this.formError = 'Please enter a group name.';
       return;
     }
-    if (/^[0-9]/.test(this.formModel.groupName.trim())) {
+    if (groupName.length > 200) {
+      this.formError = 'Group name must be between 1 and 200 characters.';
+      return;
+    }
+    if (/^[0-9]/.test(groupName)) {
       this.formError = 'Support group name must start with a letter (e.g. Heart Care Community).';
       return;
     }
-    if (/^\d+$/.test(this.formModel.groupName.trim())) {
+    if (/^\d+$/.test(groupName)) {
       this.formError = 'Support group name cannot contain only numbers.';
       return;
     }
@@ -649,8 +656,12 @@ export class SupportGroupsComponent implements OnInit, OnDestroy {
       this.formError = 'Please select or enter a category.';
       return;
     }
-    if (!this.formModel.description || this.formModel.description.trim().length < 3) {
+    if (!description || description.length < 1) {
       this.formError = 'Please provide a group description.';
+      return;
+    }
+    if (description.length > 500) {
+      this.formError = 'Description must be between 1 and 500 characters.';
       return;
     }
 

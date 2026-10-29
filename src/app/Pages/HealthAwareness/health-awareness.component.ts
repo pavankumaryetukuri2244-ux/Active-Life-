@@ -832,8 +832,8 @@ export class HealthAwarenessComponent implements OnInit, OnDestroy {
       this.formError = 'Title cannot contain only numbers.';
       return;
     }
-    if (title.length < 5) {
-      this.formError = 'Title must be at least 5 characters long.';
+    if (title.length < 1 || title.length > 200) {
+      this.formError = 'Title must be between 1 and 200 characters.';
       return;
     }
     if (!category) {
@@ -842,6 +842,11 @@ export class HealthAwarenessComponent implements OnInit, OnDestroy {
     }
     if (!plainText && !descriptionHtml.includes('<table') && !descriptionHtml.includes('<img')) {
       this.formError = 'Please enter an article description.';
+      return;
+    }
+    const descLength = plainText.length || (descriptionHtml ? descriptionHtml.replace(/<[^>]*>/g, '').trim().length : 0);
+    if (descLength < 1 || descLength > 500) {
+      this.formError = 'Description must be between 1 and 500 characters.';
       return;
     }
 

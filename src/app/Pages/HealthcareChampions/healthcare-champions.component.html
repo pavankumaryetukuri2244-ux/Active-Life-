@@ -402,7 +402,8 @@
                    (keypress)="onHospitalNameKeyPress($event)"
                    (input)="onHospitalNameInput($event)"
                    (blur)="onHospitalNameBlur()"
-                   placeholder="Enter hospital or clinic name (e.g. Apollo Hospital)">
+                   placeholder="Enter hospital or clinic name (e.g. Apollo Hospital)"
+                   maxlength="200">
             @if (hospitalNameError) {
               <div class="text-danger small mt-1 d-flex align-items-center" style="gap: 4px; font-size: 0.8rem;">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -595,7 +596,8 @@
                  [(ngModel)]="formModel.fullAddress"
                  (input)="onAddressInput($event)"
                  (blur)="onAddressBlur()"
-                 placeholder="Enter full clinic address">
+                 placeholder="Enter full clinic address"
+                 maxlength="500">
           @if (fullAddressError) {
             <div class="text-danger small mt-1 d-flex align-items-center" style="gap: 4px; font-size: 0.8rem;">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -617,7 +619,8 @@
                     [(ngModel)]="formModel.about"
                     (input)="onAboutInput($event)"
                     (blur)="onAboutBlur()"
-                    placeholder="Enter practitioner summary and clinical philosophy..."></textarea>
+                    placeholder="Enter practitioner summary and clinical philosophy..."
+                    maxlength="500"></textarea>
           @if (aboutError) {
             <div class="text-danger small mt-1 d-flex align-items-center" style="gap: 4px; font-size: 0.8rem;">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
