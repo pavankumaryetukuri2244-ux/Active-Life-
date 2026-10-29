@@ -205,19 +205,13 @@
                   {{ item.category }}
                 </span>
 
-                <button type="button"
-                  (click)="toggleStatus(item)"
-                  [disabled]="isTogglingId === item.id"
-                  [title]="'Click to ' + (item.isActive ? 'Disable' : 'Enable') + ' Remedy'"
+                <!-- Status Badge -->
+                <span class="badge"
                   [style.background]="item.isActive ? '#DCFCE7' : '#F1F5F9'"
                   [style.color]="item.isActive ? '#16A34A' : '#64748B'"
-                  class="badge border-0"
-                  style="border-radius: 8px; font-size: 12px; font-weight: 500; padding: 4px 10px; font-family: 'Inter', sans-serif; cursor: pointer; transition: all 0.15s ease;">
-                  @if (isTogglingId === item.id) {
-                    <span class="spinner-border spinner-border-sm me-1" role="status" style="width: 10px; height: 10px;"></span>
-                  }
+                  style="border-radius: 8px; font-size: 12px; font-weight: 500; padding: 4px 10px; font-family: 'Inter', sans-serif; cursor: default; user-select: none; pointer-events: none;">
                   {{ item.isActive ? 'Active' : 'Inactive' }}
-                </button>
+                </span>
               </div>
 
               <!-- Description -->
