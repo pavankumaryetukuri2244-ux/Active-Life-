@@ -717,8 +717,9 @@ export class LoginBoxedComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
+    const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     this.Form = this.fb.group({
-      loginid: ['', [Validators.required]],
+      loginid: ['', [Validators.required, Validators.pattern(emailPattern)]],
       password: ['', [Validators.required]]
     });
     // Force permanent scrollbar on login page

@@ -374,13 +374,60 @@
         <!-- Contact: Phone & Email -->
         <div class="row g-3 mb-3">
           <div class="col-md-6">
-            <label class="form-label fw-semibold small text-dark">Phone Number (Indian Format) *</label>
-            <input type="text" class="form-control" [(ngModel)]="formModel.phoneNumber" placeholder="Enter phone number (+91XXXXXXXXXX)">
-            <div class="form-text small">Format: +91 followed by 10 digits (e.g. +919876543210)</div>
+            <label class="form-label fw-semibold small text-dark">
+              Phone Number (Indian Format) <span class="text-danger">*</span>
+            </label>
+            <div class="position-relative">
+              <input type="tel"
+                     inputmode="tel"
+                     class="form-control"
+                     maxlength="13"
+                     [class.is-invalid]="phoneNumberError"
+                     [(ngModel)]="formModel.phoneNumber"
+                     (keypress)="onPhoneKeyPress($event)"
+                     (input)="onPhoneInput($event)"
+                     (blur)="onPhoneBlur()"
+                     placeholder="Enter phone number (+91XXXXXXXXXX)">
+            </div>
+            @if (phoneNumberError) {
+              <div class="text-danger small mt-1 d-flex align-items-center" style="gap: 4px; font-size: 0.8rem;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                <span>{{ phoneNumberError }}</span>
+              </div>
+            } @else {
+              <div class="form-text small" style="font-size: 0.78rem;">Format: +91 followed by 10 digits (e.g. +919876543210 or 9876543210)</div>
+            }
           </div>
           <div class="col-md-6">
-            <label class="form-label fw-semibold small text-dark">Email Address</label>
-            <input type="email" class="form-control" [(ngModel)]="formModel.email" placeholder="Enter email address">
+            <label class="form-label fw-semibold small text-dark">
+              Email Address <span class="text-muted fw-normal" style="font-size: 0.78rem;">(Optional)</span>
+            </label>
+            <div class="position-relative">
+              <input type="email"
+                     class="form-control"
+                     [class.is-invalid]="emailError"
+                     [(ngModel)]="formModel.email"
+                     (keypress)="onEmailKeyPress($event)"
+                     (input)="onEmailInput($event)"
+                     (blur)="onEmailBlur()"
+                     placeholder="Enter email address (e.g. doctor@hospital.com)">
+            </div>
+            @if (emailError) {
+              <div class="text-danger small mt-1 d-flex align-items-center" style="gap: 4px; font-size: 0.8rem;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                <span>{{ emailError }}</span>
+              </div>
+            } @else {
+              <div class="form-text small text-muted" style="font-size: 0.78rem;">Optional: e.g. doctor&#64;hospital.com</div>
+            }
           </div>
         </div>
 

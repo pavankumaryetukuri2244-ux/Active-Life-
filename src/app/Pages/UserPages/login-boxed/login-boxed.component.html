@@ -60,8 +60,11 @@
               formControlName="loginid"
               autocomplete="new-name"
               required>
-            <div class="invalid-feedback ms-1">
+            <div class="invalid-feedback ms-1" *ngIf="Form.controls['loginid'].hasError('required')">
               This field is required.
+            </div>
+            <div class="invalid-feedback ms-1" *ngIf="Form.controls['loginid'].hasError('pattern') && !Form.controls['loginid'].hasError('required')">
+              Please enter a valid email address.
             </div>
           </div>
         </div>

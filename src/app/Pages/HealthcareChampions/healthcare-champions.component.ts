@@ -406,6 +406,10 @@ export class HealthcareChampionsComponent implements OnInit, OnDestroy {
   // Form Model strictly matching SaveHealthcareChampionRequest
   public formModel: HealthcareChampionForm = this.getEmptyForm();
   public formError: string = '';
+  public phoneNumberError: string = '';
+  public emailError: string = '';
+  public phoneTouched: boolean = false;
+  public emailTouched: boolean = false;
   public isLoading: boolean = false;
   public isSaving: boolean = false;
 
@@ -762,11 +766,336 @@ export class HealthcareChampionsComponent implements OnInit, OnDestroy {
     localStorage.setItem('activeLife_healthcareChampions', JSON.stringify(this.champions));
   }
 
+  // Phone & Email Validation Helpers
+  // Phone & Email Validation Helpers
+  public normalizeIndianPhoneNumber(input: string | undefined | null): { valid: boolean; normalized: string; error?: string } {
+    if (!input || !input.trim()) {
+      return { valid: false, normalized: '', error: 'Phone number is required.' };
+    }
+
+    // Strip spaces, dashes, dots, parentheses
+    let cleaned = input.trim().replace(/[\s\-\.\(\)]/g, '');
+
+    // If starts with trunk prefix 0 and is 11 digits (e.g. 09876543210)
+    if (cleaned.startsWith('0') && cleaned.length === 11) {
+      cleaned = cleaned.substring(1);
+    }
+
+    // If starts with 91 (without +) and followed by 10 digits starting with 6-9
+    if (cleaned.startsWith('91') && cleaned.length === 12 && /^[6-9]/.test(cleaned.substring(2))) {
+      cleaned = '+' + cleaned;
+    }
+
+    // If exactly 10 digits starting with 6-9, prefix +91
+    if (/^[6-9]\d{9}$/.test(cleaned)) {
+      cleaned = '+91' + cleaned;
+    }
+
+    // If without +91 and starts with an invalid digit (1-5)
+    if (!cleaned.startsWith('+91') && !cleaned.startsWith('+') && cleaned.length > 0 && !/^[6-9]/.test(cleaned)) {
+      return {
+        valid: false,
+        normalized: cleaned,
+        error: 'Indian mobile numbers must start with 6, 7, 8, or 9.'
+      };
+    }
+
+    // Strictly enforce backend requirement: ^\+91[6-9][0-9]{9}$
+    const phoneRegex = /^\+91[6-9][0-9]{9}$/;
+    if (!phoneRegex.test(cleaned)) {
+      if (!cleaned.startsWith('+91')) {
+        if (cleaned.length < 10) {
+          return {
+            valid: false,
+            normalized: cleaned,
+            error: `Please enter all 10 digits of the Indian mobile number (${cleaned.length}/10 entered).`
+          };
+        }
+        return {
+          valid: false,
+          normalized: cleaned,
+          error: 'Please enter a valid 10-digit Indian phone number starting with 6, 7, 8, or 9 (e.g. 9876543210 or +919876543210).'
+        };
+      }
+      const digits = cleaned.substring(3);
+      if (digits.length !== 10) {
+        return {
+          valid: false,
+          normalized: cleaned,
+          error: `Phone number must have exactly 10 digits after +91 (${digits.length}/10 entered).`
+        };
+      }
+      if (!/^[6-9]/.test(digits)) {
+        return {
+          valid: false,
+          normalized: cleaned,
+          error: 'Indian mobile numbers must start with 6, 7, 8, or 9.'
+        };
+      }
+      return {
+        valid: false,
+        normalized: cleaned,
+        error: 'Please enter a valid Indian phone number starting with +91 (e.g. +919876543210).'
+      };
+    }
+
+    return { valid: true, normalized: cleaned };
+  }
+
+  public validateEmailInput(input: string | undefined | null): { valid: boolean; normalized: string; error?: string } {
+    const trimmed = input ? input.trim() : '';
+    if (!trimmed) {
+      // Optional field
+      return { valid: true, normalized: '' };
+    }
+
+    // Reject numbers-only entries (e.g. 12345678)
+    if (/^\d+$/.test(trimmed)) {
+      return {
+        valid: false,
+        normalized: trimmed,
+        error: 'Email cannot be numbers only. Please enter a valid email address (e.g. doctor@hospital.com).'
+      };
+    }
+
+    // Must contain '@'
+    if (!trimmed.includes('@')) {
+      return {
+        valid: false,
+        normalized: trimmed,
+        error: 'Email address must include an "@" symbol (e.g. doctor@hospital.com).'
+      };
+    }
+
+    // Disallow placeholder swagger defaults
+    if (trimmed.toLowerCase() === 'string' || trimmed.toLowerCase() === 'null') {
+      return {
+        valid: false,
+        normalized: trimmed,
+        error: 'Please enter a genuine email address (e.g. doctor@hospital.com).'
+      };
+    }
+
+    // Split local and domain parts
+    const parts = trimmed.split('@');
+    if (parts.length !== 2 || !parts[0] || !parts[1]) {
+      return {
+        valid: false,
+        normalized: trimmed,
+        error: 'Please enter a complete email address with username and domain (e.g. doctor@hospital.com).'
+      };
+    }
+
+    const domain = parts[1];
+    if (!domain.includes('.')) {
+      return {
+        valid: false,
+        normalized: trimmed,
+        error: 'Email domain must include an extension (e.g. hospital.com or gmail.com).'
+      };
+    }
+
+    // Standard RFC-compliant email regex
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!emailRegex.test(trimmed)) {
+      return {
+        valid: false,
+        normalized: trimmed,
+        error: 'Please enter a valid email address (e.g. doctor@hospital.com).'
+      };
+    }
+
+    return { valid: true, normalized: trimmed.toLowerCase() };
+  }
+
+  public onPhoneKeyPress(event: KeyboardEvent): boolean {
+    // Allow keyboard shortcuts (Ctrl+A, Ctrl+C, Ctrl+V, etc.)
+    if (event.ctrlKey || event.metaKey || event.altKey) {
+      return true;
+    }
+
+    const key = event.key;
+
+    // Allow navigation and editing keys
+    if (['Backspace', 'ArrowLeft', 'ArrowRight', 'Tab', 'Delete', 'Enter'].includes(key)) {
+      return true;
+    }
+
+    const input = event.target as HTMLInputElement;
+    const currentVal = input?.value || '';
+    const selStart = input?.selectionStart || 0;
+    const selEnd = input?.selectionEnd || 0;
+    const isReplacing = selEnd > selStart;
+
+    // Allow '+' ONLY as the first character
+    if (key === '+') {
+      if (selStart === 0 && !currentVal.includes('+')) {
+        return true;
+      }
+      event.preventDefault();
+      return false;
+    }
+
+    // Block any non-digit character (letters, punctuation, symbols)
+    if (!/^[0-9]$/.test(key)) {
+      event.preventDefault();
+      return false;
+    }
+
+    // Strict length caps when not replacing selected text
+    if (!isReplacing) {
+      if (currentVal.startsWith('+91')) {
+        // +91 followed by 10 digits = 13 characters maximum
+        if (currentVal.length >= 13) {
+          event.preventDefault();
+          return false;
+        }
+      } else if (currentVal.startsWith('+')) {
+        if (currentVal.length >= 13) {
+          event.preventDefault();
+          return false;
+        }
+      } else if (currentVal.startsWith('91')) {
+        if (currentVal.length >= 12) {
+          event.preventDefault();
+          return false;
+        }
+      } else if (currentVal.startsWith('0')) {
+        if (currentVal.length >= 11) {
+          event.preventDefault();
+          return false;
+        }
+      } else {
+        // Standard 10-digit number without prefix: STRICTLY MAX 10 DIGITS!
+        if (currentVal.length >= 10) {
+          event.preventDefault();
+          return false;
+        }
+      }
+    }
+
+    return true;
+  }
+
+  public onPhoneInput(event?: any): void {
+    const input = event?.target as HTMLInputElement;
+    let raw = input ? input.value : (this.formModel.phoneNumber || '');
+
+    // Check if starts with '+'
+    const startsWithPlus = raw.startsWith('+');
+
+    // Strip all non-digit characters completely
+    const digitsOnly = raw.replace(/\D/g, '');
+
+    let sanitized = '';
+    if (startsWithPlus) {
+      // + followed by max 12 digits (+91 followed by 10 digits) -> 13 chars total
+      sanitized = '+' + digitsOnly.slice(0, 12);
+    } else if (digitsOnly.startsWith('91') && digitsOnly.length > 10) {
+      // 91 followed by 10 digits -> 12 chars
+      sanitized = digitsOnly.slice(0, 12);
+    } else if (digitsOnly.startsWith('0')) {
+      // 0 followed by 10 digits -> 11 chars
+      sanitized = digitsOnly.slice(0, 11);
+    } else {
+      // Standard 10 digits STRICTLY capped at 10
+      sanitized = digitsOnly.slice(0, 10);
+    }
+
+    this.formModel.phoneNumber = sanitized;
+    if (input && input.value !== sanitized) {
+      input.value = sanitized;
+    }
+
+    // Instant real-time validation feedback on every keystroke
+    this.phoneTouched = true;
+    if (!sanitized) {
+      this.phoneNumberError = 'Phone number is required.';
+    } else {
+      const res = this.normalizeIndianPhoneNumber(sanitized);
+      this.phoneNumberError = res.valid ? '' : (res.error || '');
+    }
+  }
+
+  public onPhoneBlur(): void {
+    this.phoneTouched = true;
+    const res = this.normalizeIndianPhoneNumber(this.formModel.phoneNumber);
+    if (!res.valid) {
+      this.phoneNumberError = res.error || 'Invalid phone number';
+    } else {
+      this.phoneNumberError = '';
+      this.formModel.phoneNumber = res.normalized;
+    }
+  }
+
+  public onEmailKeyPress(event: KeyboardEvent): boolean {
+    if (event.ctrlKey || event.metaKey || event.altKey) {
+      return true;
+    }
+    const key = event.key;
+    if (['Backspace', 'ArrowLeft', 'ArrowRight', 'Tab', 'Delete', 'Enter'].includes(key)) {
+      return true;
+    }
+    // Block spaces completely in email
+    if (key === ' ' || key === 'Spacebar') {
+      event.preventDefault();
+      return false;
+    }
+    // Block multiple @ signs
+    if (key === '@') {
+      const input = event.target as HTMLInputElement;
+      if (input && input.value.includes('@')) {
+        event.preventDefault();
+        return false;
+      }
+    }
+    return true;
+  }
+
+  public onEmailInput(event?: any): void {
+    const input = event?.target as HTMLInputElement;
+    let raw = input ? input.value : (this.formModel.email || '');
+
+    // Strip spaces immediately
+    raw = raw.replace(/\s+/g, '');
+    this.formModel.email = raw;
+    if (input && input.value !== raw) {
+      input.value = raw;
+    }
+
+    // Instant real-time validation feedback on every keystroke
+    this.emailTouched = true;
+    if (!raw) {
+      // Optional field
+      this.emailError = '';
+    } else {
+      const res = this.validateEmailInput(raw);
+      this.emailError = res.valid ? '' : (res.error || '');
+    }
+  }
+
+  public onEmailBlur(): void {
+    this.emailTouched = true;
+    const res = this.validateEmailInput(this.formModel.email);
+    if (!res.valid) {
+      this.emailError = res.error || 'Invalid email address';
+    } else {
+      this.emailError = '';
+      if (res.normalized) {
+        this.formModel.email = res.normalized;
+      }
+    }
+  }
+
   // Modals & CRUD
   public openCreateModal(): void {
     this.isEditing = false;
     this.formModel = this.getEmptyForm();
     this.formError = '';
+    this.phoneNumberError = '';
+    this.emailError = '';
+    this.phoneTouched = false;
+    this.emailTouched = false;
     this.isCreateModalOpen = true;
   }
 
@@ -788,25 +1117,35 @@ export class HealthcareChampionsComponent implements OnInit, OnDestroy {
       areasOfTreatment: champion.areasOfTreatment,
       qualification: champion.qualification,
       experience: champion.experience,
-      phoneNumber: champion.phoneNumber,
-      email: champion.email,
+      phoneNumber: champion.phoneNumber && champion.phoneNumber !== 'string' ? champion.phoneNumber : '',
+      email: champion.email && champion.email !== 'string' ? champion.email : '',
       website: champion.website || '',
       aboutTheTreatment: champion.aboutTheTreatment,
       treatmentMethods: champion.treatmentMethods,
       fullAddress: champion.fullAddress
     };
     this.formError = '';
+    this.phoneNumberError = '';
+    this.emailError = '';
+    this.phoneTouched = false;
+    this.emailTouched = false;
     this.isCreateModalOpen = true;
   }
 
   public closeModal(): void {
     this.isCreateModalOpen = false;
     this.formError = '';
+    this.phoneNumberError = '';
+    this.emailError = '';
+    this.phoneTouched = false;
+    this.emailTouched = false;
     this.isSaving = false;
   }
 
   public saveChampion(): void {
     this.formError = '';
+    this.phoneNumberError = '';
+    this.emailError = '';
 
     if (!this.formModel.name || this.formModel.name.trim().length < 3) {
       this.formError = 'Please enter a valid practitioner name (minimum 3 characters).';
@@ -821,20 +1160,27 @@ export class HealthcareChampionsComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Phone validation strictly following backend pattern: ^\+91[6-9][0-9]{9}$
-    let phone = this.formModel.phoneNumber ? this.formModel.phoneNumber.trim() : '';
-    if (!phone.startsWith('+91')) {
-      // Auto-prefix +91 if user entered 10 digits
-      if (/^[6-9][0-9]{9}$/.test(phone)) {
-        phone = '+91' + phone;
-        this.formModel.phoneNumber = phone;
-      }
-    }
-    const phoneRegex = /^\+91[6-9][0-9]{9}$/;
-    if (!phoneRegex.test(phone)) {
-      this.formError = 'Please enter a valid Indian phone number starting with +91 (e.g. +919876543210).';
+    // Phone validation
+    const phoneRes = this.normalizeIndianPhoneNumber(this.formModel.phoneNumber);
+    if (!phoneRes.valid) {
+      this.phoneNumberError = phoneRes.error || 'Please enter a valid Indian phone number.';
+      this.formError = this.phoneNumberError;
+      this.phoneTouched = true;
       return;
     }
+    const phone = phoneRes.normalized;
+    this.formModel.phoneNumber = phone;
+
+    // Email validation (optional, but format-checked if provided)
+    const emailRes = this.validateEmailInput(this.formModel.email);
+    if (!emailRes.valid) {
+      this.emailError = emailRes.error || 'Please enter a valid email address.';
+      this.formError = this.emailError;
+      this.emailTouched = true;
+      return;
+    }
+    const email = emailRes.normalized;
+    this.formModel.email = email;
 
     this.isSaving = true;
 
@@ -855,7 +1201,7 @@ export class HealthcareChampionsComponent implements OnInit, OnDestroy {
       qualification: this.formModel.qualification?.trim() || '',
       experience: this.formModel.experience?.trim() || '',
       phoneNumber: phone,
-      email: this.formModel.email?.trim() || '',
+      email: email,
       website: this.formModel.website?.trim() || '',
       aboutTheTreatment: this.formModel.aboutTheTreatment?.trim() || '',
       treatmentMethods: this.formModel.treatmentMethods?.trim() || '',
