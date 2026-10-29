@@ -358,7 +358,7 @@
                 <span>{{ nameError }}</span>
               </div>
             } @else {
-              <div class="form-text small" style="font-size: 0.78rem;">Full doctor / practitioner name (letters only, min 3 characters).</div>
+              <div class="form-text small" style="font-size: 0.78rem;">Full doctor / practitioner name (letters only).</div>
             }
           </div>
           <div class="col-md-4">
@@ -409,8 +409,7 @@
                    [(ngModel)]="formModel.hospitalName"
                    (input)="onHospitalNameInput($event)"
                    (blur)="onHospitalNameBlur()"
-                   placeholder="Enter hospital or clinic name (e.g. Apollo Hospital)"
-                   minlength="3">
+                   placeholder="Enter hospital or clinic name (e.g. Apollo Hospital)">
             @if (hospitalNameError) {
               <div class="text-danger small mt-1 d-flex align-items-center" style="gap: 4px; font-size: 0.8rem;">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -421,12 +420,28 @@
                 <span>{{ hospitalNameError }}</span>
               </div>
             } @else {
-              <div class="form-text small" style="font-size: 0.78rem;">Hospital or affiliated clinic name (min 3 characters).</div>
+              <div class="form-text small" style="font-size: 0.78rem;">Hospital or affiliated clinic name.</div>
             }
           </div>
           <div class="col-md-6">
             <label class="form-label fw-semibold small text-dark">Experience</label>
-            <input type="text" class="form-control" [(ngModel)]="formModel.experience" placeholder="Enter experience (e.g. 5 Years Experience)">
+            <input type="text"
+                   class="form-control"
+                   [class.is-invalid]="experienceError"
+                   [(ngModel)]="formModel.experience"
+                   (input)="onExperienceInput($event)"
+                   (blur)="onExperienceBlur()"
+                   placeholder="Enter experience (e.g. 5 Years Experience)">
+            @if (experienceError) {
+              <div class="text-danger small mt-1 d-flex align-items-center" style="gap: 4px; font-size: 0.8rem;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                <span>{{ experienceError }}</span>
+              </div>
+            }
           </div>
         </div>
 
@@ -494,11 +509,43 @@
         <div class="row g-3 mb-3">
           <div class="col-md-6">
             <label class="form-label fw-semibold small text-dark">Qualification</label>
-            <input type="text" class="form-control" [(ngModel)]="formModel.qualification" placeholder="Enter qualification (e.g. MBBS, MD, MS)">
+            <input type="text"
+                   class="form-control"
+                   [class.is-invalid]="qualificationError"
+                   [(ngModel)]="formModel.qualification"
+                   (input)="onQualificationInput($event)"
+                   (blur)="onQualificationBlur()"
+                   placeholder="Enter qualification (e.g. MBBS, MD, MS)">
+            @if (qualificationError) {
+              <div class="text-danger small mt-1 d-flex align-items-center" style="gap: 4px; font-size: 0.8rem;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                <span>{{ qualificationError }}</span>
+              </div>
+            }
           </div>
           <div class="col-md-6">
             <label class="form-label fw-semibold small text-dark">Languages Spoken</label>
-            <input type="text" class="form-control" [(ngModel)]="formModel.languagesSpoken" placeholder="Enter languages spoken">
+            <input type="text"
+                   class="form-control"
+                   [class.is-invalid]="languagesSpokenError"
+                   [(ngModel)]="formModel.languagesSpoken"
+                   (input)="onLanguagesInput($event)"
+                   (blur)="onLanguagesBlur()"
+                   placeholder="Enter languages spoken">
+            @if (languagesSpokenError) {
+              <div class="text-danger small mt-1 d-flex align-items-center" style="gap: 4px; font-size: 0.8rem;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                <span>{{ languagesSpokenError }}</span>
+              </div>
+            }
           </div>
         </div>
 
@@ -506,24 +553,88 @@
         <div class="row g-3 mb-3">
           <div class="col-md-6">
             <label class="form-label fw-semibold small text-dark">Areas of Treatment</label>
-            <input type="text" class="form-control" [(ngModel)]="formModel.areasOfTreatment" placeholder="Enter areas of treatment">
+            <input type="text"
+                   class="form-control"
+                   [class.is-invalid]="areasOfTreatmentError"
+                   [(ngModel)]="formModel.areasOfTreatment"
+                   (input)="onAreasInput($event)"
+                   (blur)="onAreasBlur()"
+                   placeholder="Enter areas of treatment">
+            @if (areasOfTreatmentError) {
+              <div class="text-danger small mt-1 d-flex align-items-center" style="gap: 4px; font-size: 0.8rem;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                <span>{{ areasOfTreatmentError }}</span>
+              </div>
+            }
           </div>
           <div class="col-md-6">
             <label class="form-label fw-semibold small text-dark">Treatment Therapy</label>
-            <input type="text" class="form-control" [(ngModel)]="formModel.treatmentTherapy" placeholder="Enter treatment therapy">
+            <input type="text"
+                   class="form-control"
+                   [class.is-invalid]="treatmentTherapyError"
+                   [(ngModel)]="formModel.treatmentTherapy"
+                   (input)="onTherapyInput($event)"
+                   (blur)="onTherapyBlur()"
+                   placeholder="Enter treatment therapy">
+            @if (treatmentTherapyError) {
+              <div class="text-danger small mt-1 d-flex align-items-center" style="gap: 4px; font-size: 0.8rem;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                <span>{{ treatmentTherapyError }}</span>
+              </div>
+            }
           </div>
         </div>
 
         <!-- Full Address -->
         <div class="mb-3">
           <label class="form-label fw-semibold small text-dark">Full Clinic Address</label>
-          <input type="text" class="form-control" [(ngModel)]="formModel.fullAddress" placeholder="Enter full clinic address">
+          <input type="text"
+                 class="form-control"
+                 [class.is-invalid]="fullAddressError"
+                 [(ngModel)]="formModel.fullAddress"
+                 (input)="onAddressInput($event)"
+                 (blur)="onAddressBlur()"
+                 placeholder="Enter full clinic address">
+          @if (fullAddressError) {
+            <div class="text-danger small mt-1 d-flex align-items-center" style="gap: 4px; font-size: 0.8rem;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+              <span>{{ fullAddressError }}</span>
+            </div>
+          }
         </div>
 
         <!-- About Profile -->
         <div class="mb-3">
           <label class="form-label fw-semibold small text-dark">About Practitioner</label>
-          <textarea class="form-control" rows="2" [(ngModel)]="formModel.about" placeholder="Enter practitioner summary and clinical philosophy..."></textarea>
+          <textarea class="form-control"
+                    rows="2"
+                    [class.is-invalid]="aboutError"
+                    [(ngModel)]="formModel.about"
+                    (input)="onAboutInput($event)"
+                    (blur)="onAboutBlur()"
+                    placeholder="Enter practitioner summary and clinical philosophy..."></textarea>
+          @if (aboutError) {
+            <div class="text-danger small mt-1 d-flex align-items-center" style="gap: 4px; font-size: 0.8rem;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+              <span>{{ aboutError }}</span>
+            </div>
+          }
         </div>
 
         <!-- Medically Reviewed Checkbox -->
