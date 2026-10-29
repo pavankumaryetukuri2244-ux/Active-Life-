@@ -824,6 +824,14 @@ export class HealthAwarenessComponent implements OnInit, OnDestroy {
       this.formError = 'Please provide an article title.';
       return;
     }
+    if (/^[0-9]/.test(title)) {
+      this.formError = 'Title must start with a letter (e.g. Understanding Heart Health).';
+      return;
+    }
+    if (/^\d+$/.test(title)) {
+      this.formError = 'Title cannot contain only numbers.';
+      return;
+    }
     if (title.length < 5) {
       this.formError = 'Title must be at least 5 characters long.';
       return;

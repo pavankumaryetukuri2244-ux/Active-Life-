@@ -335,11 +335,34 @@
         <!-- Section: Basic Info -->
         <div class="row g-3 mb-3">
           <div class="col-md-8">
-            <label class="form-label fw-semibold small text-dark">Practitioner Name *</label>
-            <input type="text" class="form-control" [(ngModel)]="formModel.name" placeholder="Enter practitioner name" minlength="3" maxlength="200">
+            <label class="form-label fw-semibold small text-dark">
+              Practitioner Name <span class="text-danger">*</span>
+            </label>
+            <input type="text"
+                   class="form-control"
+                   [class.is-invalid]="nameError"
+                   [(ngModel)]="formModel.name"
+                   (keypress)="onNameKeyPress($event)"
+                   (input)="onNameInput($event)"
+                   (blur)="onNameBlur()"
+                   placeholder="Enter practitioner name (e.g. Dr. Sarah Connor)"
+                   minlength="3"
+                   maxlength="200">
+            @if (nameError) {
+              <div class="text-danger small mt-1 d-flex align-items-center" style="gap: 4px; font-size: 0.8rem;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                <span>{{ nameError }}</span>
+              </div>
+            } @else {
+              <div class="form-text small" style="font-size: 0.78rem;">Full doctor / practitioner name (letters only, min 3 characters).</div>
+            }
           </div>
           <div class="col-md-4">
-            <label class="form-label fw-semibold small text-dark">Gender *</label>
+            <label class="form-label fw-semibold small text-dark">Gender <span class="text-danger">*</span></label>
             <select class="form-select" [(ngModel)]="formModel.gender">
               <option value="Male">Male</option>
               <option value="Female">Female</option>
@@ -350,20 +373,56 @@
 
         <!-- Specialization / Category -->
         <div class="mb-3">
-          <label class="form-label fw-semibold small text-dark">Specialization / Category *</label>
-          <select class="form-select" [(ngModel)]="formModel.specialization">
+          <label class="form-label fw-semibold small text-dark">
+            Specialization / Category <span class="text-danger">*</span>
+          </label>
+          <select class="form-select"
+                  [class.is-invalid]="specializationError"
+                  [(ngModel)]="formModel.specialization"
+                  (change)="onSpecializationChange()">
             <option value="" disabled selected>Select Specialization / Category</option>
             @for (spec of selectableSpecializations; track spec) {
               <option [value]="spec">{{ spec }}</option>
             }
           </select>
+          @if (specializationError) {
+            <div class="text-danger small mt-1 d-flex align-items-center" style="gap: 4px; font-size: 0.8rem;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+              <span>{{ specializationError }}</span>
+            </div>
+          }
         </div>
 
         <!-- Hospital & Experience -->
         <div class="row g-3 mb-3">
           <div class="col-md-6">
-            <label class="form-label fw-semibold small text-dark">Hospital / Clinic Name *</label>
-            <input type="text" class="form-control" [(ngModel)]="formModel.hospitalName" placeholder="Enter hospital or clinic name" minlength="3">
+            <label class="form-label fw-semibold small text-dark">
+              Hospital / Clinic Name <span class="text-danger">*</span>
+            </label>
+            <input type="text"
+                   class="form-control"
+                   [class.is-invalid]="hospitalNameError"
+                   [(ngModel)]="formModel.hospitalName"
+                   (input)="onHospitalNameInput($event)"
+                   (blur)="onHospitalNameBlur()"
+                   placeholder="Enter hospital or clinic name (e.g. Apollo Hospital)"
+                   minlength="3">
+            @if (hospitalNameError) {
+              <div class="text-danger small mt-1 d-flex align-items-center" style="gap: 4px; font-size: 0.8rem;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                <span>{{ hospitalNameError }}</span>
+              </div>
+            } @else {
+              <div class="form-text small" style="font-size: 0.78rem;">Hospital or affiliated clinic name (min 3 characters).</div>
+            }
           </div>
           <div class="col-md-6">
             <label class="form-label fw-semibold small text-dark">Experience</label>

@@ -406,6 +406,12 @@ export class HealthcareChampionsComponent implements OnInit, OnDestroy {
   // Form Model strictly matching SaveHealthcareChampionRequest
   public formModel: HealthcareChampionForm = this.getEmptyForm();
   public formError: string = '';
+  public nameError: string = '';
+  public nameTouched: boolean = false;
+  public specializationError: string = '';
+  public specializationTouched: boolean = false;
+  public hospitalNameError: string = '';
+  public hospitalNameTouched: boolean = false;
   public phoneNumberError: string = '';
   public emailError: string = '';
   public phoneTouched: boolean = false;
@@ -766,7 +772,103 @@ export class HealthcareChampionsComponent implements OnInit, OnDestroy {
     localStorage.setItem('activeLife_healthcareChampions', JSON.stringify(this.champions));
   }
 
-  // Phone & Email Validation Helpers
+  // Form Field Validation Helpers
+  public onNameKeyPress(event: KeyboardEvent): boolean {
+    if (event.ctrlKey || event.metaKey || event.altKey) {
+      return true;
+    }
+    const key = event.key;
+    if (['Backspace', 'ArrowLeft', 'ArrowRight', 'Tab', 'Delete', 'Enter'].includes(key)) {
+      return true;
+    }
+    // Block numbers 0-9 completely in practitioner name
+    if (/^[0-9]$/.test(key)) {
+      event.preventDefault();
+      return false;
+    }
+    // Allow letters, spaces, dots, hyphens, and apostrophes
+    if (!/^[a-zA-Z\s\.\'\-]$/.test(key)) {
+      event.preventDefault();
+      return false;
+    }
+    return true;
+  }
+
+  public validateName(name: string | undefined | null): string {
+    const trimmed = name ? name.trim() : '';
+    if (!trimmed) {
+      return 'Practitioner name is required.';
+    }
+    if (/^[0-9]/.test(trimmed)) {
+      return 'Practitioner name cannot start with a number. Please enter a valid name (e.g. Dr. John Doe).';
+    }
+    if (/[0-9]/.test(trimmed)) {
+      return 'Practitioner name cannot contain numbers.';
+    }
+    if (!/^[a-zA-Z]/.test(trimmed)) {
+      return 'Practitioner name must start with an alphabet letter.';
+    }
+    if (trimmed.length < 3) {
+      return 'Practitioner name must be at least 3 characters long.';
+    }
+    return '';
+  }
+
+  public onNameInput(event?: any): void {
+    const input = event?.target as HTMLInputElement;
+    let raw = input ? input.value : (this.formModel.name || '');
+
+    // Strip numbers immediately if pasted
+    raw = raw.replace(/[0-9]/g, '');
+    this.formModel.name = raw;
+    if (input && input.value !== raw) {
+      input.value = raw;
+    }
+
+    this.nameTouched = true;
+    this.nameError = this.validateName(raw);
+  }
+
+  public onNameBlur(): void {
+    this.nameTouched = true;
+    this.nameError = this.validateName(this.formModel.name);
+  }
+
+  public validateHospitalName(name: string | undefined | null): string {
+    const trimmed = name ? name.trim() : '';
+    if (!trimmed) {
+      return 'Hospital / clinic name is required.';
+    }
+    if (/^[0-9]/.test(trimmed)) {
+      return 'Hospital or clinic name must start with a letter (e.g. Apollo Clinic).';
+    }
+    if (/^\d+$/.test(trimmed)) {
+      return 'Hospital or clinic name cannot be numbers only.';
+    }
+    if (trimmed.length < 3) {
+      return 'Hospital or clinic name must be at least 3 characters long.';
+    }
+    return '';
+  }
+
+  public onHospitalNameInput(event?: any): void {
+    const input = event?.target as HTMLInputElement;
+    let raw = input ? input.value : (this.formModel.hospitalName || '');
+    this.formModel.hospitalName = raw;
+    this.hospitalNameTouched = true;
+    this.hospitalNameError = this.validateHospitalName(raw);
+  }
+
+  public onHospitalNameBlur(): void {
+    this.hospitalNameTouched = true;
+    this.hospitalNameError = this.validateHospitalName(this.formModel.hospitalName);
+  }
+
+  public onSpecializationChange(): void {
+    this.specializationTouched = true;
+    this.specializationError = !this.formModel.specialization ? 'Please select a specialization.' : '';
+  }
+
   // Phone & Email Validation Helpers
   public normalizeIndianPhoneNumber(input: string | undefined | null): { valid: boolean; normalized: string; error?: string } {
     if (!input || !input.trim()) {
@@ -1092,6 +1194,12 @@ export class HealthcareChampionsComponent implements OnInit, OnDestroy {
     this.isEditing = false;
     this.formModel = this.getEmptyForm();
     this.formError = '';
+    this.nameError = '';
+    this.nameTouched = false;
+    this.specializationError = '';
+    this.specializationTouched = false;
+    this.hospitalNameError = '';
+    this.hospitalNameTouched = false;
     this.phoneNumberError = '';
     this.emailError = '';
     this.phoneTouched = false;
@@ -1125,6 +1233,12 @@ export class HealthcareChampionsComponent implements OnInit, OnDestroy {
       fullAddress: champion.fullAddress
     };
     this.formError = '';
+    this.nameError = '';
+    this.nameTouched = false;
+    this.specializationError = '';
+    this.specializationTouched = false;
+    this.hospitalNameError = '';
+    this.hospitalNameTouched = false;
     this.phoneNumberError = '';
     this.emailError = '';
     this.phoneTouched = false;
@@ -1135,6 +1249,12 @@ export class HealthcareChampionsComponent implements OnInit, OnDestroy {
   public closeModal(): void {
     this.isCreateModalOpen = false;
     this.formError = '';
+    this.nameError = '';
+    this.nameTouched = false;
+    this.specializationError = '';
+    this.specializationTouched = false;
+    this.hospitalNameError = '';
+    this.hospitalNameTouched = false;
     this.phoneNumberError = '';
     this.emailError = '';
     this.phoneTouched = false;
@@ -1144,19 +1264,33 @@ export class HealthcareChampionsComponent implements OnInit, OnDestroy {
 
   public saveChampion(): void {
     this.formError = '';
+    this.nameError = '';
+    this.specializationError = '';
+    this.hospitalNameError = '';
     this.phoneNumberError = '';
     this.emailError = '';
 
-    if (!this.formModel.name || this.formModel.name.trim().length < 3) {
-      this.formError = 'Please enter a valid practitioner name (minimum 3 characters).';
+    // 1. Practitioner Name validation
+    this.nameTouched = true;
+    this.nameError = this.validateName(this.formModel.name);
+    if (this.nameError) {
+      this.formError = this.nameError;
       return;
     }
-    if (!this.formModel.specialization) {
-      this.formError = 'Please select a specialization.';
+
+    // 2. Specialization validation
+    this.specializationTouched = true;
+    if (!this.formModel.specialization || !this.formModel.specialization.trim()) {
+      this.specializationError = 'Please select a specialization.';
+      this.formError = this.specializationError;
       return;
     }
-    if (!this.formModel.hospitalName || this.formModel.hospitalName.trim().length < 3) {
-      this.formError = 'Please provide the hospital or clinic name (minimum 3 characters).';
+
+    // 3. Hospital Name validation
+    this.hospitalNameTouched = true;
+    this.hospitalNameError = this.validateHospitalName(this.formModel.hospitalName);
+    if (this.hospitalNameError) {
+      this.formError = this.hospitalNameError;
       return;
     }
 

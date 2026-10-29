@@ -723,6 +723,14 @@ export class HomeRemediesComponent implements OnInit, OnDestroy {
       this.formError = 'Please enter a valid remedy title.';
       return;
     }
+    if (/^[0-9]/.test(this.formModel.title.trim())) {
+      this.formError = 'Remedy title must start with a letter (e.g. Ginger Tea for Cough).';
+      return;
+    }
+    if (/^\d+$/.test(this.formModel.title.trim())) {
+      this.formError = 'Remedy title cannot contain only numbers.';
+      return;
+    }
     if (!this.formModel.category || !this.formModel.category.trim()) {
       this.formError = 'Please select or enter a category.';
       return;

@@ -637,6 +637,14 @@ export class SupportGroupsComponent implements OnInit, OnDestroy {
       this.formError = 'Please enter a valid group name.';
       return;
     }
+    if (/^[0-9]/.test(this.formModel.groupName.trim())) {
+      this.formError = 'Support group name must start with a letter (e.g. Heart Care Community).';
+      return;
+    }
+    if (/^\d+$/.test(this.formModel.groupName.trim())) {
+      this.formError = 'Support group name cannot contain only numbers.';
+      return;
+    }
     if (!this.formModel.category || !this.formModel.category.trim()) {
       this.formError = 'Please select or enter a category.';
       return;
