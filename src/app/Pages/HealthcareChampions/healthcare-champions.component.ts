@@ -838,6 +838,25 @@ export class HealthcareChampionsComponent implements OnInit, OnDestroy {
     this.nameError = this.validateName(this.formModel.name);
   }
 
+  public onHospitalNameKeyPress(event: KeyboardEvent): boolean {
+    if (event.ctrlKey || event.metaKey || event.altKey) {
+      return true;
+    }
+    const key = event.key;
+    if (['Backspace', 'ArrowLeft', 'ArrowRight', 'Tab', 'Delete', 'Enter'].includes(key)) {
+      return true;
+    }
+    const input = event.target as HTMLInputElement;
+    const selStart = input?.selectionStart || 0;
+
+    // Do not allow digit as the first character
+    if (selStart === 0 && /^[0-9]$/.test(key)) {
+      event.preventDefault();
+      return false;
+    }
+    return true;
+  }
+
   public validateHospitalName(name: string | undefined | null): string {
     const trimmed = name ? name.trim() : '';
     if (!trimmed) {
@@ -848,6 +867,9 @@ export class HealthcareChampionsComponent implements OnInit, OnDestroy {
     }
     if (/^\d+$/.test(trimmed)) {
       return 'Hospital or clinic name cannot be numbers only.';
+    }
+    if (!/[a-zA-Z]/.test(trimmed)) {
+      return 'Hospital or clinic name must contain at least one letter.';
     }
     return '';
   }
@@ -1394,28 +1416,30 @@ export class HealthcareChampionsComponent implements OnInit, OnDestroy {
     this.fullAddressError = '';
     this.aboutError = '';
 
+    let hasError = false;
+
     // 1. Practitioner Name validation
     this.nameTouched = true;
     this.nameError = this.validateName(this.formModel.name);
     if (this.nameError) {
-      this.formError = this.nameError;
-      return;
+      hasError = true;
+      if (!this.formError) this.formError = this.nameError;
     }
 
     // 2. Specialization validation
     this.specializationTouched = true;
     if (!this.formModel.specialization || !this.formModel.specialization.trim()) {
       this.specializationError = 'Please select a specialization.';
-      this.formError = this.specializationError;
-      return;
+      hasError = true;
+      if (!this.formError) this.formError = this.specializationError;
     }
 
     // 3. Hospital Name validation
     this.hospitalNameTouched = true;
     this.hospitalNameError = this.validateHospitalName(this.formModel.hospitalName);
     if (this.hospitalNameError) {
-      this.formError = this.hospitalNameError;
-      return;
+      hasError = true;
+      if (!this.formError) this.formError = this.hospitalNameError;
     }
 
     // 4. Phone validation
@@ -1423,73 +1447,80 @@ export class HealthcareChampionsComponent implements OnInit, OnDestroy {
     const phoneRes = this.normalizeIndianPhoneNumber(this.formModel.phoneNumber);
     if (!phoneRes.valid) {
       this.phoneNumberError = phoneRes.error || 'Please enter a valid Indian phone number.';
-      this.formError = this.phoneNumberError;
-      this.phoneTouched = true;
-      return;
+      hasError = true;
+      if (!this.formError) this.formError = this.phoneNumberError;
     }
-    const phone = phoneRes.normalized;
-    this.formModel.phoneNumber = phone;
 
     // 5. Email validation (optional, but format-checked if provided)
     this.emailTouched = true;
-    const emailRes = this.validateEmailInput(this.formModel.email);
-    if (!emailRes.valid) {
-      this.emailError = emailRes.error || 'Please enter a valid email address.';
-      this.formError = this.emailError;
-      this.emailTouched = true;
-      return;
+    let email = '';
+    if (this.formModel.email && this.formModel.email.trim()) {
+      const emailRes = this.validateEmailInput(this.formModel.email);
+      if (!emailRes.valid) {
+        this.emailError = emailRes.error || 'Please enter a valid email address.';
+        hasError = true;
+        if (!this.formError) this.formError = this.emailError;
+      } else {
+        email = emailRes.normalized;
+      }
     }
-    const email = emailRes.normalized;
-    this.formModel.email = email;
 
     // 6. Experience validation (optional, can start with number like 5 Years, but not numbers only)
     this.experienceError = this.validateOptionalTextField(this.formModel.experience, 'Experience', true);
     if (this.experienceError) {
-      this.formError = this.experienceError;
-      return;
+      hasError = true;
+      if (!this.formError) this.formError = this.experienceError;
     }
 
     // 7. Qualification validation (optional, must start with letter, not numbers only)
     this.qualificationError = this.validateOptionalTextField(this.formModel.qualification, 'Qualification', false);
     if (this.qualificationError) {
-      this.formError = this.qualificationError;
-      return;
+      hasError = true;
+      if (!this.formError) this.formError = this.qualificationError;
     }
 
     // 8. Languages Spoken validation (optional, must start with letter)
     this.languagesSpokenError = this.validateOptionalTextField(this.formModel.languagesSpoken, 'Languages spoken', false);
     if (this.languagesSpokenError) {
-      this.formError = this.languagesSpokenError;
-      return;
+      hasError = true;
+      if (!this.formError) this.formError = this.languagesSpokenError;
     }
 
     // 9. Areas of Treatment validation (optional, must start with letter)
     this.areasOfTreatmentError = this.validateOptionalTextField(this.formModel.areasOfTreatment, 'Areas of treatment', false);
     if (this.areasOfTreatmentError) {
-      this.formError = this.areasOfTreatmentError;
-      return;
+      hasError = true;
+      if (!this.formError) this.formError = this.areasOfTreatmentError;
     }
 
     // 10. Treatment Therapy validation (optional, must start with letter)
     this.treatmentTherapyError = this.validateOptionalTextField(this.formModel.treatmentTherapy, 'Treatment therapy', false);
     if (this.treatmentTherapyError) {
-      this.formError = this.treatmentTherapyError;
-      return;
+      hasError = true;
+      if (!this.formError) this.formError = this.treatmentTherapyError;
     }
 
     // 11. Full Address validation (optional, not numbers only)
     this.fullAddressError = this.validateOptionalTextField(this.formModel.fullAddress, 'Clinic address', true);
     if (this.fullAddressError) {
-      this.formError = this.fullAddressError;
-      return;
+      hasError = true;
+      if (!this.formError) this.formError = this.fullAddressError;
     }
 
     // 12. About Practitioner validation (optional, not numbers only)
     this.aboutError = this.validateOptionalTextField(this.formModel.about, 'About practitioner', true);
     if (this.aboutError) {
-      this.formError = this.aboutError;
+      hasError = true;
+      if (!this.formError) this.formError = this.aboutError;
+    }
+
+    if (hasError) {
       return;
     }
+
+    const phone = phoneRes.normalized;
+    this.formModel.phoneNumber = phone;
+    this.formModel.email = email;
 
     this.isSaving = true;
 

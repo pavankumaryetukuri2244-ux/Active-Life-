@@ -346,7 +346,6 @@
                    (input)="onNameInput($event)"
                    (blur)="onNameBlur()"
                    placeholder="Enter practitioner name (e.g. Dr. Sarah Connor)"
-                   minlength="3"
                    maxlength="200">
             @if (nameError) {
               <div class="text-danger small mt-1 d-flex align-items-center" style="gap: 4px; font-size: 0.8rem;">
@@ -407,6 +406,7 @@
                    class="form-control"
                    [class.is-invalid]="hospitalNameError"
                    [(ngModel)]="formModel.hospitalName"
+                   (keypress)="onHospitalNameKeyPress($event)"
                    (input)="onHospitalNameInput($event)"
                    (blur)="onHospitalNameBlur()"
                    placeholder="Enter hospital or clinic name (e.g. Apollo Hospital)">
