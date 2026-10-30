@@ -215,8 +215,6 @@
                   {{ item.isActive ? 'Active' : 'Inactive' }}
                 </span>
 
-
-
                 <!-- Medically Reviewed -->
                 @if (item.isMedicallyReviewed) {
                   <span class="badge" style="background: #EFF6FF; color: #2563EB; border-radius: 8px; font-size: 12px; font-weight: 500; padding: 4px 10px;">
@@ -268,10 +266,10 @@
             </div>
 
             <!-- Card Footer -->
-            @if (formatExperience(item.experience)) {
+            @if (formatExperience(item.experience, item.name)) {
               <div class="d-flex align-items-center justify-content-end pt-2 border-top"
-                style="font-size: 13px; font-weight: 400; color: #64748B; font-family: 'Inter', sans-serif;">
-                <span class="text-secondary small">{{ formatExperience(item.experience) }}</span>
+                style="font-size: 13px; font-weight: 500; font-family: 'Inter', sans-serif;">
+                <span class="small" style="color: #64748B; font-weight: 500;">{{ formatExperience(item.experience, item.name) }}</span>
               </div>
             }
           </div>
@@ -335,10 +333,9 @@
                    class="form-control"
                    [class.is-invalid]="nameError"
                    [(ngModel)]="formModel.name"
-                   (keypress)="onNameKeyPress($event)"
                    (input)="onNameInput($event)"
                    (blur)="onNameBlur()"
-                   placeholder="Enter practitioner name (e.g. Dr. Sarah Connor)"
+                   placeholder="Enter practitioner name"
                    maxlength="200">
             @if (nameError) {
               <div class="text-danger small mt-1 d-flex align-items-center" style="gap: 4px; font-size: 0.8rem;">
@@ -349,8 +346,6 @@
                 </svg>
                 <span>{{ nameError }}</span>
               </div>
-            } @else {
-              <div class="form-text small" style="font-size: 0.78rem;">Full doctor / practitioner name (letters only).</div>
             }
           </div>
           <div class="col-md-4">
@@ -363,30 +358,55 @@
           </div>
         </div>
 
-        <!-- Specialization / Category -->
-        <div class="mb-3">
-          <label class="form-label fw-semibold small text-dark">
-            Specialization / Category <span class="text-danger">*</span>
-          </label>
-          <select class="form-select"
-                  [class.is-invalid]="specializationError"
-                  [(ngModel)]="formModel.specialization"
-                  (change)="onSpecializationChange()">
-            <option value="" disabled selected>Select Specialization / Category</option>
-            @for (spec of selectableSpecializations; track spec) {
-              <option [value]="spec">{{ spec }}</option>
+        <!-- Specialization / Category & Practitioner Type -->
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small text-dark">
+              Specialization / Category <span class="text-danger">*</span>
+            </label>
+            <select class="form-select"
+                    [class.is-invalid]="specializationError"
+                    [(ngModel)]="formModel.specialization"
+                    (change)="onSpecializationChange()">
+              <option value="" disabled selected>Select Specialization / Category</option>
+              @for (spec of selectableSpecializations; track spec) {
+                <option [value]="spec">{{ spec }}</option>
+              }
+            </select>
+            @if (specializationError) {
+              <div class="text-danger small mt-1 d-flex align-items-center" style="gap: 4px; font-size: 0.8rem;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                <span>{{ specializationError }}</span>
+              </div>
             }
-          </select>
-          @if (specializationError) {
-            <div class="text-danger small mt-1 d-flex align-items-center" style="gap: 4px; font-size: 0.8rem;">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="12" y1="8" x2="12" y2="12"></line>
-                <line x1="12" y1="16" x2="12.01" y2="16"></line>
-              </svg>
-              <span>{{ specializationError }}</span>
-            </div>
-          }
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small text-dark">
+              Practitioner Type <span class="text-danger">*</span>
+            </label>
+            <input type="text"
+                   class="form-control"
+                   [class.is-invalid]="practitionerTypeError"
+                   [(ngModel)]="formModel.practitionerType"
+                   (input)="onPractitionerTypeInput($event)"
+                   (blur)="onPractitionerTypeBlur()"
+                   placeholder="Enter practitioner type (e.g. Specialist)"
+                   maxlength="100">
+            @if (practitionerTypeError) {
+              <div class="text-danger small mt-1 d-flex align-items-center" style="gap: 4px; font-size: 0.8rem;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                <span>{{ practitionerTypeError }}</span>
+              </div>
+            }
+          </div>
         </div>
 
         <!-- Hospital & Experience -->
@@ -399,10 +419,9 @@
                    class="form-control"
                    [class.is-invalid]="hospitalNameError"
                    [(ngModel)]="formModel.hospitalName"
-                   (keypress)="onHospitalNameKeyPress($event)"
                    (input)="onHospitalNameInput($event)"
                    (blur)="onHospitalNameBlur()"
-                   placeholder="Enter hospital or clinic name (e.g. Apollo Hospital)"
+                   placeholder="Enter hospital or clinic name"
                    maxlength="200">
             @if (hospitalNameError) {
               <div class="text-danger small mt-1 d-flex align-items-center" style="gap: 4px; font-size: 0.8rem;">
@@ -413,19 +432,20 @@
                 </svg>
                 <span>{{ hospitalNameError }}</span>
               </div>
-            } @else {
-              <div class="form-text small" style="font-size: 0.78rem;">Hospital or affiliated clinic name.</div>
             }
           </div>
           <div class="col-md-6">
-            <label class="form-label fw-semibold small text-dark">Experience</label>
+            <label class="form-label fw-semibold small text-dark">
+              Experience <span class="text-danger">*</span>
+            </label>
             <input type="text"
                    class="form-control"
                    [class.is-invalid]="experienceError"
                    [(ngModel)]="formModel.experience"
                    (input)="onExperienceInput($event)"
                    (blur)="onExperienceBlur()"
-                   placeholder="Enter experience (e.g. 5 Years Experience)">
+                   placeholder="Enter experience (e.g. 5 Years Experience)"
+                   maxlength="100">
             @if (experienceError) {
               <div class="text-danger small mt-1 d-flex align-items-center" style="gap: 4px; font-size: 0.8rem;">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -447,12 +467,10 @@
             </label>
             <div class="position-relative">
               <input type="tel"
-                     inputmode="tel"
                      class="form-control"
-                     maxlength="13"
+                     maxlength="16"
                      [class.is-invalid]="phoneNumberError"
                      [(ngModel)]="formModel.phoneNumber"
-                     (keypress)="onPhoneKeyPress($event)"
                      (input)="onPhoneInput($event)"
                      (blur)="onPhoneBlur()"
                      placeholder="Enter phone number (+91XXXXXXXXXX)">
@@ -467,22 +485,22 @@
                 <span>{{ phoneNumberError }}</span>
               </div>
             } @else {
-              <div class="form-text small" style="font-size: 0.78rem;">Format: +91 followed by 10 digits (e.g. +919876543210 or 9876543210)</div>
+              <div class="form-text small" style="font-size: 0.78rem;">Format: +91 followed by 10 digits (e.g. +918693874875 or 8693874875)</div>
             }
           </div>
           <div class="col-md-6">
             <label class="form-label fw-semibold small text-dark">
-              Email Address <span class="text-muted fw-normal" style="font-size: 0.78rem;">(Optional)</span>
+              Email Address <span class="text-danger">*</span>
             </label>
             <div class="position-relative">
               <input type="email"
                      class="form-control"
+                     maxlength="100"
                      [class.is-invalid]="emailError"
                      [(ngModel)]="formModel.email"
-                     (keypress)="onEmailKeyPress($event)"
                      (input)="onEmailInput($event)"
                      (blur)="onEmailBlur()"
-                     placeholder="Enter email address (e.g. doctor@hospital.com)">
+                     placeholder="Enter email address (e.g. raju@gmail.com)">
             </div>
             @if (emailError) {
               <div class="text-danger small mt-1 d-flex align-items-center" style="gap: 4px; font-size: 0.8rem;">
@@ -493,8 +511,6 @@
                 </svg>
                 <span>{{ emailError }}</span>
               </div>
-            } @else {
-              <div class="form-text small text-muted" style="font-size: 0.78rem;">Optional: e.g. doctor&#64;hospital.com</div>
             }
           </div>
         </div>
@@ -502,14 +518,17 @@
         <!-- Qualification & Languages -->
         <div class="row g-3 mb-3">
           <div class="col-md-6">
-            <label class="form-label fw-semibold small text-dark">Qualification</label>
+            <label class="form-label fw-semibold small text-dark">
+              Qualification <span class="text-danger">*</span>
+            </label>
             <input type="text"
                    class="form-control"
                    [class.is-invalid]="qualificationError"
                    [(ngModel)]="formModel.qualification"
                    (input)="onQualificationInput($event)"
                    (blur)="onQualificationBlur()"
-                   placeholder="Enter qualification (e.g. MBBS, MD, MS)">
+                   placeholder="Enter qualification (e.g. MBBS, MD, MS)"
+                   maxlength="50">
             @if (qualificationError) {
               <div class="text-danger small mt-1 d-flex align-items-center" style="gap: 4px; font-size: 0.8rem;">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -522,14 +541,17 @@
             }
           </div>
           <div class="col-md-6">
-            <label class="form-label fw-semibold small text-dark">Languages Spoken</label>
+            <label class="form-label fw-semibold small text-dark">
+              Languages Spoken <span class="text-danger">*</span>
+            </label>
             <input type="text"
                    class="form-control"
                    [class.is-invalid]="languagesSpokenError"
                    [(ngModel)]="formModel.languagesSpoken"
                    (input)="onLanguagesInput($event)"
                    (blur)="onLanguagesBlur()"
-                   placeholder="Enter languages spoken">
+                   placeholder="Enter languages spoken"
+                   maxlength="200">
             @if (languagesSpokenError) {
               <div class="text-danger small mt-1 d-flex align-items-center" style="gap: 4px; font-size: 0.8rem;">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -543,10 +565,36 @@
           </div>
         </div>
 
+        <!-- Availability & Website -->
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small text-dark">
+              Availability
+            </label>
+            <input type="text"
+                   class="form-control"
+                   [(ngModel)]="formModel.availability"
+                   placeholder="Enter availability (e.g. Mon–Sat, 9:00 AM – 5:00 PM)"
+                   maxlength="200">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small text-dark">
+              Website
+            </label>
+            <input type="text"
+                   class="form-control"
+                   [(ngModel)]="formModel.website"
+                   placeholder="Enter website (e.g. apollo.com)"
+                   maxlength="200">
+          </div>
+        </div>
+
         <!-- Areas of Treatment & Treatment Therapy -->
         <div class="row g-3 mb-3">
           <div class="col-md-6">
-            <label class="form-label fw-semibold small text-dark">Areas of Treatment</label>
+            <label class="form-label fw-semibold small text-dark">
+              Areas of Treatment <span class="text-danger">*</span>
+            </label>
             <input type="text"
                    class="form-control"
                    [class.is-invalid]="areasOfTreatmentError"
@@ -566,14 +614,17 @@
             }
           </div>
           <div class="col-md-6">
-            <label class="form-label fw-semibold small text-dark">Treatment Therapy</label>
+            <label class="form-label fw-semibold small text-dark">
+              Treatment Therapy <span class="text-danger">*</span>
+            </label>
             <input type="text"
                    class="form-control"
                    [class.is-invalid]="treatmentTherapyError"
                    [(ngModel)]="formModel.treatmentTherapy"
                    (input)="onTherapyInput($event)"
                    (blur)="onTherapyBlur()"
-                   placeholder="Enter treatment therapy">
+                   placeholder="Enter treatment therapy"
+                   maxlength="200">
             @if (treatmentTherapyError) {
               <div class="text-danger small mt-1 d-flex align-items-center" style="gap: 4px; font-size: 0.8rem;">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -587,9 +638,61 @@
           </div>
         </div>
 
+        <!-- Treatment Methods & About The Treatment -->
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small text-dark">
+              Treatment Methods <span class="text-danger">*</span>
+            </label>
+            <input type="text"
+                   class="form-control"
+                   [class.is-invalid]="treatmentMethodsError"
+                   [(ngModel)]="formModel.treatmentMethods"
+                   (input)="onTreatmentMethodsInput($event)"
+                   (blur)="onTreatmentMethodsBlur()"
+                   placeholder="Enter treatment methods (e.g. Medication, surgery)"
+                   maxlength="1000">
+            @if (treatmentMethodsError) {
+              <div class="text-danger small mt-1 d-flex align-items-center" style="gap: 4px; font-size: 0.8rem;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                <span>{{ treatmentMethodsError }}</span>
+              </div>
+            }
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small text-dark">
+              About the Treatment <span class="text-danger">*</span>
+            </label>
+            <input type="text"
+                   class="form-control"
+                   [class.is-invalid]="aboutTheTreatmentError"
+                   [(ngModel)]="formModel.aboutTheTreatment"
+                   (input)="onAboutTheTreatmentInput($event)"
+                   (blur)="onAboutTheTreatmentBlur()"
+                   placeholder="Enter about the treatment"
+                   maxlength="1000">
+            @if (aboutTheTreatmentError) {
+              <div class="text-danger small mt-1 d-flex align-items-center" style="gap: 4px; font-size: 0.8rem;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                <span>{{ aboutTheTreatmentError }}</span>
+              </div>
+            }
+          </div>
+        </div>
+
         <!-- Full Address -->
         <div class="mb-3">
-          <label class="form-label fw-semibold small text-dark">Full Clinic Address</label>
+          <label class="form-label fw-semibold small text-dark">
+            Full Clinic Address <span class="text-danger">*</span>
+          </label>
           <input type="text"
                  class="form-control"
                  [class.is-invalid]="fullAddressError"
@@ -597,7 +700,7 @@
                  (input)="onAddressInput($event)"
                  (blur)="onAddressBlur()"
                  placeholder="Enter full clinic address"
-                 maxlength="500">
+                 maxlength="1000">
           @if (fullAddressError) {
             <div class="text-danger small mt-1 d-flex align-items-center" style="gap: 4px; font-size: 0.8rem;">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -612,7 +715,9 @@
 
         <!-- About Profile -->
         <div class="mb-3">
-          <label class="form-label fw-semibold small text-dark">About Practitioner</label>
+          <label class="form-label fw-semibold small text-dark">
+            About Practitioner <span class="text-danger">*</span>
+          </label>
           <textarea class="form-control"
                     rows="2"
                     [class.is-invalid]="aboutError"
@@ -620,7 +725,7 @@
                     (input)="onAboutInput($event)"
                     (blur)="onAboutBlur()"
                     placeholder="Enter practitioner summary and clinical philosophy..."
-                    maxlength="500"></textarea>
+                    maxlength="1000"></textarea>
           @if (aboutError) {
             <div class="text-danger small mt-1 d-flex align-items-center" style="gap: 4px; font-size: 0.8rem;">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">

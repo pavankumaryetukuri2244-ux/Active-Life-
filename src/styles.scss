@@ -1485,6 +1485,29 @@ canvas {
   font-family: 'Inter', sans-serif !important;
 }
 
+/* Explicit validation error styles for inputs (overriding borderless default) */
+.modal-content input.form-control.is-invalid,
+.modal-content select.form-select.is-invalid,
+.modal-content textarea.form-control.is-invalid,
+input.form-control.is-invalid,
+select.form-select.is-invalid,
+textarea.form-control.is-invalid {
+  border: 1.5px solid #EF4444 !important;
+  background-color: #FEF2F2 !important;
+}
+
+.modal-content input.form-control.is-invalid:focus,
+.modal-content select.form-select.is-invalid:focus,
+.modal-content textarea.form-control.is-invalid:focus,
+input.form-control.is-invalid:focus,
+select.form-select.is-invalid:focus,
+textarea.form-control.is-invalid:focus {
+  border: 1.5px solid #DC2626 !important;
+  background-color: #FEF2F2 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.18) !important;
+  outline: none !important;
+}
+
 /* Ensure all checkboxes across the application use brand blue and never validation green */
 .form-check-input:checked,
 .custom-control-input:checked~.custom-control-label::before,
