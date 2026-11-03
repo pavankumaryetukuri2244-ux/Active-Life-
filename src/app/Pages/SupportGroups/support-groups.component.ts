@@ -312,6 +312,35 @@ export interface SupportGroupForm {
       color: #FFFFFF;
       border-left: 4px solid #EF4444;
     }
+
+    /* Description Container inside Support Group Cards */
+    .cm-group-description {
+      font-size: 13.5px !important;
+      line-height: 1.55 !important;
+      color: #475569 !important;
+      margin-bottom: 12px !important;
+      white-space: pre-line !important;
+      word-break: break-word !important;
+      overflow-wrap: break-word !important;
+      max-height: 140px !important;
+      overflow-y: auto !important;
+      scrollbar-width: thin !important;
+      scrollbar-color: #CBD5E1 transparent !important;
+      padding-right: 4px !important;
+    }
+    .cm-group-description::-webkit-scrollbar {
+      width: 4px !important;
+    }
+    .cm-group-description::-webkit-scrollbar-track {
+      background: transparent !important;
+    }
+    .cm-group-description::-webkit-scrollbar-thumb {
+      background: #CBD5E1 !important;
+      border-radius: 4px !important;
+    }
+    .cm-group-description::-webkit-scrollbar-thumb:hover {
+      background: #94A3B8 !important;
+    }
   `]
 })
 export class SupportGroupsComponent implements OnInit, OnDestroy {
@@ -829,6 +858,18 @@ export class SupportGroupsComponent implements OnInit, OnDestroy {
     this.toastTimer = setTimeout(() => {
       this.toastMessage = '';
     }, 4000);
+  }
+
+  public formatDescription(desc: string | undefined | null): string {
+    if (!desc) return '';
+    let text = desc.replace(/<br\s*\/?>/gi, '\n');
+    text = text.replace(/<\/p>\s*<p>/gi, '\n');
+    text = text.replace(/<[^>]*>/g, '');
+    text = text.replace(/&nbsp;/g, ' ')
+               .replace(/&quot;/g, '"')
+               .replace(/&#39;/g, "'")
+               .replace(/&amp;/g, '&');
+    return text.trim();
   }
 
   private getEmptyForm(): SupportGroupForm {
