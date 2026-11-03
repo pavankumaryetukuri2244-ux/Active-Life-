@@ -406,6 +406,7 @@ export class SupportGroupsComponent implements OnInit, OnDestroy {
   public isEditing: boolean = false;
   public formModel: SupportGroupForm = this.getEmptyForm();
   public formError: string = '';
+  public groupNameError: string = '';
 
   // Toast
   public toastMessage: string = '';
@@ -638,6 +639,7 @@ export class SupportGroupsComponent implements OnInit, OnDestroy {
     this.isEditing = false;
     this.formModel = this.getEmptyForm();
     this.formError = '';
+    this.groupNameError = '';
     this.isCreateModalOpen = true;
   }
 
@@ -650,17 +652,38 @@ export class SupportGroupsComponent implements OnInit, OnDestroy {
       description: group.description
     };
     this.formError = '';
+    this.groupNameError = '';
     this.isCreateModalOpen = true;
   }
 
   public closeModal(): void {
     this.isCreateModalOpen = false;
     this.formError = '';
+    this.groupNameError = '';
     this.isSaving = false;
+  }
+
+  public onGroupNameInput(): void {
+    const raw = (this.formModel.groupName || '').trim();
+    if (!raw) {
+      this.groupNameError = '';
+      return;
+    }
+    const currentId = this.isEditing && this.formModel.id !== undefined && this.formModel.id !== null ? Number(this.formModel.id) : null;
+    const isDuplicate = this.groups.some(g =>
+      (currentId === null || Number(g.id) !== currentId) &&
+      g.groupName && g.groupName.trim().toLowerCase() === raw.toLowerCase()
+    );
+    if (isDuplicate) {
+      this.groupNameError = 'A support group with this name already exists. Please choose a unique group name.';
+    } else {
+      this.groupNameError = '';
+    }
   }
 
   public saveGroup(): void {
     this.formError = '';
+    this.groupNameError = '';
 
     const groupName = this.formModel.groupName ? this.formModel.groupName.trim() : '';
     const description = this.formModel.description ? this.formModel.description.trim() : '';
@@ -679,6 +702,16 @@ export class SupportGroupsComponent implements OnInit, OnDestroy {
     }
     if (/^\d+$/.test(groupName)) {
       this.formError = 'Support group name cannot contain only numbers.';
+      return;
+    }
+    const currentId = this.isEditing && this.formModel.id !== undefined && this.formModel.id !== null ? Number(this.formModel.id) : null;
+    const isDuplicateGroupName = this.groups.some(g =>
+      (currentId === null || Number(g.id) !== currentId) &&
+      g.groupName && g.groupName.trim().toLowerCase() === groupName.toLowerCase()
+    );
+    if (isDuplicateGroupName) {
+      this.groupNameError = 'A support group with this name already exists. Please choose a unique group name.';
+      this.formError = this.groupNameError;
       return;
     }
     if (!this.formModel.category || !this.formModel.category.trim()) {
@@ -750,7 +783,11 @@ export class SupportGroupsComponent implements OnInit, OnDestroy {
       },
       error: (err: any) => {
         this.isSaving = false;
-        this.formError = err?.error?.message || err?.message || 'Failed to save support group. Please try again.';
+        const msg = err?.error?.message || err?.message || 'Failed to save support group. Please try again.';
+        if (typeof msg === 'string' && (msg.toLowerCase().includes('already exists') || msg.toLowerCase().includes('duplicate'))) {
+          this.groupNameError = msg;
+        }
+        this.formError = msg;
       }
     });
   }

@@ -553,6 +553,7 @@ export class HealthAwarenessComponent implements OnInit, OnDestroy {
   // Form Model strictly matching the create/update request body
   public formModel: HealthAwarenessForm = this.getEmptyForm();
   public formError: string = '';
+  public titleError: string = '';
   public isLoading: boolean = false;
   public isSaving: boolean = false;
 
@@ -763,6 +764,7 @@ export class HealthAwarenessComponent implements OnInit, OnDestroy {
     this.isEditing = false;
     this.formModel = this.getEmptyForm();
     this.formError = '';
+    this.titleError = '';
     this.showTableMenu = false;
     this.showCustomTableModal = false;
     this.isCreateModalOpen = true;
@@ -783,6 +785,7 @@ export class HealthAwarenessComponent implements OnInit, OnDestroy {
       description: article.description
     };
     this.formError = '';
+    this.titleError = '';
     this.showTableMenu = false;
     this.showCustomTableModal = false;
     this.isCreateModalOpen = true;
@@ -796,11 +799,30 @@ export class HealthAwarenessComponent implements OnInit, OnDestroy {
   public closeModal(): void {
     this.isCreateModalOpen = false;
     this.formError = '';
+    this.titleError = '';
     this.isSaving = false;
     this.showTableMenu = false;
     this.showCustomTableModal = false;
     if (this.descEditorRef?.nativeElement) {
       this.descEditorRef.nativeElement.innerHTML = '';
+    }
+  }
+
+  public onTitleInput(): void {
+    const raw = (this.formModel.title || '').trim();
+    if (!raw) {
+      this.titleError = '';
+      return;
+    }
+    const currentId = this.isEditing && this.formModel.id !== undefined && this.formModel.id !== null ? Number(this.formModel.id) : null;
+    const isDuplicate = this.articles.some(a =>
+      (currentId === null || Number(a.id) !== currentId) &&
+      a.title && a.title.trim().toLowerCase() === raw.toLowerCase()
+    );
+    if (isDuplicate) {
+      this.titleError = 'An article with this title already exists. Please choose a unique title.';
+    } else {
+      this.titleError = '';
     }
   }
 
@@ -812,6 +834,7 @@ export class HealthAwarenessComponent implements OnInit, OnDestroy {
 
   public saveArticle(): void {
     this.formError = '';
+    this.titleError = '';
     if (this.descEditorRef?.nativeElement) {
       this.formModel.description = this.descEditorRef.nativeElement.innerHTML;
     }
@@ -836,6 +859,17 @@ export class HealthAwarenessComponent implements OnInit, OnDestroy {
       this.formError = 'Title must be between 1 and 200 characters.';
       return;
     }
+    const currentId = this.isEditing && this.formModel.id !== undefined && this.formModel.id !== null ? Number(this.formModel.id) : null;
+    const isDuplicateTitle = this.articles.some(a =>
+      (currentId === null || Number(a.id) !== currentId) &&
+      a.title && a.title.trim().toLowerCase() === title.toLowerCase()
+    );
+    if (isDuplicateTitle) {
+      this.titleError = 'An article with this title already exists. Please choose a unique title.';
+      this.formError = this.titleError;
+      return;
+    }
+
     if (!category) {
       this.formError = 'Please select a category.';
       return;
@@ -904,7 +938,13 @@ export class HealthAwarenessComponent implements OnInit, OnDestroy {
       },
       error: (err: any) => {
         this.isSaving = false;
-        this.formError = err?.error?.message || err?.message || 'Failed to save health awareness content. Please check input and try again.';
+        const backendMsg = err?.error?.message || err?.message || 'Failed to save health awareness content. Please check input and try again.';
+        if (backendMsg.toLowerCase().includes('already exists') || backendMsg.toLowerCase().includes('duplicate')) {
+          this.titleError = 'An article with this title already exists. Please choose a unique title.';
+          this.formError = this.titleError;
+        } else {
+          this.formError = backendMsg;
+        }
       }
     });
   }

@@ -267,7 +267,17 @@
         <!-- Title field -->
         <div class="mb-3">
           <label class="form-label fw-semibold small text-dark">Title *</label>
-          <input type="text" class="form-control" [(ngModel)]="formModel.title" placeholder="e.g. Understanding Heart Health: Prevention & Daily Care" maxlength="200">
+          <input type="text" class="form-control" [class.is-invalid]="titleError" [(ngModel)]="formModel.title" (input)="onTitleInput()" placeholder="e.g. Understanding Heart Health: Prevention & Daily Care" maxlength="200">
+          @if (titleError) {
+            <div class="text-danger small mt-1 d-flex align-items-center" style="gap: 4px; font-size: 0.8rem;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+              <span>{{ titleError }}</span>
+            </div>
+          }
           <div class="form-text small">Article title (1 to 200 characters).</div>
         </div>
 

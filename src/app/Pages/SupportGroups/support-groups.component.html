@@ -277,8 +277,18 @@
           <!-- Group Name -->
           <div class="mb-3">
             <label class="form-label small fw-semibold text-dark">Group Name <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" [(ngModel)]="formModel.groupName" name="groupName"
+            <input type="text" class="form-control" [class.is-invalid]="groupNameError" [(ngModel)]="formModel.groupName" (input)="onGroupNameInput()" name="groupName"
               placeholder="e.g. Cancer Support, Postpartum Mothers Circle..." maxlength="200" required>
+            @if (groupNameError) {
+              <div class="text-danger small mt-1 d-flex align-items-center" style="gap: 4px; font-size: 0.8rem;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                <span>{{ groupNameError }}</span>
+              </div>
+            }
             <div class="form-text small">Group name must be between 1 and 200 characters.</div>
           </div>
 

@@ -994,11 +994,42 @@ export class HealthcareChampionsComponent implements OnInit, OnDestroy {
     this.aboutError = this.validateBackendField(this.formModel.about, 'About practitioner', 1, 1000);
   }
 
+  public checkDuplicatePhone(phoneValue: string | undefined | null): boolean {
+    if (!phoneValue) return false;
+    const digits = phoneValue.replace(/\D/g, '');
+    if (digits.length < 10) return false;
+    const inputDigits = digits.slice(-10);
+
+    const currentId = this.isEditing && this.formModel.id !== undefined && this.formModel.id !== null && this.formModel.id !== ''
+      ? Number(this.formModel.id)
+      : null;
+
+    return this.champions.some(c => {
+      if (currentId !== null && Number(c.id) === currentId) {
+        return false;
+      }
+      if (!c.phoneNumber) return false;
+      const existDigits = c.phoneNumber.replace(/\D/g, '').slice(-10);
+      return existDigits.length === 10 && existDigits === inputDigits;
+    });
+  }
+
   public onPhoneInput(event?: any): void {
     const input = event?.target as HTMLInputElement;
     const raw = input ? input.value : (this.formModel.phoneNumber || '');
     this.formModel.phoneNumber = raw;
-    if (this.phoneNumberError) {
+
+    const digits = raw.replace(/\D/g, '');
+    if (digits.length >= 10 && this.checkDuplicatePhone(raw)) {
+      this.phoneNumberError = 'A healthcare champion with this phone number already exists. Phone number cannot be used twice.';
+      return;
+    }
+
+    if (this.phoneNumberError && this.phoneNumberError.includes('already exists')) {
+      if (!this.checkDuplicatePhone(raw)) {
+        this.phoneNumberError = '';
+      }
+    } else if (this.phoneNumberError) {
       const res = this.normalizeIndianPhoneNumber(raw);
       if (res.valid) {
         this.phoneNumberError = '';
@@ -1016,10 +1047,17 @@ export class HealthcareChampionsComponent implements OnInit, OnDestroy {
     const res = this.normalizeIndianPhoneNumber(trimmed);
     if (!res.valid) {
       this.phoneNumberError = res.error || 'Phone number must start with +91 followed by 10 digits starting with 6-9 (e.g. +918693874875)';
-    } else {
-      this.phoneNumberError = '';
-      this.formModel.phoneNumber = res.normalized;
+      return;
     }
+
+    this.formModel.phoneNumber = res.normalized;
+
+    if (this.checkDuplicatePhone(res.normalized)) {
+      this.phoneNumberError = 'A healthcare champion with this phone number already exists. Phone number cannot be used twice.';
+      return;
+    }
+
+    this.phoneNumberError = '';
   }
 
   public onEmailInput(event?: any): void {
@@ -1212,6 +1250,11 @@ export class HealthcareChampionsComponent implements OnInit, OnDestroy {
       if (!this.formError) this.formError = this.phoneNumberError;
     } else {
       this.formModel.phoneNumber = phoneRes.normalized;
+      if (this.checkDuplicatePhone(phoneRes.normalized)) {
+        this.phoneNumberError = 'A healthcare champion with this phone number already exists. Phone number cannot be used twice.';
+        hasError = true;
+        if (!this.formError) this.formError = this.phoneNumberError;
+      }
     }
 
     // 8. Email: Required by backend schema
@@ -1475,6 +1518,13 @@ export class HealthcareChampionsComponent implements OnInit, OnDestroy {
     if (fieldMap['phoneNumber']) {
       this.phoneNumberError = fieldMap['phoneNumber'];
       this.phoneTouched = true;
+    }
+    if (rawError && typeof rawError === 'string' && rawError.toLowerCase().includes('phone') && (rawError.toLowerCase().includes('already') || rawError.toLowerCase().includes('duplicate') || rawError.toLowerCase().includes('exist'))) {
+      this.phoneNumberError = 'A healthcare champion with this phone number already exists. Phone number cannot be used twice.';
+      this.phoneTouched = true;
+      if (!fieldMap['phoneNumber']) {
+        fieldMap['phoneNumber'] = this.phoneNumberError;
+      }
     }
     if (fieldMap['email']) {
       this.emailError = fieldMap['email'];

@@ -429,6 +429,7 @@ export class HomeRemediesComponent implements OnInit, OnDestroy {
   public isEditing: boolean = false;
   public formModel: HomeRemedyForm = this.getEmptyForm();
   public formError: string = '';
+  public titleError: string = '';
   public isLoading: boolean = false;
   public isSaving: boolean = false;
 
@@ -685,6 +686,7 @@ export class HomeRemediesComponent implements OnInit, OnDestroy {
     this.isEditing = false;
     this.formModel = this.getEmptyForm();
     this.formError = '';
+    this.titleError = '';
     this.showTableMenu = false;
     this.showCustomTableModal = false;
     this.contentTab = 'write';
@@ -701,6 +703,7 @@ export class HomeRemediesComponent implements OnInit, OnDestroy {
       remedyContent: remedy.remedyContent
     };
     this.formError = '';
+    this.titleError = '';
     this.showTableMenu = false;
     this.showCustomTableModal = false;
     this.contentTab = 'write';
@@ -710,14 +713,34 @@ export class HomeRemediesComponent implements OnInit, OnDestroy {
   public closeModal(): void {
     this.isCreateModalOpen = false;
     this.formError = '';
+    this.titleError = '';
     this.isSaving = false;
     this.showTableMenu = false;
     this.showCustomTableModal = false;
     this.contentTab = 'write';
   }
 
+  public onTitleInput(): void {
+    const raw = (this.formModel.title || '').trim();
+    if (!raw) {
+      this.titleError = '';
+      return;
+    }
+    const currentId = this.isEditing && this.formModel.id !== undefined && this.formModel.id !== null ? Number(this.formModel.id) : null;
+    const isDuplicate = this.remedies.some(r =>
+      (currentId === null || Number(r.id) !== currentId) &&
+      r.title && r.title.trim().toLowerCase() === raw.toLowerCase()
+    );
+    if (isDuplicate) {
+      this.titleError = 'A home remedy with this title already exists. Please choose a unique title.';
+    } else {
+      this.titleError = '';
+    }
+  }
+
   public saveRemedy(): void {
     this.formError = '';
+    this.titleError = '';
 
     const title = this.formModel.title ? this.formModel.title.trim() : '';
     const description = this.formModel.description ? this.formModel.description.trim() : '';
@@ -736,6 +759,16 @@ export class HomeRemediesComponent implements OnInit, OnDestroy {
     }
     if (/^\d+$/.test(title)) {
       this.formError = 'Remedy title cannot contain only numbers.';
+      return;
+    }
+    const currentId = this.isEditing && this.formModel.id !== undefined && this.formModel.id !== null ? Number(this.formModel.id) : null;
+    const isDuplicateTitle = this.remedies.some(r =>
+      (currentId === null || Number(r.id) !== currentId) &&
+      r.title && r.title.trim().toLowerCase() === title.toLowerCase()
+    );
+    if (isDuplicateTitle) {
+      this.titleError = 'A home remedy with this title already exists. Please choose a unique title.';
+      this.formError = this.titleError;
       return;
     }
     if (!this.formModel.category || !this.formModel.category.trim()) {
@@ -813,7 +846,11 @@ export class HomeRemediesComponent implements OnInit, OnDestroy {
       },
       error: (err: any) => {
         this.isSaving = false;
-        this.formError = err?.error?.message || err?.message || 'Failed to save home remedy. Please try again.';
+        const msg = err?.error?.message || err?.message || 'Failed to save home remedy. Please try again.';
+        if (typeof msg === 'string' && (msg.toLowerCase().includes('already exists') || msg.toLowerCase().includes('duplicate'))) {
+          this.titleError = msg;
+        }
+        this.formError = msg;
       }
     });
   }
