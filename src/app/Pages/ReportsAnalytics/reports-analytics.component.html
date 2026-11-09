@@ -1,0 +1,166 @@
+<div class="ra-container p-3 p-md-4">
+  <!-- Page Header -->
+  <div class="ra-page-header">
+    <div>
+      <h1 class="ra-page-title">Reports & Analytics</h1>
+      <p class="ra-page-subtitle">Comprehensive insights and performance metrics</p>
+    </div>
+    <div class="ra-header-actions">
+      <select class="ra-time-select" [(ngModel)]="selectedRange" (ngModelChange)="onRangeChange($event)">
+        @for (range of ranges; track range) {
+          <option [value]="range">{{ range }}</option>
+        }
+      </select>
+    </div>
+  </div>
+
+  <!-- 4 Top Stat Cards -->
+  <div class="row g-3 mb-4">
+    @for (card of metrics; track card.title) {
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="ra-stat-card">
+          <div class="ra-stat-top">
+            <span class="ra-stat-label">{{ card.title }}</span>
+            <div class="ra-icon-circle" [ngClass]="'ra-icon-circle-' + card.colorTheme">
+              @if (card.colorTheme === 'green') {
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+              } @else if (card.colorTheme === 'blue') {
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+              } @else if (card.colorTheme === 'purple') {
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+              } @else if (card.colorTheme === 'amber') {
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+              }
+            </div>
+          </div>
+          <div class="ra-stat-value" [ngClass]="'ra-stat-val-' + card.colorTheme">{{ card.value }}</div>
+          <div class="ra-trend-badge">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+            <span>{{ card.trend }}</span>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Row 1: User Engagement & Feature Usage -->
+  <div class="row g-4 mb-4">
+    <!-- User Engagement Trends (Area Line Chart) -->
+    <div class="col-12 col-lg-6">
+      <div class="ra-chart-card">
+        <div class="ra-chart-header">
+          <h2 class="ra-chart-title">User Engagement Trends</h2>
+        </div>
+        <div class="ra-chart-body" style="height: 330px; position: relative;">
+          <canvas baseChart
+            [data]="engagementData"
+            [options]="engagementOptions"
+            [type]="'line'">
+          </canvas>
+        </div>
+        <div class="ra-legend-wrap">
+          <div class="ra-legend-item">
+            <span class="ra-legend-line ra-legend-blue"></span>
+            <span>Total Users</span>
+          </div>
+          <div class="ra-legend-item">
+            <span class="ra-legend-line ra-legend-emerald"></span>
+            <span>Active Users</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feature Usage Distribution (Pie Chart) -->
+    <div class="col-12 col-lg-6">
+      <div class="ra-chart-card">
+        <div class="ra-chart-header">
+          <h2 class="ra-chart-title">Feature Usage Distribution</h2>
+        </div>
+        <div class="ra-chart-body d-flex align-items-center justify-content-center" style="height: 300px; position: relative;">
+          <canvas baseChart
+            [data]="featureUsageData"
+            [options]="featureUsageOptions"
+            [type]="'pie'">
+          </canvas>
+        </div>
+        <div class="ra-pie-pills">
+          @for (slice of featureSlices; track slice.label) {
+            <div class="ra-pie-pill">
+              <span class="ra-legend-dot" [style.background-color]="slice.color"></span>
+              <span>{{ slice.label }} {{ slice.percentage }}%</span>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Row 2: Weekly Appointment Breakdown & Revenue Trends -->
+  <div class="row g-4 mb-4">
+    <!-- Weekly Appointment Breakdown (Grouped Bar Chart) -->
+    <div class="col-12 col-lg-6">
+      <div class="ra-chart-card">
+        <div class="ra-chart-header">
+          <h2 class="ra-chart-title">Weekly Appointment Breakdown</h2>
+        </div>
+        <div class="ra-chart-body" style="height: 330px; position: relative;">
+          <canvas baseChart
+            [data]="appointmentBreakdownData"
+            [options]="appointmentBreakdownOptions"
+            [type]="'bar'">
+          </canvas>
+        </div>
+        <div class="ra-legend-wrap">
+          <div class="ra-legend-item">
+            <span class="ra-legend-box ra-box-blue"></span>
+            <span>Consultations</span>
+          </div>
+          <div class="ra-legend-item">
+            <span class="ra-legend-box ra-box-green"></span>
+            <span>Follow-ups</span>
+          </div>
+          <div class="ra-legend-item">
+            <span class="ra-legend-box ra-box-red"></span>
+            <span>Emergency</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Revenue Trends (Line Chart) -->
+    <div class="col-12 col-lg-6">
+      <div class="ra-chart-card">
+        <div class="ra-chart-header">
+          <h2 class="ra-chart-title">Revenue Trends</h2>
+        </div>
+        <div class="ra-chart-body" style="height: 330px; position: relative;">
+          <canvas baseChart
+            [data]="revenueTrendsData"
+            [options]="revenueTrendsOptions"
+            [type]="'line'">
+          </canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Row 3: User Retention Analysis (Area Line Chart) -->
+  <div class="row g-4 mb-2">
+    <div class="col-12">
+      <div class="ra-chart-card">
+        <div class="ra-chart-header">
+          <h2 class="ra-chart-title">User Retention Analysis</h2>
+        </div>
+        <div class="ra-chart-body" style="height: 280px; position: relative;">
+          <canvas baseChart
+            [data]="retentionData"
+            [options]="retentionOptions"
+            [type]="'line'">
+          </canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+

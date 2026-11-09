@@ -10,7 +10,7 @@ import { WebapiService } from '../../../services/webapi.service';
   selector: 'app-sidebar',
   templateUrl: './sidebar.component.html',
   standalone: false,
-  
+
   styles: [`
     /* Reset host sidebar background to light premium look */
     :host ::ng-deep .app-sidebar {
@@ -352,6 +352,27 @@ export class SidebarComponent implements OnInit {
     },
     {
       type: 'link',
+      title: 'Doctors',
+      route: '/dashboards/doctors',
+      icon: 'pe-7s-id',
+      activeMenu: 'doctorsMenu'
+    },
+    {
+      type: 'link',
+      title: 'Doctor Approvals',
+      route: '/dashboards/doctor-approvals',
+      icon: 'pe-7s-check',
+      activeMenu: 'doctorApprovalsMenu'
+    },
+    {
+      type: 'link',
+      title: 'Appointments',
+      route: '/dashboards/appointments',
+      icon: 'pe-7s-date',
+      activeMenu: 'appointmentsMenu'
+    },
+    {
+      type: 'link',
       title: 'Content',
       route: '/dashboards/content',
       icon: 'pe-7s-note2',
@@ -359,10 +380,24 @@ export class SidebarComponent implements OnInit {
     },
     {
       type: 'link',
+      title: 'Notifications',
+      route: '/dashboards/notifications',
+      icon: 'pe-7s-bell',
+      activeMenu: 'notificationsMenu'
+    },
+    {
+      type: 'link',
       title: 'Preventive Care',
       route: '/dashboards/preventive-care',
       icon: 'pe-7s-like',
       activeMenu: 'preventiveCareMenu'
+    },
+    {
+      type: 'link',
+      title: 'Analytics',
+      route: '/dashboards/reports-analytics',
+      icon: 'pe-7s-graph1',
+      activeMenu: 'analyticsMenu'
     },
     {
       type: 'link',
@@ -457,7 +492,7 @@ export class SidebarComponent implements OnInit {
       if (profileStr) {
         try {
           profile = JSON.parse(profileStr);
-        } catch (e) {}
+        } catch (e) { }
       }
 
       const email = storedEmail || (profile?.email || profile?.username || '').trim().toLowerCase();
@@ -480,6 +515,13 @@ export class SidebarComponent implements OnInit {
             route: '/dashboards/users',
             icon: 'pe-7s-users',
             activeMenu: 'usersMenu'
+          },
+          {
+            type: 'link',
+            title: 'Doctors',
+            route: '/dashboards/doctors',
+            icon: 'pe-7s-id',
+            activeMenu: 'doctorsMenu'
           },
           {
             type: 'link',

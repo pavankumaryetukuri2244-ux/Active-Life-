@@ -515,5 +515,258 @@ export class WebapiService {
     const url = `${this.WebApi}/api/v1/support-groups/join`;
     return this.Http.post<any>(url, { groupId, ...memberData }, { headers });
   }
-}
 
+  // ==========================================
+  // Doctor Management API Methods
+  // ==========================================
+  public GetDoctors(filters: any = {}) {
+    const token = localStorage.getItem('accessToken');
+    let headers = new HttpHeaders({
+      'Content-Type': 'application/json'
+    });
+    if (token && token !== 'null' && token !== 'undefined') {
+      const cleanToken = token.replace(/^"(.*)"$/, '$1').trim();
+      headers = headers.set('Authorization', 'Bearer ' + cleanToken);
+    }
+    const url = this.WebApi + '/admin/api/doctors/list';
+    return this.Http.post<any>(url, filters, { headers });
+  }
+
+  public EditDoctor(body: {
+    id: number;
+    fullName?: string;
+    email?: string;
+    mobileNumber?: string;
+    gender?: string;
+    hospitalName?: string;
+    specializationId?: number;
+    qualification?: string;
+    address?: string;
+    pinCode?: string;
+    consultationFee?: number;
+    [key: string]: any;
+  }) {
+    const token = localStorage.getItem('accessToken');
+    let headers = new HttpHeaders({
+      'Content-Type': 'application/json'
+    });
+    if (token && token !== 'null' && token !== 'undefined') {
+      const cleanToken = token.replace(/^"(.*)"$/, '$1').trim();
+      headers = headers.set('Authorization', 'Bearer ' + cleanToken);
+    }
+    const url = `${this.WebApi}/admin/api/doctors/edit`;
+    return this.Http.post<any>(url, body, { headers });
+  }
+
+  public ToggleDoctorStatus(body: { id: number; isActive: boolean }) {
+    const token = localStorage.getItem('accessToken');
+    let headers = new HttpHeaders({
+      'Content-Type': 'application/json'
+    });
+    if (token && token !== 'null' && token !== 'undefined') {
+      const cleanToken = token.replace(/^"(.*)"$/, '$1').trim();
+      headers = headers.set('Authorization', 'Bearer ' + cleanToken);
+    }
+    const payload = {
+      id: Number(body.id),
+      isActive: Boolean(body.isActive)
+    };
+    const url = `${this.WebApi}/admin/api/doctors/toggle-status`;
+    return this.Http.post<any>(url, payload, { headers });
+  }
+
+  public GetDoctorAvailability(body: { id: number | string }) {
+    const token = localStorage.getItem('accessToken');
+    let headers = new HttpHeaders({
+      'Content-Type': 'application/json'
+    });
+    if (token && token !== 'null' && token !== 'undefined') {
+      const cleanToken = token.replace(/^"(.*)"$/, '$1').trim();
+      headers = headers.set('Authorization', 'Bearer ' + cleanToken);
+    }
+    const payload = {
+      id: Number(body.id)
+    };
+    const url = `${this.WebApi}/admin/api/doctors/availability/list`;
+    console.log('[WebapiService] POST GetDoctorAvailability:', url, payload);
+    return this.Http.post<any>(url, payload, { headers });
+  }
+
+  public UpdateDoctorAvailability(body: {
+    id: number | string;
+    day: string;
+    open: boolean;
+    sessions: Array<{
+      startTime: string;
+      endTime: string;
+      hospitalId?: number;
+      hospitalName?: string;
+      location?: string;
+    }>;
+  }) {
+    const token = localStorage.getItem('accessToken');
+    let headers = new HttpHeaders({
+      'Content-Type': 'application/json'
+    });
+    if (token && token !== 'null' && token !== 'undefined') {
+      const cleanToken = token.replace(/^"(.*)"$/, '$1').trim();
+      headers = headers.set('Authorization', 'Bearer ' + cleanToken);
+    }
+    const payload = {
+      id: Number(body.id),
+      day: String(body.day).toUpperCase().trim(),
+      open: Boolean(body.open),
+      sessions: Array.isArray(body.sessions) ? body.sessions.map((s: any) => ({
+        startTime: String(s.startTime || '09:00').trim(),
+        endTime: String(s.endTime || '12:00').trim(),
+        hospitalId: Number(s.hospitalId) || 1
+      })) : []
+    };
+    const url = `${this.WebApi}/admin/api/doctors/availability/update`;
+    console.log('[WebapiService] POST UpdateDoctorAvailability:', url, payload);
+    return this.Http.post<any>(url, payload, { headers });
+  }
+
+  public SaveDoctorAvailability(body: any) {
+    if (body && body.day) {
+      return this.UpdateDoctorAvailability(body);
+    }
+    const token = localStorage.getItem('accessToken');
+    let headers = new HttpHeaders({
+      'Content-Type': 'application/json'
+    });
+    if (token && token !== 'null' && token !== 'undefined') {
+      const cleanToken = token.replace(/^"(.*)"$/, '$1').trim();
+      headers = headers.set('Authorization', 'Bearer ' + cleanToken);
+    }
+    const url = `${this.WebApi}/admin/api/doctors/availability/update`;
+    console.log('[WebapiService] POST SaveDoctorAvailability:', url, body);
+    return this.Http.post<any>(url, body, { headers });
+  }
+
+  // ==========================================
+  // Doctor Approval API Methods
+  // ==========================================
+  public GetDoctorApprovals(filters: any = {}) {
+    const token = localStorage.getItem('accessToken');
+    let headers = new HttpHeaders({
+      'Content-Type': 'application/json'
+    });
+    if (token) {
+      headers = headers.set('Authorization', 'Bearer ' + token);
+    }
+    const url = `${this.WebApi}/admin/api/doctor-approvals/list`;
+    return this.Http.post<any>(url, filters, { headers });
+  }
+
+  public UpdateDoctorApprovalStatus(body: { id: number; status: 'APPROVED' | 'REJECTED'; rejectionReason?: string }) {
+    const token = localStorage.getItem('accessToken');
+    let headers = new HttpHeaders({
+      'Content-Type': 'application/json'
+    });
+    if (token && token !== 'null' && token !== 'undefined') {
+      const cleanToken = token.replace(/^"(.*)"$/, '$1').trim();
+      headers = headers.set('Authorization', 'Bearer ' + cleanToken);
+    }
+    const payload: { id: number; status: 'APPROVED' | 'REJECTED'; rejectionReason?: string } = {
+      id: Number(body.id),
+      status: body.status
+    };
+    if (body.status === 'REJECTED') {
+      payload.rejectionReason = (body.rejectionReason && body.rejectionReason.trim())
+        ? body.rejectionReason.trim()
+        : 'Application rejected by administrator';
+    }
+    const url = `${this.WebApi}/admin/api/doctor-approvals/update-status`;
+    console.log('[WebapiService] POST UpdateDoctorApprovalStatus:', url, payload);
+    return this.Http.post<any>(url, payload, { headers });
+  }
+
+  // ==========================================
+  // Appointment Management API Methods
+  // ==========================================
+  public GetAppointments(filters: any = {}) {
+    const token = localStorage.getItem('accessToken');
+    let headers = new HttpHeaders({
+      'Content-Type': 'application/json'
+    });
+    if (token && token !== 'null' && token !== 'undefined') {
+      const cleanToken = token.replace(/^"(.*)"$/, '$1').trim();
+      headers = headers.set('Authorization', 'Bearer ' + cleanToken);
+    }
+    const url = `${this.WebApi}/admin/api/appointments/list`;
+    console.log('[WebapiService] POST GetAppointments:', url, filters);
+    return this.Http.post<any>(url, filters, { headers });
+  }
+
+  public MarkAppointmentComplete(body: { id: number | string }) {
+    const token = localStorage.getItem('accessToken');
+    let headers = new HttpHeaders({
+      'Content-Type': 'application/json'
+    });
+    if (token && token !== 'null' && token !== 'undefined') {
+      const cleanToken = token.replace(/^"(.*)"$/, '$1').trim();
+      headers = headers.set('Authorization', 'Bearer ' + cleanToken);
+    }
+    const url = `${this.WebApi}/admin/api/appointments/mark-complete`;
+    return this.Http.post<any>(url, body, { headers });
+  }
+
+  public CancelAppointment(body: { id: number | string; reason?: string }) {
+    const token = localStorage.getItem('accessToken');
+    let headers = new HttpHeaders({
+      'Content-Type': 'application/json'
+    });
+    if (token && token !== 'null' && token !== 'undefined') {
+      const cleanToken = token.replace(/^"(.*)"$/, '$1').trim();
+      headers = headers.set('Authorization', 'Bearer ' + cleanToken);
+    }
+    const payload = {
+      id: Number(body.id),
+      reason: (body.reason && body.reason.trim()) ? body.reason.trim() : 'Cancelled by administrator'
+    };
+    const url = `${this.WebApi}/admin/api/appointments/cancel`;
+    console.log('[WebapiService] POST CancelAppointment:', url, payload);
+    return this.Http.post<any>(url, payload, { headers });
+  }
+
+  // ==========================================
+  // Notification Management API Methods
+  // ==========================================
+  public GetNotifications(filters: any = {}) {
+    const token = localStorage.getItem('accessToken');
+    let headers = new HttpHeaders({
+      'Content-Type': 'application/json'
+    });
+    if (token) {
+      headers = headers.set('Authorization', 'Bearer ' + token);
+    }
+    const url = `${this.WebApi}/admin/api/notifications/list`;
+    return this.Http.post<any>(url, filters, { headers });
+  }
+
+  public CreateNotification(body: any) {
+    const token = localStorage.getItem('accessToken');
+    let headers = new HttpHeaders({
+      'Content-Type': 'application/json'
+    });
+    if (token) {
+      headers = headers.set('Authorization', 'Bearer ' + token);
+    }
+    const url = `${this.WebApi}/admin/api/notifications/create`;
+    return this.Http.post<any>(url, body, { headers });
+  }
+
+  public GetTargetAudiences() {
+    const token = localStorage.getItem('accessToken');
+    let headers = new HttpHeaders({
+      'Content-Type': 'application/json'
+    });
+    if (token && token !== 'null' && token !== 'undefined') {
+      const cleanToken = token.replace(/^"(.*)"$/, '$1').trim();
+      headers = headers.set('Authorization', 'Bearer ' + cleanToken);
+    }
+    const url = `${this.WebApi}/admin/api/masterdata/target-audiences`;
+    return this.Http.get<any>(url, { headers });
+  }
+}

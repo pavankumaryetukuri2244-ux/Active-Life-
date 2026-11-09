@@ -1,0 +1,1184 @@
+<!-- Page Title Header (matching User Management styling aligned to left) -->
+<div class="db-header-container mb-3 text-start" style="text-align: left !important; align-items: flex-start !important;">
+  <h1 class="um-page-title" style="text-align: left !important;">Doctor Management</h1>
+  <p class="um-page-subtitle" style="text-align: left !important;">Manage doctor profiles and approvals</p>
+</div>
+
+<!-- Three Stat Cards (matching User Management stat cards, Average Rating removed) -->
+<div class="row mb-4 g-3">
+  <!-- Total Doctors -->
+  <div class="col-sm-6 col-md-4 mb-3 mb-md-0">
+    <div class="um-stat-card um-stat-card-purple">
+      <span class="um-stat-label">Total Doctors</span>
+      <h2 class="um-stat-value um-stat-value-purple">
+        {{ totalDoctorsCount | number }}
+      </h2>
+    </div>
+  </div>
+
+  <!-- Active Doctors -->
+  <div class="col-sm-6 col-md-4 mb-3 mb-md-0">
+    <div class="um-stat-card um-stat-card-green">
+      <span class="um-stat-label">Active Doctors</span>
+      <h2 class="um-stat-value um-stat-value-green">
+        {{ activeDoctorsCount | number }}
+      </h2>
+    </div>
+  </div>
+
+  <!-- Pending Approval -->
+  <div class="col-sm-6 col-md-4 mb-3 mb-md-0">
+    <div class="um-stat-card um-stat-card-yellow">
+      <span class="um-stat-label">Pending Approval</span>
+      <h2 class="um-stat-value um-stat-value-yellow">
+        {{ pendingApprovalCount | number }}
+      </h2>
+    </div>
+  </div>
+</div>
+
+<!-- Search & Filter Card (matching Figma exact look) -->
+<div class="row mb-4">
+  <div class="col-md-12">
+    <div class="um-filter-card">
+      <div class="d-flex flex-column" style="gap: 12px;">
+        <!-- Full-Width Compact Search Bar -->
+        <div class="um-search-wrapper w-100">
+          <svg class="um-search-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <input
+            type="text"
+            [(ngModel)]="searchQuery"
+            (input)="onSearchInput($event)"
+            placeholder="Search doctors by name, specialization, or ID..."
+            class="um-search-input">
+        </div>
+
+        <!-- Status & Approval Tab Filter Chips -->
+        <div class="d-flex flex-wrap" style="gap: 8px;">
+          <button type="button" (click)="setTab('All')" class="um-tab-btn" [class.active]="activeTab === 'All'">
+            All
+          </button>
+          <button type="button" (click)="setTab('Approved')" class="um-tab-btn" [class.active]="activeTab === 'Approved'">
+            Approved
+          </button>
+          <button type="button" (click)="setTab('Pending')" class="um-tab-btn" [class.active]="activeTab === 'Pending'">
+            Pending
+          </button>
+          <button type="button" (click)="setTab('Rejected')" class="um-tab-btn" [class.active]="activeTab === 'Rejected'">
+            Rejected
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- Toast Notification -->
+@if (toastMessage) {
+  <div style="position: fixed; top: 20px; right: 20px; z-index: 99999; min-width: 280px; max-width: 420px; animation: slideIn 0.25s ease;"
+    [style.background]="toastType === 'success' ? '#0F172A' : '#EF4444'"
+    class="text-white px-3 py-2 rounded-3 shadow-lg d-flex align-items-center justify-content-between">
+    <div class="d-flex align-items-center" style="gap: 10px;">
+      @if (toastType === 'success') {
+        <svg width="18" height="18" fill="none" stroke="#22C55E" stroke-width="2.5" viewBox="0 0 24 24">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+      } @else {
+        <svg width="18" height="18" fill="none" stroke="#FFFFFF" stroke-width="2.5" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="15" y1="9" x2="9" y2="15"></line>
+          <line x1="9" y1="9" x2="15" y2="15"></line>
+        </svg>
+      }
+      <span style="font-size: 13.5px; font-weight: 500;">{{ toastMessage }}</span>
+    </div>
+    <button type="button" (click)="toastMessage = ''" class="btn-close btn-close-white ms-2" style="font-size: 10px;"></button>
+  </div>
+}
+
+<!-- Table Card (matching User Management table card & styling) -->
+<div class="row">
+  <div class="col-md-12">
+    <div class="um-table-card mb-4">
+      <div class="table-responsive" style="overflow: visible !important;">
+        <table class="um-table">
+          <thead>
+            <tr>
+              <th class="col-id">DOCTOR ID</th>
+              <th>NAME</th>
+              <th>SPECIALIZATION</th>
+              <th>EXPERIENCE</th>
+              <th>STATUS</th>
+              <th>APPROVAL</th>
+              <th class="col-actions">ACTIONS</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (doc of paginatedDoctors; track doc.id; let i = $index) {
+              <tr>
+                <!-- Doctor ID -->
+                <td class="col-id">
+                  {{ doc.id }}
+                </td>
+
+                <!-- Name with Avatar Circle & Patient Subtitle (User Management style) -->
+                <td>
+                  <div class="d-flex align-items-center" style="gap: 12px;">
+                    <div class="um-avatar-circle" [style.background]="doc.avatarBg">
+                      {{ doc.initial }}
+                    </div>
+                    <div class="d-flex flex-column" style="gap: 1px;">
+                      <span class="um-user-name">
+                        {{ doc.name }}
+                      </span>
+                      <span class="um-user-email">
+                        {{ doc.patientsCount }} patients
+                      </span>
+                    </div>
+                  </div>
+                </td>
+
+                <!-- Specialization -->
+                <td class="col-text">
+                  <span style="font-weight: 500; color: #1E293B;">{{ doc.specialization }}</span>
+                </td>
+
+                <!-- Experience -->
+                <td class="col-text">
+                  {{ doc.experience }}
+                </td>
+
+                <!-- Status Chip -->
+                <td>
+                  <span class="um-status-badge"
+                    (click)="toggleStatus(doc)"
+                    style="cursor: pointer;"
+                    title="Click to toggle status"
+                    [ngClass]="doc.status === 'Active' ? 'um-status-active' : 'um-status-inactive'">
+                    {{ doc.status }}
+                  </span>
+                </td>
+
+                <!-- Approval Chip -->
+                <td>
+                  <span class="um-status-badge"
+                    [ngClass]="{
+                      'um-approval-approved': doc.approval === 'Approved',
+                      'um-approval-pending': doc.approval === 'Pending',
+                      'um-approval-rejected': doc.approval === 'Rejected'
+                    }">
+                    {{ doc.approval }}
+                  </span>
+                </td>
+
+                <!-- Actions Dropdown -->
+                <td class="col-actions">
+                  <div style="position: relative; display: inline-block;">
+                    <!-- ⋮ Trigger Button -->
+                    <button class="um-action-btn" (click)="toggleDropdown(doc.id, $event)">
+                      &#8942;
+                    </button>
+
+                    <!-- Dropdown Menu -->
+                    @if (openDropdownId === doc.id) {
+                      <div
+                        [style.top]="(i >= paginatedDoctors.length - 2 && paginatedDoctors.length > 3) ? 'auto' : '36px'"
+                        [style.bottom]="(i >= paginatedDoctors.length - 2 && paginatedDoctors.length > 3) ? '36px' : 'auto'"
+                        style="position: absolute; right: 0; z-index: 99999; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 10px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1); min-width: 190px; padding: 6px 0; font-family: 'Inter', sans-serif;">
+
+                        <!-- 1. APPROVED DOCTORS: view, edit, availability, view documents, set inactive -->
+                        @if (doc.approval === 'Approved') {
+                          <!-- View -->
+                          <button class="dropdown-action-btn" (click)="viewDoctor(doc); closeDropdown()">
+                            <svg width="15" height="15" fill="none" stroke="#64748B" stroke-width="1.8" viewBox="0 0 24 24">
+                              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                              <circle cx="12" cy="12" r="3" />
+                            </svg>
+                            View
+                          </button>
+
+                          <!-- Edit -->
+                          <button class="dropdown-action-btn" (click)="openEditModal(doc); closeDropdown()">
+                            <svg width="15" height="15" fill="none" stroke="#64748B" stroke-width="1.8" viewBox="0 0 24 24">
+                              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                            </svg>
+                            Edit
+                          </button>
+
+                          <!-- Set Availability -->
+                          <button class="dropdown-action-btn" (click)="openAvailabilityModal(doc); closeDropdown()">
+                            <svg width="15" height="15" fill="none" stroke="#64748B" stroke-width="1.8" viewBox="0 0 24 24">
+                              <circle cx="12" cy="12" r="10"></circle>
+                              <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                            Set Availability
+                          </button>
+
+                          <!-- View Documents -->
+                          <button class="dropdown-action-btn" (click)="openDocumentsModal(doc); closeDropdown()">
+                            <svg width="15" height="15" fill="none" stroke="#64748B" stroke-width="1.8" viewBox="0 0 24 24">
+                              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                              <polyline points="14 2 14 8 20 8"></polyline>
+                              <line x1="16" y1="13" x2="8" y2="13"></line>
+                              <line x1="16" y1="17" x2="8" y2="17"></line>
+                            </svg>
+                            View Documents
+                          </button>
+
+                          <div style="height: 1px; background: #F1F5F9; margin: 4px 0;"></div>
+
+                          <!-- Set Inactive / Set Active -->
+                          @if (doc.status === 'Active') {
+                            <button class="dropdown-action-btn" (click)="setDoctorStatus(doc, 'Inactive'); closeDropdown()" style="color: #DC2626;">
+                              <svg width="15" height="15" fill="none" stroke="#DC2626" stroke-width="2" viewBox="0 0 24 24">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="15" y1="9" x2="9" y2="15"></line>
+                                <line x1="9" y1="9" x2="15" y2="15"></line>
+                              </svg>
+                              Set Inactive
+                            </button>
+                          } @else {
+                            <button class="dropdown-action-btn" (click)="setDoctorStatus(doc, 'Active'); closeDropdown()" style="color: #16A34A;">
+                              <svg width="15" height="15" fill="none" stroke="#16A34A" stroke-width="2" viewBox="0 0 24 24">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                              </svg>
+                              Set Active
+                            </button>
+                          }
+                        }
+
+                        <!-- 2. PENDING DOCTORS: view & edit -->
+                        @else if (doc.approval === 'Pending') {
+                          <!-- View -->
+                          <button class="dropdown-action-btn" (click)="viewDoctor(doc); closeDropdown()">
+                            <svg width="15" height="15" fill="none" stroke="#64748B" stroke-width="1.8" viewBox="0 0 24 24">
+                              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                              <circle cx="12" cy="12" r="3" />
+                            </svg>
+                            View
+                          </button>
+
+                          <!-- Edit -->
+                          <button class="dropdown-action-btn" (click)="openEditModal(doc); closeDropdown()">
+                            <svg width="15" height="15" fill="none" stroke="#64748B" stroke-width="1.8" viewBox="0 0 24 24">
+                              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                            </svg>
+                            Edit
+                          </button>
+
+                          <div style="height: 1px; background: #F1F5F9; margin: 4px 0;"></div>
+
+                          <!-- Set Inactive / Set Active -->
+                          @if (doc.status === 'Active') {
+                            <button class="dropdown-action-btn" (click)="setDoctorStatus(doc, 'Inactive'); closeDropdown()" style="color: #DC2626;">
+                              <svg width="15" height="15" fill="none" stroke="#DC2626" stroke-width="2" viewBox="0 0 24 24">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="15" y1="9" x2="9" y2="15"></line>
+                                <line x1="9" y1="9" x2="15" y2="15"></line>
+                              </svg>
+                              Set Inactive
+                            </button>
+                          } @else {
+                            <button class="dropdown-action-btn" (click)="setDoctorStatus(doc, 'Active'); closeDropdown()" style="color: #16A34A;">
+                              <svg width="15" height="15" fill="none" stroke="#16A34A" stroke-width="2" viewBox="0 0 24 24">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                              </svg>
+                              Set Active
+                            </button>
+                          }
+                        }
+
+                        <!-- 3. REJECTED DOCTORS: view, edit and set active/inactive -->
+                        @else if (doc.approval === 'Rejected') {
+                          <!-- View -->
+                          <button class="dropdown-action-btn" (click)="viewDoctor(doc); closeDropdown()">
+                            <svg width="15" height="15" fill="none" stroke="#64748B" stroke-width="1.8" viewBox="0 0 24 24">
+                              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                              <circle cx="12" cy="12" r="3" />
+                            </svg>
+                            View
+                          </button>
+
+                          <!-- Edit -->
+                          <button class="dropdown-action-btn" (click)="openEditModal(doc); closeDropdown()">
+                            <svg width="15" height="15" fill="none" stroke="#64748B" stroke-width="1.8" viewBox="0 0 24 24">
+                              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                            </svg>
+                            Edit
+                          </button>
+
+                          <div style="height: 1px; background: #F1F5F9; margin: 4px 0;"></div>
+
+                          <!-- Set Inactive / Set Active -->
+                          @if (doc.status === 'Active') {
+                            <button class="dropdown-action-btn" (click)="setDoctorStatus(doc, 'Inactive'); closeDropdown()" style="color: #DC2626;">
+                              <svg width="15" height="15" fill="none" stroke="#DC2626" stroke-width="2" viewBox="0 0 24 24">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="15" y1="9" x2="9" y2="15"></line>
+                                <line x1="9" y1="9" x2="15" y2="15"></line>
+                              </svg>
+                              Set Inactive
+                            </button>
+                          } @else {
+                            <button class="dropdown-action-btn" (click)="setDoctorStatus(doc, 'Active'); closeDropdown()" style="color: #16A34A;">
+                              <svg width="15" height="15" fill="none" stroke="#16A34A" stroke-width="2" viewBox="0 0 24 24">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                              </svg>
+                              Set Active
+                            </button>
+                          }
+                        }
+                      </div>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Empty State -->
+      @if (filteredDoctors.length === 0) {
+        <div class="text-center py-5 px-3">
+          <div class="d-inline-flex p-3 rounded-circle bg-light text-muted mb-3">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </div>
+          <h4 style="font-size: 16px; font-weight: 600; color: #0F172A;">No doctors found</h4>
+          <p class="text-muted small mb-3">No doctor records match your current search or status filter.</p>
+          <button type="button" class="btn btn-sm btn-outline-secondary" (click)="setTab('All'); searchQuery = ''; applyFilters()">
+            Reset Filters
+          </button>
+        </div>
+      }
+
+      <!-- Pagination (matching User Management bottom pagination) -->
+      @if (filteredDoctors.length > 0) {
+        <div class="d-flex align-items-center justify-content-between p-3 border-top flex-wrap" style="gap: 12px;">
+          <span class="text-muted small">
+            Showing {{ ((currentPage - 1) * pageSize) + 1 }} to {{ Math.min(currentPage * pageSize, filteredDoctors.length) }} of {{ filteredDoctors.length }} doctors
+          </span>
+          @if (totalPages > 1) {
+            <div class="d-flex align-items-center" style="gap: 6px;">
+              <button type="button" class="btn btn-sm btn-light" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">
+                Previous
+              </button>
+              <span class="small px-2 text-dark font-weight-bold">Page {{ currentPage }} of {{ totalPages }}</span>
+              <button type="button" class="btn btn-sm btn-light" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">
+                Next
+              </button>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+</div>
+
+<!-- View Profile Modal -->
+@if (isViewModalOpen && selectedDoctor) {
+  <div class="dm-modal-backdrop" (click)="closeViewModal()">
+    <div class="dm-modal-content p-4" (click)="$event.stopPropagation()">
+      <!-- Header -->
+      <div class="d-flex align-items-center justify-content-between pb-3 border-bottom mb-3">
+        <div class="d-flex align-items-center" style="gap: 12px;">
+          <div class="um-avatar-circle" [style.background]="selectedDoctor.avatarBg" style="width: 48px; height: 48px; font-size: 18px;">
+            {{ selectedDoctor.initial }}
+          </div>
+          <div>
+            <h3 style="font-size: 18px; font-weight: 700; color: #0F172A; margin: 0;">
+              {{ selectedDoctor.name }}
+            </h3>
+            <span class="text-muted small">{{ selectedDoctor.id }} • {{ selectedDoctor.specialization }}</span>
+          </div>
+        </div>
+        <button type="button" class="btn btn-sm btn-light rounded-circle p-2" (click)="closeViewModal()">✕</button>
+      </div>
+
+      <!-- Chips row -->
+      <div class="d-flex align-items-center mb-3" style="gap: 8px;">
+        <span class="um-status-badge"
+          [ngClass]="selectedDoctor.status === 'Active' ? 'um-status-active' : 'um-status-inactive'">
+          {{ selectedDoctor.status }}
+        </span>
+        <span class="um-status-badge"
+          [ngClass]="{
+            'um-approval-approved': selectedDoctor.approval === 'Approved',
+            'um-approval-pending': selectedDoctor.approval === 'Pending',
+            'um-approval-rejected': selectedDoctor.approval === 'Rejected'
+          }">
+          {{ selectedDoctor.approval }}
+        </span>
+        @if (selectedDoctor.approval === 'Approved' && selectedDoctor.rating) {
+          <span style="font-weight: 600; color: #1E293B; display: inline-flex; align-items: center; gap: 3px; font-size: 13.5px;" class="ms-2">
+            {{ selectedDoctor.rating }} <span style="color: #F59E0B; font-size: 12px;">★</span>
+          </span>
+        } @else {
+          <span class="text-muted small ms-2 fw-semibold">Rating: N/A</span>
+        }
+      </div>
+
+      <!-- Details Grid -->
+      <div class="row g-3 small mb-3">
+        <div class="col-6">
+          <div class="text-muted">Specialization</div>
+          <div class="fw-semibold text-dark">{{ selectedDoctor.specialization }}</div>
+        </div>
+        <div class="col-6">
+          <div class="text-muted">Experience</div>
+          <div class="fw-semibold text-dark">{{ selectedDoctor.experience }}</div>
+        </div>
+        <div class="col-6">
+          <div class="text-muted">Total Patients</div>
+          <div class="fw-semibold text-dark">{{ selectedDoctor.patientsCount }} patients</div>
+        </div>
+        <div class="col-6">
+          <div class="text-muted">Hospital / Clinic</div>
+          <div class="fw-semibold text-dark">{{ selectedDoctor.hospitalName || 'Health Center Hospital' }}</div>
+        </div>
+        <div class="col-6">
+          <div class="text-muted">Email</div>
+          <div class="fw-semibold text-dark">{{ selectedDoctor.email || 'doctor@healthadmin.com' }}</div>
+        </div>
+        <div class="col-6">
+          <div class="text-muted">Phone</div>
+          <div class="fw-semibold text-dark">{{ selectedDoctor.phone || '+91 9876543210' }}</div>
+        </div>
+        <div class="col-6">
+          <div class="text-muted">Gender</div>
+          <div class="fw-semibold text-dark">{{ selectedDoctor.gender || 'Not Specified' }}</div>
+        </div>
+        <div class="col-6">
+          <div class="text-muted">Consultation Fee</div>
+          <div class="fw-semibold text-dark">₹{{ selectedDoctor.consultationFee || 500 }}</div>
+        </div>
+        <div class="col-12">
+          <div class="text-muted">Qualification</div>
+          <div class="fw-semibold text-dark">{{ selectedDoctor.qualification || 'MBBS, MD' }}</div>
+        </div>
+        <div class="col-12">
+          <div class="text-muted">Address</div>
+          <div class="text-secondary" style="line-height: 1.5;">
+            {{ selectedDoctor.address || selectedDoctor.about || 'Banjara Hills, Hyderabad' }}
+            @if (selectedDoctor.pinCode) {
+              <span> (Pin: {{ selectedDoctor.pinCode }})</span>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-end pt-3 border-top" style="gap: 10px;">
+        <button type="button" class="btn btn-sm btn-light" (click)="closeViewModal()">Close</button>
+        <button type="button" class="btn btn-sm btn-outline-primary" (click)="closeViewModal(); openEditModal(selectedDoctor)">Edit Profile</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Add / Edit Doctor Modal -->
+@if (isAddModalOpen) {
+  <div class="dm-modal-backdrop" (click)="closeAddModal()">
+    <div class="dm-modal-content p-4" (click)="$event.stopPropagation()">
+      <!-- Header -->
+      <div class="d-flex align-items-center justify-content-between pb-3 border-bottom mb-3">
+        <div>
+          <h3 style="font-size: 18px; font-weight: 700; color: #0F172A; margin: 0;">
+            {{ isEditing ? 'Edit Doctor Profile' : 'Add New Doctor' }}
+          </h3>
+          <p class="text-muted small m-0 mt-1">Configure doctor credentials, medical department, and status</p>
+        </div>
+        <button type="button" class="btn btn-sm btn-light rounded-circle p-2" (click)="closeAddModal()">✕</button>
+      </div>
+
+      @if (formError) {
+        <div class="alert alert-danger py-2 px-3 small mb-3 rounded-3">{{ formError }}</div>
+      }
+
+      <form (ngSubmit)="saveDoctor()">
+        <div class="row g-3">
+          <!-- Doctor Full Name -->
+          <div class="col-md-6">
+            <label class="form-label small fw-semibold text-dark">Doctor Full Name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" [(ngModel)]="formModel.name" name="name" placeholder="e.g. Dr. Emily Roberts" required>
+          </div>
+
+          <!-- Email Address -->
+          <div class="col-md-6">
+            <label class="form-label small fw-semibold text-dark">Email Address <span class="text-danger">*</span></label>
+            <input type="email" class="form-control" [(ngModel)]="formModel.email" name="email" placeholder="e.g. emily.roberts@hospital.com" required>
+          </div>
+
+          <!-- Mobile Number -->
+          <div class="col-md-6">
+            <label class="form-label small fw-semibold text-dark">Mobile Number <span class="text-danger">*</span></label>
+            <input type="tel" class="form-control" [(ngModel)]="formModel.phone" name="phone" placeholder="e.g. +919876543710" required>
+          </div>
+
+          <!-- Gender -->
+          <div class="col-md-6">
+            <label class="form-label small fw-semibold text-dark">Gender <span class="text-danger">*</span></label>
+            <select class="form-select" [(ngModel)]="formModel.gender" name="gender" required>
+              <option value="FEMALE">Female</option>
+              <option value="MALE">Male</option>
+              <option value="OTHER">Other</option>
+            </select>
+          </div>
+
+          <!-- Specialization -->
+          <div class="col-md-6">
+            <label class="form-label small fw-semibold text-dark">Specialization <span class="text-danger">*</span></label>
+            <select class="form-select" [ngModel]="formModel.specializationId" (ngModelChange)="onSpecializationChange($event)" name="specializationId" required>
+              @for (spec of specializationOptions; track spec.id) {
+                <option [value]="spec.id">{{ spec.name }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- Qualification -->
+          <div class="col-md-6">
+            <label class="form-label small fw-semibold text-dark">Qualification <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" [(ngModel)]="formModel.qualification" name="qualification" placeholder="e.g. MD, MBBS" required>
+          </div>
+
+          <!-- Hospital / Clinic -->
+          <div class="col-md-6">
+            <label class="form-label small fw-semibold text-dark">Hospital / Clinic <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" [(ngModel)]="formModel.hospitalName" name="hospitalName" placeholder="e.g. City Hospital" required>
+          </div>
+
+          <!-- Consultation Fee -->
+          <div class="col-md-6">
+            <label class="form-label small fw-semibold text-dark">Consultation Fee (₹) <span class="text-danger">*</span></label>
+            <input type="number" class="form-control" [(ngModel)]="formModel.consultationFee" name="consultationFee" min="0" placeholder="e.g. 500" required>
+          </div>
+
+          <!-- Address -->
+          <div class="col-md-8">
+            <label class="form-label small fw-semibold text-dark">Address <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" [(ngModel)]="formModel.address" name="address" placeholder="e.g. Banjara Hills, Hyderabad" required>
+          </div>
+
+          <!-- Pin Code -->
+          <div class="col-md-4">
+            <label class="form-label small fw-semibold text-dark">Pin Code <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" [(ngModel)]="formModel.pinCode" name="pinCode" placeholder="e.g. 500034" required>
+          </div>
+
+          <!-- Experience (Years) -->
+          <div class="col-md-6">
+            <label class="form-label small fw-semibold text-dark">Experience (Years)</label>
+            <input type="number" class="form-control" [(ngModel)]="formModel.experienceYears" name="experienceYears" min="1" max="50">
+          </div>
+
+          <!-- Status -->
+          <div class="col-md-6">
+            <label class="form-label small fw-semibold text-dark">Status</label>
+            <select class="form-select" [(ngModel)]="formModel.status" name="status">
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-end pt-3 border-top mt-4" style="gap: 12px;">
+          <button type="button" class="btn btn-light" [disabled]="isSubmitting" (click)="closeAddModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary d-flex align-items-center" [disabled]="isSubmitting"
+            style="background: linear-gradient(135deg, #7C3AED 0%, #9333EA 100%); border: none; border-radius: 10px; padding: 9px 20px; gap: 8px;">
+            @if (isSubmitting) {
+              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              <span>Updating...</span>
+            } @else {
+              <span>{{ isEditing ? 'Update Doctor' : 'Save Doctor' }}</span>
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+
+<!-- Availability Modal -->
+@if (isAvailabilityModalOpen && availabilityDoctor) {
+  <div class="dm-modal-backdrop" (click)="closeAvailabilityModal()">
+    <div class="dm-modal-content p-4" (click)="$event.stopPropagation()" style="max-width: 640px; max-height: 90vh; overflow-y: auto;">
+      <!-- Header -->
+      <div class="d-flex align-items-center justify-content-between pb-3 border-bottom mb-3">
+        <div class="d-flex align-items-center" style="gap: 12px;">
+          <div class="um-avatar-circle" [style.background]="availabilityDoctor.avatarBg" style="width: 44px; height: 44px; font-size: 16px;">
+            {{ availabilityDoctor.initial }}
+          </div>
+          <div>
+            <div class="d-flex align-items-center" style="gap: 8px;">
+              <h3 style="font-size: 17px; font-weight: 700; color: #0F172A; margin: 0;">
+                {{ doctorAvailability?.doctorName || availabilityDoctor.name }}
+              </h3>
+              <span class="badge" style="background: #F1F5F9; color: #475569; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 6px;">
+                Doctor ID: #{{ doctorAvailability?.doctorId || availabilityDoctor.numericId || availabilityDoctor.id }}
+              </span>
+            </div>
+            <span class="text-muted small">Doctor Availability &amp; Consultation Hours</span>
+          </div>
+        </div>
+        <button type="button" class="btn btn-sm btn-light rounded-circle p-2" (click)="closeAvailabilityModal()" aria-label="Close">✕</button>
+      </div>
+
+      <!-- Loading State -->
+      @if (isLoadingAvailability) {
+        <div class="text-center py-5">
+          <div class="spinner-border text-primary" role="status" style="width: 2rem; height: 2rem;">
+            <span class="visually-hidden">Loading availability...</span>
+          </div>
+          <p class="text-muted small mt-2 mb-0">Retrieving doctor availability from server...</p>
+        </div>
+      } @else if (doctorAvailability) {
+        <!-- Offline Appointments Setting Card -->
+        <div class="p-3 rounded-3 mb-3" style="background: #F8FAFC; border: 1px solid #E2E8F0;">
+          <div class="d-flex align-items-center justify-content-between">
+            <div>
+              <div class="d-flex align-items-center" style="gap: 6px;">
+                <svg width="16" height="16" fill="none" stroke="#2563EB" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                <span class="fw-semibold text-dark" style="font-size: 13.5px;">Offline / In-Clinic Appointments</span>
+              </div>
+              <div class="text-muted small mt-1">Allow patients to book physical in-person appointments at hospital clinics</div>
+            </div>
+            <button type="button"
+                    class="btn btn-sm"
+                    [style.background]="doctorAvailability.offlineAppointments ? '#DCFCE7' : '#F1F5F9'"
+                    [style.color]="doctorAvailability.offlineAppointments ? '#15803D' : '#64748B'"
+                    [style.border]="doctorAvailability.offlineAppointments ? '1px solid #BBF7D0' : '1px solid #CBD5E1'"
+                    style="border-radius: 20px; font-weight: 600; font-size: 12px; padding: 4px 14px; cursor: pointer;"
+                    (click)="toggleOfflineAppointments()">
+              {{ doctorAvailability.offlineAppointments ? '● Enabled' : '○ Disabled' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Associated Hospitals Card -->
+        <div class="mb-3">
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <span style="font-size: 13px; font-weight: 700; color: #1E293B;">Associated Hospitals &amp; Clinics</span>
+            <span class="badge" style="background: #EFF6FF; color: #2563EB; font-size: 11px;">
+              {{ doctorAvailability.hospitals.length }} Clinic{{ doctorAvailability.hospitals.length > 1 ? 's' : '' }}
+            </span>
+          </div>
+
+          <div class="d-flex flex-wrap gap-2">
+            @for (h of doctorAvailability.hospitals; track h.id) {
+              <div class="p-2 px-3 rounded-2 d-flex align-items-center" style="background: #FFFFFF; border: 1px solid #E2E8F0; gap: 8px;">
+                <svg width="14" height="14" fill="none" stroke="#0284C7" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M3 21h18"></path>
+                  <path d="M5 21V7l8-4v18"></path>
+                  <path d="M19 21V11l-6-3"></path>
+                  <path d="M9 9h1"></path>
+                  <path d="M9 13h1"></path>
+                  <path d="M9 17h1"></path>
+                </svg>
+                <div>
+                  <span class="fw-semibold text-dark" style="font-size: 12.5px;">{{ h.hospitalName }}</span>
+                  @if (h.location) {
+                    <span class="text-muted small ms-1" style="font-size: 11.5px;">• {{ h.location }}</span>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Weekly Schedule Header -->
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <h6 style="font-size: 13.5px; font-weight: 700; color: #0F172A; margin: 0;">Weekly Consultation Schedule</h6>
+          <span class="text-muted small">Select a day tab to configure consultation hours</span>
+        </div>
+
+        <!-- 7-Day Navigation Tabs -->
+        <div class="d-flex align-items-center gap-1 p-1 bg-light rounded-3 mb-3" style="overflow-x: auto;">
+          @for (d of doctorAvailability.days; track d.day) {
+            <button type="button"
+                    class="btn btn-sm d-flex align-items-center justify-content-center"
+                    [style.background]="selectedAvailabilityDay === d.day ? '#0F172A' : 'transparent'"
+                    [style.color]="selectedAvailabilityDay === d.day ? '#FFFFFF' : '#475569'"
+                    [style.fontWeight]="selectedAvailabilityDay === d.day ? '700' : '500'"
+                    style="border-radius: 8px; border: none; padding: 6px 12px; font-size: 12.5px; white-space: nowrap; gap: 6px; flex: 1;"
+                    (click)="selectAvailabilityDay(d.day)">
+              <span [style.background]="d.open ? '#22C55E' : '#94A3B8'"
+                    style="width: 7px; height: 7px; border-radius: 50%; display: inline-block;"></span>
+              {{ formatDayName(d.day).slice(0, 3) }}
+            </button>
+          }
+        </div>
+
+        <!-- Active Day Editor Card -->
+        @if (activeAvailabilityDay) {
+          <div class="p-3 rounded-3 mb-3 border bg-white" style="border-color: #E2E8F0 !important; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+            <!-- Day Title & Open/Close Switch -->
+            <div class="d-flex align-items-center justify-content-between pb-3 border-bottom mb-3">
+              <div>
+                <h5 class="fw-bold mb-0 text-dark" style="font-size: 15px;">
+                  {{ formatDayName(activeAvailabilityDay.day) }} Consultation Schedule
+                </h5>
+                <span class="text-muted small">
+                  {{ activeAvailabilityDay.open ? 'Doctor is available for consultations on this day' : 'Doctor is marked off-duty on this day' }}
+                </span>
+              </div>
+
+              <div class="d-flex align-items-center" style="gap: 8px;">
+                <span class="badge"
+                      [style.background]="activeAvailabilityDay.open ? '#ECFDF5' : '#FFF1F2'"
+                      [style.color]="activeAvailabilityDay.open ? '#059669' : '#DC2626'"
+                      style="padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 12px;">
+                  {{ activeAvailabilityDay.open ? '● Open & Available' : '○ Closed / Off Duty' }}
+                </span>
+
+                <button type="button"
+                        class="btn btn-sm"
+                        [style.background]="activeAvailabilityDay.open ? '#EF4444' : '#2563EB'"
+                        style="color: #FFFFFF; font-size: 12px; font-weight: 600; padding: 5px 14px; border: none; border-radius: 8px;"
+                        (click)="toggleDayOpen(activeAvailabilityDay)">
+                  {{ activeAvailabilityDay.open ? 'Mark Off' : 'Set Open' }}
+                </button>
+              </div>
+            </div>
+
+            <!-- Active Day Sessions (When Open) -->
+            @if (activeAvailabilityDay.open) {
+              <div class="mb-3">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                  <span class="fw-semibold text-dark small">Time Slots &amp; Assigned Hospital</span>
+                  <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2" style="font-size: 11.5px; border-radius: 6px;" (click)="addSession(activeAvailabilityDay)">
+                    + Add Another Session
+                  </button>
+                </div>
+
+                @if (!activeAvailabilityDay.sessions || activeAvailabilityDay.sessions.length === 0) {
+                  <div class="p-3 rounded-2 text-center text-muted small bg-light">
+                    No consultation sessions configured yet. Click "+ Add Another Session" to specify hours.
+                  </div>
+                } @else {
+                  <div class="d-flex flex-column gap-2">
+                    @for (sess of activeAvailabilityDay.sessions; track $index; let sIdx = $index) {
+                      <div class="p-2 px-3 rounded-2 border d-flex align-items-center justify-content-between flex-wrap" style="background: #F8FAFC; border-color: #E2E8F0 !important; gap: 10px;">
+                        <div class="d-flex align-items-center" style="gap: 8px;">
+                          <span class="badge bg-secondary" style="font-size: 11px;">#{{ sIdx + 1 }}</span>
+                          <div class="d-flex align-items-center" style="gap: 4px;">
+                            <input type="time"
+                                   class="form-control form-control-sm"
+                                   [(ngModel)]="sess.startTime"
+                                   style="width: 105px; font-weight: 600; font-size: 12.5px;">
+                            <span class="text-muted small">to</span>
+                            <input type="time"
+                                   class="form-control form-control-sm"
+                                   [(ngModel)]="sess.endTime"
+                                   style="width: 105px; font-weight: 600; font-size: 12.5px;">
+                          </div>
+                        </div>
+
+                        <div class="d-flex align-items-center" style="gap: 8px; flex: 1; min-width: 180px; justify-content: flex-end;">
+                          <select class="form-select form-select-sm"
+                                  [(ngModel)]="sess.hospitalId"
+                                  style="max-width: 220px; font-size: 12px; font-weight: 500;">
+                            @for (h of doctorAvailability.hospitals; track h.id) {
+                              <option [value]="h.id">{{ h.hospitalName }} ({{ h.location || 'Clinic' }})</option>
+                            }
+                          </select>
+
+                          <button type="button"
+                                  class="btn btn-sm btn-outline-danger p-1 px-2"
+                                  style="font-size: 12px; border-radius: 6px; line-height: 1;"
+                                  (click)="removeSession(activeAvailabilityDay, sIdx)"
+                                  title="Remove session">
+                            ✕
+                          </button>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            }
+
+            <!-- Single Day Update Action -->
+            <div class="d-flex justify-content-end pt-2 border-top">
+              <button type="button"
+                      class="btn btn-sm btn-primary d-inline-flex align-items-center"
+                      style="background: #2563EB; border: none; border-radius: 8px; padding: 6px 18px; font-weight: 600; font-size: 12.5px; gap: 6px;"
+                      [disabled]="isSavingAvailability"
+                      (click)="updateDayAvailability(activeAvailabilityDay)">
+                @if (isSavingAvailability && updatingDay === activeAvailabilityDay.day) {
+                  <span class="spinner-border spinner-border-sm" role="status"></span>
+                  Updating...
+                } @else {
+                  Update {{ formatDayName(activeAvailabilityDay.day) }} Availability
+                }
+              </button>
+            </div>
+          </div>
+        }
+
+        <!-- Full Week Overview -->
+        <div class="mb-3">
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <span style="font-size: 12.5px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.04em;">Full Week Overview</span>
+            <span class="text-muted small">Click any day above to edit its slots</span>
+          </div>
+
+          <div class="d-flex flex-column gap-1" style="max-height: 180px; overflow-y: auto;">
+            @for (d of doctorAvailability.days; track d.day) {
+              <div class="p-2 px-3 rounded-2 d-flex align-items-center justify-content-between"
+                   [style.background]="selectedAvailabilityDay === d.day ? '#EFF6FF' : '#F8FAFC'"
+                   [style.border]="selectedAvailabilityDay === d.day ? '1px solid #BFDBFE' : '1px solid #F1F5F9'"
+                   style="cursor: pointer; transition: all 0.12s ease;"
+                   (click)="selectAvailabilityDay(d.day)">
+                <div class="d-flex align-items-center" style="gap: 8px;">
+                  <span class="fw-bold" style="font-size: 12.5px; min-width: 85px;" [style.color]="selectedAvailabilityDay === d.day ? '#1D4ED8' : '#1E293B'">
+                    {{ formatDayName(d.day) }}
+                  </span>
+                  @if (d.open && d.sessions && d.sessions.length > 0) {
+                    <div class="d-flex flex-wrap gap-1">
+                      @for (sess of d.sessions; track $index) {
+                        <span class="badge" style="background: #FFFFFF; border: 1px solid #CBD5E1; color: #1E293B; font-weight: 500; font-size: 11px;">
+                          {{ formatTime12(sess.startTime) }} – {{ formatTime12(sess.endTime) }}
+                          @if (sess.hospitalName || getHospitalName(sess.hospitalId || 1)) {
+                            <span class="text-muted ms-1">({{ sess.hospitalName || getHospitalName(sess.hospitalId || 1) }})</span>
+                          }
+                        </span>
+                      }
+                    </div>
+                  } @else if (d.open) {
+                    <span class="text-muted small" style="font-size: 11.5px;">Open (No session times configured)</span>
+                  } @else {
+                    <span class="badge" style="background: #FFF1F2; color: #DC2626; font-size: 10.5px; font-weight: 500;">Closed / Off Duty</span>
+                  }
+                </div>
+
+                <span class="text-muted" style="font-size: 11px;">Edit &rarr;</span>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Modal Footer Actions -->
+        <div class="d-flex justify-content-end pt-3 border-top" style="gap: 10px;">
+          <button type="button" class="btn btn-sm btn-light" (click)="closeAvailabilityModal()">Close</button>
+          <button type="button" class="btn btn-sm btn-primary"
+                  style="background: #2563EB; border: none; border-radius: 8px; padding: 7px 20px; font-weight: 600;"
+                  [disabled]="isSavingAvailability"
+                  (click)="saveAvailability()">
+            @if (isSavingAvailability) {
+              <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+              Saving...
+            } @else {
+              Save &amp; Close
+            }
+          </button>
+        </div>
+      }
+    </div>
+  </div>
+}
+
+<!-- View Documents Modal -->
+@if (isDocumentsModalOpen && documentsDoctor) {
+  <div class="dm-modal-backdrop" (click)="closeDocumentsModal()">
+    <div class="dm-modal-content p-4" (click)="$event.stopPropagation()" style="max-width: 660px;">
+      <!-- Header -->
+      <div class="d-flex align-items-center justify-content-between pb-3 border-bottom mb-3">
+        <div class="d-flex align-items-center" style="gap: 12px;">
+          <div class="um-avatar-circle" [style.background]="documentsDoctor.avatarBg" style="width: 44px; height: 44px; font-size: 16px;">
+            {{ documentsDoctor.initial }}
+          </div>
+          <div>
+            <h3 style="font-size: 17px; font-weight: 700; color: #0F172A; margin: 0;">
+              {{ documentsDoctor.name }}
+            </h3>
+            <span class="text-muted small">{{ documentsDoctor.id }} • Verification Documents</span>
+          </div>
+        </div>
+        <button type="button" class="btn btn-sm btn-light rounded-circle p-2" (click)="closeDocumentsModal()">✕</button>
+      </div>
+
+      <!-- Council Info -->
+      <div class="p-2 px-3 rounded-3 mb-3 d-flex align-items-center justify-content-between" style="background: #F1F5F9; font-size: 13px;">
+        <span class="text-muted">Registration Authority: <strong class="text-dark">{{ documentsDoctor.registrationCouncil || 'Telangana State Medical Council (TSMC)' }}</strong></span>
+        <span class="badge bg-success" style="font-size: 11px;">All Verified</span>
+      </div>
+
+      <!-- Document List -->
+      <div class="d-flex align-items-center justify-content-between mb-2">
+        <h6 style="font-size: 13.5px; font-weight: 700; color: #0F172A; margin: 0;">Submitted Credentials</h6>
+        <span class="text-muted small">Click any document to inspect</span>
+      </div>
+
+      <div class="d-flex flex-column gap-2 mb-4">
+        @for (docItem of (documentsDoctor.documents || getDefaultDocuments(documentsDoctor)); track docItem.name; let dIdx = $index) {
+          <div class="d-flex align-items-center justify-content-between p-3 rounded-3 border"
+            style="background: #FAFAFA; transition: all 0.2s ease; cursor: pointer;"
+            (click)="openCertificateViewer(docItem, documentsDoctor)">
+            <div class="d-flex align-items-center gap-3">
+              <span class="badge border font-monospace"
+                [ngClass]="docItem.type === 'PDF' ? 'bg-danger text-white' : (docItem.type === 'PNG' ? 'bg-info text-white' : 'bg-warning text-dark')"
+                style="font-size: 11px; padding: 6px 10px;">
+                {{ docItem.type }}
+              </span>
+              <div>
+                <div class="fw-semibold text-dark" style="font-size: 13.5px;">{{ docItem.name }}</div>
+                <span class="text-muted" style="font-size: 12px;">
+                  Reg No: {{ docItem.certificateNumber || documentsDoctor.registrationNumber || ('TGMC-' + (98420 + dIdx)) }} • Verified {{ docItem.verifiedDate || 'Oct 28, 2026' }}
+                </span>
+              </div>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge" style="background: #ECFDF5; color: #059669; padding: 5px 12px; border-radius: 12px; font-size: 12px;">Verified</span>
+              <button type="button" class="btn btn-sm btn-primary d-inline-flex align-items-center gap-1"
+                style="background: #2563EB; border: none; border-radius: 8px; font-size: 12px; padding: 5px 12px;"
+                (click)="openCertificateViewer(docItem, documentsDoctor); $event.stopPropagation()">
+                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+                View
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="d-flex justify-content-end pt-3 border-top">
+        <button type="button" class="btn btn-sm btn-light" (click)="closeDocumentsModal()">Close</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Certificate Viewer Modal -->
+@if (isCertificateViewerOpen && activeCertificateDoc && activeCertificateDoctor) {
+  <div class="da-cert-modal-backdrop" (click)="closeCertificateViewer()">
+    <div class="da-cert-modal-content p-4" (click)="$event.stopPropagation()">
+
+      <!-- Header -->
+      <div class="d-flex align-items-center justify-content-between pb-3 border-bottom mb-3 flex-wrap" style="gap: 12px;">
+        <div class="d-flex align-items-center" style="gap: 12px;">
+          <div class="um-avatar-circle" [style.background]="activeCertificateDoctor.avatarBg" style="width: 44px; height: 44px; font-size: 16px;">
+            {{ activeCertificateDoctor.initial }}
+          </div>
+          <div>
+            <div class="d-flex align-items-center gap-2">
+              <h3 style="font-size: 17px; font-weight: 700; color: #0F172A; margin: 0;">
+                {{ activeCertificateDoc.name }}
+              </h3>
+              <span class="badge"
+                [style.background]="activeCertificateDoc.status === 'Verified' ? '#DCFCE7' : '#FEF3C7'"
+                [style.color]="activeCertificateDoc.status === 'Verified' ? '#16A34A' : '#D97706'"
+                style="font-size: 11px; border-radius: 6px;">
+                {{ activeCertificateDoc.status || 'Verified' }}
+              </span>
+            </div>
+            <span class="text-muted small">
+              {{ activeCertificateDoctor.name }} • Registration: {{ activeCertificateDoc.certificateNumber || activeCertificateDoctor.registrationNumber || 'TGMC-123456' }}
+            </span>
+          </div>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <button type="button" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1"
+            (click)="printCertificate()" title="Print Certificate">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <polyline points="6 9 6 2 18 2 18 9"></polyline>
+              <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+              <rect x="6" y="14" width="12" height="8"></rect>
+            </svg>
+            <span>Print</span>
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1"
+            (click)="downloadCertificate()" title="Download Document">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span>Download</span>
+          </button>
+          <button type="button" class="btn btn-sm btn-light rounded-circle p-2 ms-2" (click)="closeCertificateViewer()">✕</button>
+        </div>
+      </div>
+
+      <!-- Document Tabs Switcher (when multiple documents exist) -->
+      @if (activeCertificateDoctor.documents && activeCertificateDoctor.documents.length > 1) {
+        <div class="d-flex align-items-center gap-2 mb-3 p-1 rounded-3" style="background: #F1F5F9; overflow-x: auto;">
+          @for (d of activeCertificateDoctor.documents; track d.name; let i = $index) {
+            <button type="button"
+              class="btn btn-sm flex-grow-1 text-truncate"
+              [ngClass]="activeDocIndex === i ? 'btn-white bg-white shadow-sm fw-bold text-dark' : 'btn-transparent text-secondary border-0'"
+              style="border-radius: 8px; font-size: 12.5px; padding: 6px 12px; transition: all 0.15s ease;"
+              (click)="selectCertificateIndex(i)">
+              <span class="badge border font-monospace me-1" [ngClass]="activeDocIndex === i ? 'bg-primary text-white border-primary' : 'bg-light text-muted'" style="font-size: 10px;">{{ d.type }}</span>
+              {{ d.name }}
+            </button>
+          }
+        </div>
+      }
+
+      <!-- Certificate Body -->
+      <div class="da-cert-frame my-2">
+        <!-- Watermark Logo -->
+        <svg class="da-cert-watermark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M12 2v20M5 7l14 0M7 12l10 0M9 17l6 0"></path>
+          <circle cx="12" cy="12" r="10"></circle>
+        </svg>
+
+        <div class="da-cert-content">
+          <!-- Official Header Emblem & Title -->
+          <div class="text-center mb-3">
+            <div class="d-flex align-items-center justify-content-center mb-2">
+              <!-- Caduceus Emblem -->
+              <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2">
+                <path d="M12 2v20"></path>
+                <path d="M12 5c-3 0-5 2-5 4s3 3 5 4 5 2 5 4-2 4-5 4"></path>
+                <path d="M12 5c3 0 5 2 5 4s-3 3-5 4-5 2-5 4 2 4 5 4"></path>
+                <circle cx="12" cy="3" r="1.5" fill="#D97706"></circle>
+                <circle cx="12" cy="12" r="10" stroke="#1E3A8A" stroke-width="1" stroke-dasharray="2 2"></circle>
+              </svg>
+            </div>
+            <h2 class="da-cert-title">
+              {{ activeCertificateDoc.issuer || 'TELANGANA STATE MEDICAL COUNCIL' }}
+            </h2>
+            <div class="da-cert-subtitle">
+              GOVERNMENT OF TELANGANA • DIRECTORATE OF MEDICAL EDUCATION &amp; PRACTICE
+            </div>
+            <div class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-3 py-1" style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em;">
+              OFFICIAL REGISTRATION CERTIFICATE
+            </div>
+          </div>
+
+          <!-- Meta Details Bar -->
+          <div class="d-flex align-items-center justify-content-between p-2 px-3 rounded border mb-4 flex-wrap" style="background: #F8FAFC; font-family: 'Inter', sans-serif; font-size: 12px; gap: 8px;">
+            <div>
+              <span class="text-muted">Registration Number: </span>
+              <strong class="text-dark">{{ activeCertificateDoc.certificateNumber || activeCertificateDoctor.registrationNumber || 'TGMC-123456' }}</strong>
+            </div>
+            <div>
+              <span class="text-muted">Issue Date: </span>
+              <strong class="text-dark">{{ activeCertificateDoc.issueDate || 'Oct 28, 2026' }}</strong>
+            </div>
+            <div>
+              <span class="text-muted">Valid Till: </span>
+              <strong class="text-dark">{{ activeCertificateDoc.expiryDate || 'Oct 27, 2036' }}</strong>
+            </div>
+          </div>
+
+          <!-- Certificate Statement -->
+          <div class="text-center mb-4" style="line-height: 1.8; font-size: 14.5px;">
+            <p class="mb-1 text-muted">
+              This is to certify that in accordance with the provisions of the State Medical Council Act &amp; National Medical Commission regulations:
+            </p>
+            <div class="da-cert-name">
+              {{ activeCertificateDoctor.name }}
+            </div>
+            <p class="mb-0 text-muted">
+              has been duly registered as a <strong>Registered Medical Practitioner (RMP)</strong> entitled to practice medicine and surgery.
+            </p>
+          </div>
+
+          <!-- Qualifications & Credentials Table -->
+          <div class="row g-3 mb-4 p-3 rounded-3" style="background: #FDFBF7; border: 1px dashed #E2E8F0; font-family: 'Inter', sans-serif; font-size: 13px;">
+            <div class="col-sm-6">
+              <span class="text-muted d-block" style="font-size: 11.5px;">Recognized Medical Qualification:</span>
+              <strong class="text-dark">{{ activeCertificateDoctor.qualification || 'MBBS' }}, MD ({{ activeCertificateDoctor.specialization }})</strong>
+            </div>
+            <div class="col-sm-6">
+              <span class="text-muted d-block" style="font-size: 11.5px;">Specialization Discipline:</span>
+              <strong class="text-dark">{{ activeCertificateDoctor.specialization }}</strong>
+            </div>
+            <div class="col-sm-6">
+              <span class="text-muted d-block" style="font-size: 11.5px;">Clinical Experience Standing:</span>
+              <strong class="text-dark">{{ activeCertificateDoctor.experience }}</strong>
+            </div>
+            <div class="col-sm-6">
+              <span class="text-muted d-block" style="font-size: 11.5px;">Primary Hospital / Medical Center:</span>
+              <strong class="text-dark">{{ activeCertificateDoctor.hospitalName || 'Apollo Hospital' }}</strong>
+            </div>
+          </div>
+
+          <!-- Seals, Stamps & Signatures Footer -->
+          <div class="d-flex align-items-center justify-content-between pt-3 border-top mt-3 flex-wrap" style="gap: 16px; font-family: 'Inter', sans-serif;">
+            <!-- Official Stamp & QR Code -->
+            <div class="d-flex align-items-center" style="gap: 14px;">
+              <!-- QR Code representation -->
+              <div class="p-1 bg-white border rounded shadow-sm text-center" style="width: 58px; height: 58px;">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#1E293B" stroke-width="2">
+                  <rect x="3" y="3" width="7" height="7"></rect>
+                  <rect x="14" y="3" width="7" height="7"></rect>
+                  <rect x="14" y="14" width="7" height="7"></rect>
+                  <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
+              </div>
+              <div>
+                <div class="da-cert-stamp">Verified Practitioner</div>
+                <span class="d-block text-muted" style="font-size: 10.5px; margin-top: 3px;">
+                  Digital Signature: Validated
+                </span>
+              </div>
+            </div>
+
+            <!-- Official Gold Seal -->
+            <div class="da-cert-seal-badge text-center">
+              <div style="font-size: 8px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;">
+                TSMC<br>SEAL<br>2026
+              </div>
+            </div>
+
+            <!-- Registrar Signature -->
+            <div class="text-end">
+              <div style="font-family: 'Brush Script MT', cursive, serif; font-size: 20px; color: #1E3A8A; font-style: italic; line-height: 1;">
+                Dr. K. Srinivas Rao
+              </div>
+              <div style="font-size: 11.5px; font-weight: 700; color: #0F172A; margin-top: 4px;">
+                Registrar &amp; Secretary
+              </div>
+              <span class="text-muted" style="font-size: 10.5px;">Telangana State Medical Council</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Navigation Footer -->
+      <div class="d-flex align-items-center justify-content-between pt-3 border-top mt-2 flex-wrap" style="gap: 12px;">
+        <!-- Prev / Next Document Buttons -->
+        <div class="d-flex align-items-center" style="gap: 8px;">
+          <button type="button" class="btn btn-sm btn-outline-secondary"
+            [disabled]="activeDocIndex === 0"
+            (click)="prevCertificate()">
+            ← Previous Document
+          </button>
+          <span class="text-muted small">
+            {{ activeDocIndex + 1 }} of {{ activeCertificateDoctor.documents?.length || 1 }}
+          </span>
+          <button type="button" class="btn btn-sm btn-outline-secondary"
+            [disabled]="activeDocIndex >= (activeCertificateDoctor.documents?.length || 1) - 1"
+            (click)="nextCertificate()">
+            Next Document →
+          </button>
+        </div>
+
+        <button type="button" class="btn btn-sm btn-light" (click)="closeCertificateViewer()">
+          Close Viewer
+        </button>
+      </div>
+
+    </div>
+  </div>
+}

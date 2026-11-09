@@ -1,0 +1,386 @@
+<div class="nt-container">
+
+  <!-- Toast Notification Popup -->
+  @if (toastMessage) {
+    <div style="position: fixed; top: 20px; right: 20px; z-index: 99999; min-width: 280px; max-width: 420px; animation: slideIn 0.25s ease;"
+      [style.background]="toastType === 'success' ? '#0F172A' : '#EF4444'"
+      class="text-white px-3 py-2 rounded-3 shadow-lg d-flex align-items-center justify-content-between">
+      <div class="d-flex align-items-center" style="gap: 10px;">
+        @if (toastType === 'success') {
+          <svg width="18" height="18" fill="none" stroke="#22C55E" stroke-width="2.5" viewBox="0 0 24 24">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        } @else {
+          <svg width="18" height="18" fill="none" stroke="#FFFFFF" stroke-width="2.5" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="15" y1="9" x2="9" y2="15"></line>
+            <line x1="9" y1="9" x2="15" y2="15"></line>
+          </svg>
+        }
+        <span style="font-size: 13.5px; font-weight: 500;">{{ toastMessage }}</span>
+      </div>
+      <button type="button" (click)="toastMessage = ''" class="btn-close btn-close-white ms-2" style="font-size: 10px;"></button>
+    </div>
+  }
+
+  <!-- Page Header (matching Figma left-aligned title + right-aligned buttons) -->
+  <div class="nt-page-header">
+    <div class="nt-title-wrap">
+      <h1 class="nt-page-title">Notifications &amp; Communications</h1>
+      <p class="nt-page-subtitle">Send notifications and manage communications</p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <button type="button" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2" style="border-radius: 10px; height: 42px; font-weight: 500; font-size: 13.5px;" (click)="loadNotifications()" [disabled]="isLoading">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" [class.nt-spin]="isLoading">
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <polyline points="1 20 1 14 7 14"></polyline>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+        </svg>
+        <span>Refresh</span>
+      </button>
+      <button type="button" class="nt-btn-create" (click)="openCreateModal()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+        </svg>
+        <span>+ Create Notification</span>
+      </button>
+    </div>
+  </div>
+
+  @if (apiError) {
+    <div class="alert alert-warning d-flex align-items-center justify-content-between mb-3" style="border-radius: 10px;">
+      <div class="d-flex align-items-center gap-2">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+          <line x1="12" y1="9" x2="12" y2="13"></line>
+          <line x1="12" y1="17" x2="12.01" y2="17"></line>
+        </svg>
+        <span style="font-size: 13.5px;">{{ apiError }}</span>
+      </div>
+      <button type="button" class="btn btn-sm btn-outline-dark" (click)="loadNotifications()">Retry</button>
+    </div>
+  }
+
+  <!-- Top Stat Cards (Total Sent and Recipients) -->
+  <div class="row mb-4 g-3">
+    <!-- Total Sent -->
+    <div class="col-sm-6 col-xl-6">
+      <div class="nt-stat-card nt-stat-card-blue">
+        <div>
+          <span class="nt-stat-label">Total Sent</span>
+          <h2 class="nt-stat-number nt-stat-val-blue">{{ stats.totalSent | number }}</h2>
+        </div>
+        <div class="nt-stat-icon-wrap">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recipients -->
+    <div class="col-sm-6 col-xl-6">
+      <div class="nt-stat-card nt-stat-card-green">
+        <div>
+          <span class="nt-stat-label">Recipients</span>
+          <h2 class="nt-stat-number nt-stat-val-green">{{ stats.recipients | number }}</h2>
+        </div>
+        <div class="nt-stat-icon-wrap">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Section: Recent Notifications -->
+  <div class="nt-recent-section">
+    <div class="nt-recent-header mb-3 d-flex align-items-center justify-content-between flex-wrap gap-3">
+      <h3 class="nt-section-title" style="margin: 0; font-size: 18px; font-weight: 700; color: #0F172A;">Recent Notifications</h3>
+      <div class="d-flex align-items-center gap-3 flex-wrap">
+        <div style="position: relative; min-width: 260px;">
+          <svg style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94A3B8;" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input
+            type="text"
+            [value]="searchQuery"
+            (input)="onSearch($event)"
+            placeholder="Search notifications..."
+            style="width: 100%; height: 38px; padding-left: 36px; padding-right: 12px; border-radius: 8px; border: 1px solid #E2E8F0; background: #FFFFFF; font-size: 13.5px; outline: none;"
+          />
+        </div>
+
+        <div class="nt-filter-pill-group">
+          <button type="button" class="nt-filter-pill" [class.active]="selectedFilter === 'All'" (click)="setFilter('All')">All</button>
+          <button type="button" class="nt-filter-pill" [class.active]="selectedFilter === 'Sent'" (click)="setFilter('Sent')">Sent</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notification Cards List -->
+    @if (isLoading) {
+      <div class="card p-5 text-center text-muted" style="border-radius: 14px; border: 1px solid #E2E8F0;">
+        <div class="spinner-border text-primary mx-auto mb-3" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mb-0" style="font-weight: 500; color: #64748B;">Loading notifications from server...</p>
+      </div>
+    } @else if (filteredNotifications.length === 0) {
+      <div class="card p-5 text-center text-muted" style="border-radius: 14px; border: 1px dashed #CBD5E1;">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.5" class="mx-auto mb-2">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+        </svg>
+        <p class="mb-0" style="font-weight: 500;">No notifications found</p>
+      </div>
+    } @else {
+      @for (item of filteredNotifications; track item.id) {
+        <div class="nt-item-card" (click)="viewDetails(item)">
+          <!-- Left: Orange Square Icon with White Bell -->
+          <div class="nt-icon-box">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+          </div>
+
+          <!-- Middle: Content & Metadata -->
+          <div class="nt-item-main">
+            <h4 class="nt-item-title">{{ item.title }}</h4>
+            <p class="nt-item-msg">{{ item.message }}</p>
+            <div class="nt-meta-row">
+              <span class="nt-badge-type">{{ item.category }}</span>
+              <span class="nt-meta-text">Recipients: {{ item.audience }}</span>
+              <span class="nt-meta-text">
+                @if (item.status === 'Sent') {
+                  Sent: {{ item.date }}
+                } @else {
+                  Scheduled: {{ item.date }}
+                }
+              </span>
+            </div>
+          </div>
+
+          <!-- Right: Status Pill -->
+          <div class="d-flex align-items-center gap-3 flex-shrink-0">
+            <span
+              class="nt-status-pill"
+              [ngClass]="item.status === 'Sent' ? 'nt-status-sent' : 'nt-status-scheduled'"
+            >
+              {{ item.status }}
+            </span>
+          </div>
+        </div>
+      }
+    }
+  </div>
+
+  <!-- Create Notification Modal -->
+  @if (isCreateModalOpen) {
+    <div class="nt-modal-backdrop" (click)="closeCreateModal()">
+      <div class="nt-modal-dialog" (click)="$event.stopPropagation()">
+        <div class="nt-modal-header">
+          <div class="d-flex align-items-center gap-2">
+            <div style="width: 32px; height: 32px; border-radius: 8px; background: #FFF1EB; color: #EA2E00; display: flex; align-items: center; justify-content: center;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+              </svg>
+            </div>
+            <h3 class="nt-modal-title">Create New Notification</h3>
+          </div>
+          <button type="button" class="btn-close" (click)="closeCreateModal()"></button>
+        </div>
+
+        <div class="nt-modal-body">
+          <!-- 1. Title -->
+          <div class="nt-form-group">
+            <label class="nt-form-label">Title <span class="text-danger">*</span></label>
+            <input
+              type="text"
+              class="nt-input"
+              placeholder="e.g. Vaccination Due Reminder"
+              [(ngModel)]="newNotification.title"
+            />
+          </div>
+
+          <!-- 2. Message -->
+          <div class="nt-form-group">
+            <label class="nt-form-label">Message <span class="text-danger">*</span></label>
+            <input
+              type="text"
+              class="nt-input"
+              placeholder="e.g. Please bring your child for checkup"
+              [(ngModel)]="newNotification.message"
+            />
+          </div>
+
+          <!-- 3. Target Audience (Master Data) -->
+          <div class="nt-form-group">
+            <div class="d-flex align-items-center justify-content-between mb-1">
+              <label class="nt-form-label mb-0">Target Audience <span class="text-danger">*</span></label>
+              @if (isLoadingAudiences) {
+                <span class="text-muted small" style="font-size: 11px;">Loading audiences...</span>
+              }
+            </div>
+
+            <select
+              class="nt-input"
+              [(ngModel)]="newNotification.targetAudience"
+              style="cursor: pointer;"
+            >
+              @for (aud of targetAudiences; track aud.code) {
+                <option [value]="aud.code">{{ aud.label }}</option>
+              }
+            </select>
+
+            <!-- Quick Selection Badges -->
+            <div class="d-flex flex-wrap gap-1 mt-2">
+              @for (aud of targetAudiences; track aud.code) {
+                <button type="button"
+                        class="badge border-0"
+                        [style.background]="newNotification.targetAudience === aud.code ? '#EA2E00' : '#FFF1EB'"
+                        [style.color]="newNotification.targetAudience === aud.code ? '#FFFFFF' : '#EA2E00'"
+                        style="font-size: 11px; font-weight: 500; padding: 4px 10px; border-radius: 12px; transition: all 0.15s ease; cursor: pointer;"
+                        (click)="newNotification.targetAudience = aud.code">
+                  {{ aud.label }}
+                </button>
+              }
+            </div>
+          </div>
+
+          <!-- 4. Description -->
+          <div class="nt-form-group">
+            <label class="nt-form-label">Description</label>
+            <textarea
+              class="nt-textarea"
+              rows="3"
+              placeholder="Enter detailed description..."
+              [(ngModel)]="newNotification.description"
+            ></textarea>
+          </div>
+
+          <!-- 5. Image -->
+          <div class="nt-form-group mb-0">
+            <label class="nt-form-label">Image</label>
+            <input
+              type="text"
+              class="nt-input"
+              placeholder="e.g. https://example.com/image.png"
+              [(ngModel)]="newNotification.image"
+            />
+          </div>
+        </div>
+
+        <div class="nt-modal-footer">
+          <button type="button" class="btn btn-light" style="border-radius: 8px; font-weight: 500;" (click)="closeCreateModal()" [disabled]="isSubmitting">
+            Cancel
+          </button>
+          <button
+            type="button"
+            class="nt-btn-create"
+            style="padding: 10px 24px !important;"
+            (click)="submitCreateModal()"
+            [disabled]="!newNotification.title.trim() || !newNotification.message.trim() || isSubmitting"
+          >
+            @if (isSubmitting) {
+              <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+              <span>Sending...</span>
+            } @else {
+              <span>Send Notification</span>
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- View Details Modal -->
+  @if (isDetailsModalOpen && selectedNotification) {
+    <div class="nt-modal-backdrop" (click)="closeDetailsModal()">
+      <div class="nt-modal-dialog" (click)="$event.stopPropagation()">
+        <div class="nt-modal-header">
+          <div class="d-flex align-items-center gap-2">
+            <div class="nt-icon-box" style="width: 36px; height: 36px; border-radius: 8px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+              </svg>
+            </div>
+            <div>
+              <h3 class="nt-modal-title">{{ selectedNotification.title }}</h3>
+              <span class="text-muted" style="font-size: 12.5px;">ID: {{ selectedNotification.id }}</span>
+            </div>
+          </div>
+          <button type="button" class="btn-close" (click)="closeDetailsModal()"></button>
+        </div>
+
+        <div class="nt-modal-body">
+          <div class="p-3 mb-3" style="background: #F8FAFC; border-radius: 12px; border: 1px solid #E2E8F0;">
+            <span class="text-muted d-block mb-1" style="font-size: 12px; font-weight: 600; text-transform: uppercase;">Message Content</span>
+            <p class="mb-0" style="font-size: 14.5px; color: #1E293B; line-height: 1.5;">{{ selectedNotification.message }}</p>
+          </div>
+
+          @if (selectedNotification.description) {
+            <div class="p-3 mb-3" style="background: #F8FAFC; border-radius: 12px; border: 1px solid #E2E8F0;">
+              <span class="text-muted d-block mb-1" style="font-size: 12px; font-weight: 600; text-transform: uppercase;">Description</span>
+              <p class="mb-0" style="font-size: 14px; color: #1E293B; line-height: 1.5;">{{ selectedNotification.description }}</p>
+            </div>
+          }
+
+          @if (selectedNotification.image) {
+            <div class="p-3 mb-3" style="background: #F8FAFC; border-radius: 12px; border: 1px solid #E2E8F0;">
+              <span class="text-muted d-block mb-1" style="font-size: 12px; font-weight: 600; text-transform: uppercase;">Image URL</span>
+              <span style="font-size: 13px; color: #2563EB; word-break: break-all;">{{ selectedNotification.image }}</span>
+            </div>
+          }
+
+          <div class="row g-3">
+            <div class="col-6">
+              <span class="text-muted d-block" style="font-size: 12px;">Category</span>
+              <span class="nt-badge-type mt-1">{{ selectedNotification.category }}</span>
+            </div>
+            <div class="col-6">
+              <span class="text-muted d-block" style="font-size: 12px;">Status</span>
+              <span class="nt-status-pill mt-1" [ngClass]="selectedNotification.status === 'Sent' ? 'nt-status-sent' : 'nt-status-scheduled'">
+                {{ selectedNotification.status }}
+              </span>
+            </div>
+            <div class="col-6">
+              <span class="text-muted d-block" style="font-size: 12px;">Target Audience</span>
+              <strong style="font-size: 13.5px; color: #0F172A;">{{ selectedNotification.audience }}</strong>
+            </div>
+            <div class="col-6">
+              <span class="text-muted d-block" style="font-size: 12px;">Channel</span>
+              <strong style="font-size: 13.5px; color: #0F172A;">{{ selectedNotification.channel || 'Push Notification' }}</strong>
+            </div>
+            <div class="col-6">
+              <span class="text-muted d-block" style="font-size: 12px;">Date</span>
+              <strong style="font-size: 13.5px; color: #0F172A;">{{ selectedNotification.date }}</strong>
+            </div>
+            <div class="col-6">
+              <span class="text-muted d-block" style="font-size: 12px;">Estimated Reach</span>
+              <strong style="font-size: 13.5px; color: #0F172A;">{{ (selectedNotification.recipientsCount || 11234) | number }} recipients</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="nt-modal-footer">
+          <button type="button" class="btn btn-secondary" style="border-radius: 8px; font-weight: 500;" (click)="closeDetailsModal()">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+</div>
+
