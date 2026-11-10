@@ -242,9 +242,9 @@
                       [style.bottom]="(i >= paginatedAppointments.length - 2 && paginatedAppointments.length > 3) ? '36px' : 'auto'"
                       style="position: absolute; right: 0; z-index: 99999; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 10px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1); min-width: 195px; padding: 6px 0; font-family: 'Inter', sans-serif;">
 
-                      <!-- 1. COMPLETED: View Details, View Notes only -->
-                      @if (item.status === 'Completed') {
-                        <!-- View Details -->
+                      <!-- Dynamic Actions based on API allowedActions & status -->
+                      <!-- View Details -->
+                      @if (hasAction(item, 'VIEW_DETAILS')) {
                         <button type="button" class="apt-dropdown-item" (click)="openViewModal(item); closeDropdown()">
                           <svg width="15" height="15" fill="none" stroke="#64748B" stroke-width="1.8" viewBox="0 0 24 24">
                             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
@@ -252,8 +252,10 @@
                           </svg>
                           <span>View Details</span>
                         </button>
+                      }
 
-                        <!-- View Notes -->
+                      <!-- View Notes -->
+                      @if (hasAction(item, 'VIEW_NOTES')) {
                         <button type="button" class="apt-dropdown-item" (click)="openNotesModal(item); closeDropdown()">
                           <svg width="15" height="15" fill="none" stroke="#64748B" stroke-width="1.8" viewBox="0 0 24 24">
                             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -265,41 +267,8 @@
                         </button>
                       }
 
-                      <!-- 2. CANCELLED: View Details only -->
-                      @else if (item.status === 'Cancelled') {
-                        <!-- View Details -->
-                        <button type="button" class="apt-dropdown-item" (click)="openViewModal(item); closeDropdown()">
-                          <svg width="15" height="15" fill="none" stroke="#64748B" stroke-width="1.8" viewBox="0 0 24 24">
-                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                            <circle cx="12" cy="12" r="3"></circle>
-                          </svg>
-                          <span>View Details</span>
-                        </button>
-                      }
-
-                      <!-- 3. SCHEDULED: View Details, View Notes, Reschedule, Mark Complete, Cancel Appointment -->
-                      @else {
-                        <!-- View Details -->
-                        <button type="button" class="apt-dropdown-item" (click)="openViewModal(item); closeDropdown()">
-                          <svg width="15" height="15" fill="none" stroke="#64748B" stroke-width="1.8" viewBox="0 0 24 24">
-                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                            <circle cx="12" cy="12" r="3"></circle>
-                          </svg>
-                          <span>View Details</span>
-                        </button>
-
-                        <!-- View Notes -->
-                        <button type="button" class="apt-dropdown-item" (click)="openNotesModal(item); closeDropdown()">
-                          <svg width="15" height="15" fill="none" stroke="#64748B" stroke-width="1.8" viewBox="0 0 24 24">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                            <polyline points="14 2 14 8 20 8"></polyline>
-                            <line x1="16" y1="13" x2="8" y2="13"></line>
-                            <line x1="16" y1="17" x2="8" y2="17"></line>
-                          </svg>
-                          <span>View Notes</span>
-                        </button>
-
-                        <!-- Reschedule -->
+                      <!-- Reschedule -->
+                      @if (hasAction(item, 'RESCHEDULE')) {
                         <button type="button" class="apt-dropdown-item" (click)="openRescheduleModal(item); closeDropdown()">
                           <svg width="15" height="15" fill="none" stroke="#64748B" stroke-width="1.8" viewBox="0 0 24 24">
                             <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -309,18 +278,25 @@
                           </svg>
                           <span>Reschedule</span>
                         </button>
+                      }
 
+                      <!-- Divider -->
+                      @if (hasAction(item, 'MARK_COMPLETE') || hasAction(item, 'CANCEL')) {
                         <div style="height: 1px; background: #E2E8F0; margin: 4px 0;"></div>
+                      }
 
-                        <!-- Mark Complete -->
+                      <!-- Mark Complete -->
+                      @if (hasAction(item, 'MARK_COMPLETE')) {
                         <button type="button" class="apt-dropdown-item" (click)="markCompleted(item); closeDropdown()" style="color: #16A34A !important;">
                           <svg width="15" height="15" fill="none" stroke="#16A34A" stroke-width="2.2" viewBox="0 0 24 24">
                             <polyline points="20 6 9 17 4 12"></polyline>
                           </svg>
                           <span>Mark Complete</span>
                         </button>
+                      }
 
-                        <!-- Cancel Appointment -->
+                      <!-- Cancel Appointment -->
+                      @if (hasAction(item, 'CANCEL')) {
                         <button type="button" class="apt-dropdown-item" (click)="cancelAppointment(item); closeDropdown()" style="color: #DC2626 !important;">
                           <svg width="15" height="15" fill="none" stroke="#DC2626" stroke-width="2.2" viewBox="0 0 24 24">
                             <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -384,9 +360,11 @@
         <div class="d-flex align-items-center justify-content-between pb-3 border-bottom mb-3">
           <div>
             <h3 style="font-size: 18px; font-weight: 700; color: #0F172A; margin: 0;">
-              Appointment {{ selectedAppointment.id }}
+              Appointment #{{ selectedAppointment.appointmentId || selectedAppointment.id }}
             </h3>
-            <span class="text-muted small">Consultation Overview</span>
+            <span class="text-muted small">
+              {{ selectedAppointment.bookingReference || ('APT-' + (selectedAppointment.appointmentId || selectedAppointment.id)) }} • Consultation Overview
+            </span>
           </div>
           <button type="button" class="btn btn-sm btn-light rounded-circle p-2" (click)="closeViewModal()">✕</button>
         </div>
@@ -462,18 +440,30 @@
 
         <!-- Notes / Purpose -->
         @if (selectedAppointment.notes) {
-          <div class="p-3 rounded-3 mb-4" style="background: #F8FAFC; border: 1px solid #E2E8F0; font-size: 13px; color: #475569;">
+          <div class="p-3 rounded-3 mb-3" style="background: #F8FAFC; border: 1px solid #E2E8F0; font-size: 13px; color: #475569;">
             <span class="fw-semibold text-dark">Consultation Note: </span>{{ selectedAppointment.notes }}
+          </div>
+        }
+
+        <!-- Cancellation Reason if Cancelled -->
+        @if (selectedAppointment.cancellationReason) {
+          <div class="p-3 rounded-3 mb-3" style="background: #FEF2F2; border: 1px solid #FECACA; font-size: 13px; color: #991B1B;">
+            <span class="fw-semibold text-danger">Cancellation Reason: </span>{{ selectedAppointment.cancellationReason }}
+            @if (selectedAppointment.cancelledBy) {
+              <span class="text-muted small ms-2">(Cancelled by {{ selectedAppointment.cancelledBy }})</span>
+            }
           </div>
         }
 
         <!-- Modal Footer -->
         <div class="d-flex align-items-center justify-content-end pt-3 border-top" style="gap: 10px;">
           <button type="button" class="btn btn-light" (click)="closeViewModal()">Close</button>
-          @if (selectedAppointment.status === 'Scheduled') {
+          @if (hasAction(selectedAppointment, 'CANCEL')) {
             <button type="button" class="btn btn-outline-danger" (click)="cancelAppointment(selectedAppointment); closeViewModal()">
               Cancel
             </button>
+          }
+          @if (hasAction(selectedAppointment, 'MARK_COMPLETE')) {
             <button type="button" class="btn btn-success" (click)="markCompleted(selectedAppointment); closeViewModal()">
               Mark Completed
             </button>
