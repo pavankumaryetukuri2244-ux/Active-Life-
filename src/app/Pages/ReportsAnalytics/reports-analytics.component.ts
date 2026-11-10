@@ -363,8 +363,8 @@ export class ReportsAnalyticsComponent implements OnInit {
         backgroundColor: '#2563EB',
         hoverBackgroundColor: '#1D4ED8',
         borderRadius: 4,
-        barPercentage: 0.8,
-        categoryPercentage: 0.7
+        barPercentage: 0.75,
+        categoryPercentage: 0.65
       },
       {
         label: 'Follow-ups',
@@ -372,17 +372,8 @@ export class ReportsAnalyticsComponent implements OnInit {
         backgroundColor: '#10B981',
         hoverBackgroundColor: '#059669',
         borderRadius: 4,
-        barPercentage: 0.8,
-        categoryPercentage: 0.7
-      },
-      {
-        label: 'Emergency',
-        data: [5, 7, 4, 8, 6, 5, 3],
-        backgroundColor: '#EF4444',
-        hoverBackgroundColor: '#DC2626',
-        borderRadius: 4,
-        barPercentage: 0.8,
-        categoryPercentage: 0.7
+        barPercentage: 0.75,
+        categoryPercentage: 0.65
       }
     ]
   };
