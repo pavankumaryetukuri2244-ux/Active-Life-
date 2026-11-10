@@ -504,7 +504,7 @@
         <div class="alert alert-danger py-2 px-3 small mb-3 rounded-3">{{ formError }}</div>
       }
 
-      <form (ngSubmit)="saveDoctor()">
+      <form novalidate (ngSubmit)="saveDoctor()">
         <div class="row g-3">
           <!-- Doctor Full Name -->
           <div class="col-md-6">
@@ -592,8 +592,9 @@
 
         <div class="d-flex justify-content-end pt-3 border-top mt-4" style="gap: 12px;">
           <button type="button" class="btn btn-light" [disabled]="isSubmitting" (click)="closeAddModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary d-flex align-items-center" [disabled]="isSubmitting"
-            style="background: linear-gradient(135deg, #7C3AED 0%, #9333EA 100%); border: none; border-radius: 10px; padding: 9px 20px; gap: 8px;">
+          <button type="button" class="btn btn-primary d-flex align-items-center" [disabled]="isSubmitting"
+            (click)="saveDoctor()"
+            style="background: linear-gradient(135deg, #7C3AED 0%, #9333EA 100%); border: none; border-radius: 10px; padding: 9px 20px; gap: 8px; cursor: pointer;">
             @if (isSubmitting) {
               <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
               <span>Updating...</span>

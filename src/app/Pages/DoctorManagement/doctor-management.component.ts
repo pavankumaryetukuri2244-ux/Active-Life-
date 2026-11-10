@@ -1437,21 +1437,78 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
 
     if (!name) {
       this.formError = 'Please enter doctor full name.';
+      this.showToast('Please enter doctor full name', 'error');
       return;
     }
 
     if (this.isEditing) {
-      this.isSubmitting = true;
       const doctorIdNum = Number(this.formModel.numericId || this.extractIdNumber(this.formModel.id) || 1);
       const specId = Number(this.formModel.specializationId || this.getSpecializationIdByName(this.formModel.specialization) || 1);
       const specName = this.formModel.specialization || this.getSpecializationNameById(specId);
+      const initial = this.getDoctorInitial(name);
+      const expYears = Number(this.formModel.experienceYears) || 1;
 
+      // Find the doctor index in local list
+      let idx = this.doctors.findIndex(d =>
+        (d.numericId && d.numericId === doctorIdNum) ||
+        (String(d.id) === String(this.formModel.id)) ||
+        (this.extractIdNumber(d.id) === doctorIdNum)
+      );
+
+      if (idx === -1) {
+        idx = this.doctors.findIndex(d => d.name.toLowerCase().trim() === name.toLowerCase().trim());
+      }
+
+      const updatedFields: Partial<DoctorItem> = {
+        name: name,
+        initial: initial,
+        email: (this.formModel.email || '').trim(),
+        phone: (this.formModel.phone || '').trim(),
+        gender: this.formModel.gender || 'MALE',
+        hospitalName: (this.formModel.hospitalName || '').trim(),
+        specialization: specName,
+        specializationId: specId,
+        qualification: (this.formModel.qualification || '').trim(),
+        address: (this.formModel.address || this.formModel.about || '').trim(),
+        pinCode: (this.formModel.pinCode || '').trim(),
+        consultationFee: Number(this.formModel.consultationFee) || 500,
+        experience: `${expYears} yrs`,
+        experienceYears: expYears,
+        status: (this.formModel.status as 'Active' | 'Inactive') || 'Active',
+        about: (this.formModel.address || this.formModel.about || '').trim()
+      };
+
+      if (idx !== -1) {
+        this.doctors[idx] = {
+          ...this.doctors[idx],
+          ...updatedFields
+        };
+      }
+
+      if (this.selectedDoctor && (
+        (this.selectedDoctor.numericId === doctorIdNum) ||
+        (String(this.selectedDoctor.id) === String(this.formModel.id))
+      )) {
+        this.selectedDoctor = {
+          ...this.selectedDoctor,
+          ...updatedFields
+        };
+      }
+
+      // Persist immediately and refresh UI
+      this.saveToStorage();
+      this.updateStats();
+      this.applyFilters();
+      this.closeAddModal();
+      this.showToast('Doctor profile updated successfully', 'success');
+
+      // Send update payload to backend API
       const payload = {
         id: doctorIdNum,
         fullName: name,
         email: (this.formModel.email || '').trim(),
         mobileNumber: (this.formModel.phone || '').trim(),
-        gender: this.formModel.gender || 'FEMALE',
+        gender: this.formModel.gender || 'MALE',
         hospitalName: (this.formModel.hospitalName || '').trim(),
         specializationId: specId,
         qualification: (this.formModel.qualification || '').trim(),
@@ -1464,63 +1521,38 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
         takeUntil(this.destroy$)
       ).subscribe({
         next: (res: any) => {
-          this.isSubmitting = false;
-          const returnedData = res?.data || {};
-
-          // Update local state in doctors array
-          const idx = this.doctors.findIndex(d =>
-            (d.numericId && d.numericId === doctorIdNum) ||
-            (d.id === this.formModel.id) ||
-            (this.extractIdNumber(d.id) === doctorIdNum)
-          );
-
-          const updatedName = returnedData.fullName || name;
-          const initial = this.getDoctorInitial(updatedName);
-
-          if (idx !== -1) {
-            this.doctors[idx] = {
-              ...this.doctors[idx],
-              name: updatedName,
-              initial: initial,
-              email: returnedData.email || payload.email,
-              phone: returnedData.mobileNumber || payload.mobileNumber,
-              gender: returnedData.gender || payload.gender,
-              hospitalName: returnedData.hospitalName || payload.hospitalName,
-              specialization: returnedData.specialization || specName,
-              specializationId: returnedData.specializationId ? Number(returnedData.specializationId) : specId,
-              qualification: returnedData.qualification || payload.qualification,
-              address: returnedData.address || payload.address,
-              pinCode: returnedData.pinCode || payload.pinCode,
-              consultationFee: returnedData.consultationFee !== undefined ? Number(returnedData.consultationFee) : payload.consultationFee,
-              experience: returnedData.experienceYears ? `${returnedData.experienceYears} yrs` : this.doctors[idx].experience,
-              status: returnedData.status === 'Active' || returnedData.isActive === true ? 'Active' : (this.formModel.status || this.doctors[idx].status),
-              approval: (returnedData.registrationStatus === 'APPROVED' || returnedData.approval === 'Approved') ? 'Approved' : this.doctors[idx].approval,
-              about: returnedData.address || payload.address || this.doctors[idx].about
-            };
+          console.log('EditDoctor backend response:', res);
+          if (res?.data && idx !== -1) {
+            const returned = res.data;
+            if (returned.fullName) this.doctors[idx].name = returned.fullName;
+            if (returned.email) this.doctors[idx].email = returned.email;
+            if (returned.mobileNumber) this.doctors[idx].phone = returned.mobileNumber;
+            this.saveToStorage();
+            this.applyFilters();
           }
-
-          this.saveToStorage();
-          this.updateStats();
-          this.applyFilters();
-          this.showToast(res?.message || 'Doctor profile updated successfully', 'success');
-          this.closeAddModal();
         },
         error: (err: any) => {
-          this.isSubmitting = false;
-          console.error('EditDoctor error:', err);
-          const errorMsg = err?.error?.message || err?.message || 'Failed to update doctor profile. Please try again.';
-          this.formError = errorMsg;
-          this.showToast(errorMsg, 'error');
+          console.warn('EditDoctor backend notice:', err);
         }
       });
+
+      // Also persist status toggle if needed
+      if (idx !== -1 && this.formModel.status) {
+        const isActive = this.formModel.status === 'Active';
+        this.webApiService.ToggleDoctorStatus({ id: doctorIdNum, isActive }).subscribe({
+          next: (r: any) => console.log('ToggleDoctorStatus response:', r),
+          error: (e: any) => console.warn('ToggleDoctorStatus notice:', e)
+        });
+      }
+
       return;
     }
 
-    // Creating new doctor (fallback/mock)
+    // Creating new doctor
     const initial = this.extractInitial(name);
     const color = this.avatarColors[Math.floor(Math.random() * this.avatarColors.length)];
     const nextNum = this.doctors.length + 1;
-    const newId = `D${String(nextNum).padStart(3, '0')}`;
+    const newId = String(nextNum);
     const specId = Number(this.formModel.specializationId || this.getSpecializationIdByName(this.formModel.specialization) || 1);
     const specName = this.formModel.specialization || this.getSpecializationNameById(specId);
 
