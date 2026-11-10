@@ -478,9 +478,8 @@
         </div>
       </div>
 
-      <div class="d-flex justify-content-end pt-3 border-top" style="gap: 10px;">
+      <div class="d-flex justify-content-end pt-3 border-top">
         <button type="button" class="btn btn-sm btn-light" (click)="closeViewModal()">Close</button>
-        <button type="button" class="btn btn-sm btn-outline-primary" (click)="closeViewModal(); openEditModal(selectedDoctor)">Edit Profile</button>
       </div>
     </div>
   </div>
@@ -625,7 +624,7 @@
                 {{ doctorAvailability?.doctorName || availabilityDoctor.name }}
               </h3>
               <span class="badge" style="background: #F1F5F9; color: #475569; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 6px;">
-                Doctor ID: #{{ doctorAvailability?.doctorId || availabilityDoctor.numericId || availabilityDoctor.id }}
+                Doctor ID: {{ doctorAvailability?.doctorId || availabilityDoctor.numericId || availabilityDoctor.id }}
               </span>
             </div>
             <span class="text-muted small">Doctor Availability &amp; Consultation Hours</span>
@@ -643,62 +642,6 @@
           <p class="text-muted small mt-2 mb-0">Retrieving doctor availability from server...</p>
         </div>
       } @else if (doctorAvailability) {
-        <!-- Offline Appointments Setting Card -->
-        <div class="p-3 rounded-3 mb-3" style="background: #F8FAFC; border: 1px solid #E2E8F0;">
-          <div class="d-flex align-items-center justify-content-between">
-            <div>
-              <div class="d-flex align-items-center" style="gap: 6px;">
-                <svg width="16" height="16" fill="none" stroke="#2563EB" stroke-width="2" viewBox="0 0 24 24">
-                  <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
-                  <circle cx="12" cy="7" r="4"></circle>
-                </svg>
-                <span class="fw-semibold text-dark" style="font-size: 13.5px;">Offline / In-Clinic Appointments</span>
-              </div>
-              <div class="text-muted small mt-1">Allow patients to book physical in-person appointments at hospital clinics</div>
-            </div>
-            <button type="button"
-                    class="btn btn-sm"
-                    [style.background]="doctorAvailability.offlineAppointments ? '#DCFCE7' : '#F1F5F9'"
-                    [style.color]="doctorAvailability.offlineAppointments ? '#15803D' : '#64748B'"
-                    [style.border]="doctorAvailability.offlineAppointments ? '1px solid #BBF7D0' : '1px solid #CBD5E1'"
-                    style="border-radius: 20px; font-weight: 600; font-size: 12px; padding: 4px 14px; cursor: pointer;"
-                    (click)="toggleOfflineAppointments()">
-              {{ doctorAvailability.offlineAppointments ? '● Enabled' : '○ Disabled' }}
-            </button>
-          </div>
-        </div>
-
-        <!-- Associated Hospitals Card -->
-        <div class="mb-3">
-          <div class="d-flex align-items-center justify-content-between mb-2">
-            <span style="font-size: 13px; font-weight: 700; color: #1E293B;">Associated Hospitals &amp; Clinics</span>
-            <span class="badge" style="background: #EFF6FF; color: #2563EB; font-size: 11px;">
-              {{ doctorAvailability.hospitals.length }} Clinic{{ doctorAvailability.hospitals.length > 1 ? 's' : '' }}
-            </span>
-          </div>
-
-          <div class="d-flex flex-wrap gap-2">
-            @for (h of doctorAvailability.hospitals; track h.id) {
-              <div class="p-2 px-3 rounded-2 d-flex align-items-center" style="background: #FFFFFF; border: 1px solid #E2E8F0; gap: 8px;">
-                <svg width="14" height="14" fill="none" stroke="#0284C7" stroke-width="2" viewBox="0 0 24 24">
-                  <path d="M3 21h18"></path>
-                  <path d="M5 21V7l8-4v18"></path>
-                  <path d="M19 21V11l-6-3"></path>
-                  <path d="M9 9h1"></path>
-                  <path d="M9 13h1"></path>
-                  <path d="M9 17h1"></path>
-                </svg>
-                <div>
-                  <span class="fw-semibold text-dark" style="font-size: 12.5px;">{{ h.hospitalName }}</span>
-                  @if (h.location) {
-                    <span class="text-muted small ms-1" style="font-size: 11.5px;">• {{ h.location }}</span>
-                  }
-                </div>
-              </div>
-            }
-          </div>
-        </div>
-
         <!-- Weekly Schedule Header -->
         <div class="d-flex align-items-center justify-content-between mb-2">
           <h6 style="font-size: 13.5px; font-weight: 700; color: #0F172A; margin: 0;">Weekly Consultation Schedule</h6>
@@ -758,22 +701,19 @@
             @if (activeAvailabilityDay.open) {
               <div class="mb-3">
                 <div class="d-flex align-items-center justify-content-between mb-2">
-                  <span class="fw-semibold text-dark small">Time Slots &amp; Assigned Hospital</span>
-                  <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2" style="font-size: 11.5px; border-radius: 6px;" (click)="addSession(activeAvailabilityDay)">
-                    + Add Another Session
-                  </button>
+                  <span class="fw-semibold text-dark small">Consultation Time Slots</span>
                 </div>
 
                 @if (!activeAvailabilityDay.sessions || activeAvailabilityDay.sessions.length === 0) {
                   <div class="p-3 rounded-2 text-center text-muted small bg-light">
-                    No consultation sessions configured yet. Click "+ Add Another Session" to specify hours.
+                    No consultation sessions configured yet for this day.
                   </div>
                 } @else {
                   <div class="d-flex flex-column gap-2">
                     @for (sess of activeAvailabilityDay.sessions; track $index; let sIdx = $index) {
                       <div class="p-2 px-3 rounded-2 border d-flex align-items-center justify-content-between flex-wrap" style="background: #F8FAFC; border-color: #E2E8F0 !important; gap: 10px;">
                         <div class="d-flex align-items-center" style="gap: 8px;">
-                          <span class="badge bg-secondary" style="font-size: 11px;">#{{ sIdx + 1 }}</span>
+                          <span class="badge bg-secondary" style="font-size: 11px;">Slot {{ sIdx + 1 }}</span>
                           <div class="d-flex align-items-center" style="gap: 4px;">
                             <input type="time"
                                    class="form-control form-control-sm"
@@ -787,23 +727,15 @@
                           </div>
                         </div>
 
-                        <div class="d-flex align-items-center" style="gap: 8px; flex: 1; min-width: 180px; justify-content: flex-end;">
-                          <select class="form-select form-select-sm"
-                                  [(ngModel)]="sess.hospitalId"
-                                  style="max-width: 220px; font-size: 12px; font-weight: 500;">
-                            @for (h of doctorAvailability.hospitals; track h.id) {
-                              <option [value]="h.id">{{ h.hospitalName }} ({{ h.location || 'Clinic' }})</option>
-                            }
-                          </select>
-
+                        @if (activeAvailabilityDay.sessions.length > 1) {
                           <button type="button"
                                   class="btn btn-sm btn-outline-danger p-1 px-2"
                                   style="font-size: 12px; border-radius: 6px; line-height: 1;"
                                   (click)="removeSession(activeAvailabilityDay, sIdx)"
-                                  title="Remove session">
+                                  title="Remove slot">
                             ✕
                           </button>
-                        </div>
+                        }
                       </div>
                     }
                   </div>
@@ -828,48 +760,6 @@
             </div>
           </div>
         }
-
-        <!-- Full Week Overview -->
-        <div class="mb-3">
-          <div class="d-flex align-items-center justify-content-between mb-2">
-            <span style="font-size: 12.5px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.04em;">Full Week Overview</span>
-            <span class="text-muted small">Click any day above to edit its slots</span>
-          </div>
-
-          <div class="d-flex flex-column gap-1" style="max-height: 180px; overflow-y: auto;">
-            @for (d of doctorAvailability.days; track d.day) {
-              <div class="p-2 px-3 rounded-2 d-flex align-items-center justify-content-between"
-                   [style.background]="selectedAvailabilityDay === d.day ? '#EFF6FF' : '#F8FAFC'"
-                   [style.border]="selectedAvailabilityDay === d.day ? '1px solid #BFDBFE' : '1px solid #F1F5F9'"
-                   style="cursor: pointer; transition: all 0.12s ease;"
-                   (click)="selectAvailabilityDay(d.day)">
-                <div class="d-flex align-items-center" style="gap: 8px;">
-                  <span class="fw-bold" style="font-size: 12.5px; min-width: 85px;" [style.color]="selectedAvailabilityDay === d.day ? '#1D4ED8' : '#1E293B'">
-                    {{ formatDayName(d.day) }}
-                  </span>
-                  @if (d.open && d.sessions && d.sessions.length > 0) {
-                    <div class="d-flex flex-wrap gap-1">
-                      @for (sess of d.sessions; track $index) {
-                        <span class="badge" style="background: #FFFFFF; border: 1px solid #CBD5E1; color: #1E293B; font-weight: 500; font-size: 11px;">
-                          {{ formatTime12(sess.startTime) }} – {{ formatTime12(sess.endTime) }}
-                          @if (sess.hospitalName || getHospitalName(sess.hospitalId || 1)) {
-                            <span class="text-muted ms-1">({{ sess.hospitalName || getHospitalName(sess.hospitalId || 1) }})</span>
-                          }
-                        </span>
-                      }
-                    </div>
-                  } @else if (d.open) {
-                    <span class="text-muted small" style="font-size: 11.5px;">Open (No session times configured)</span>
-                  } @else {
-                    <span class="badge" style="background: #FFF1F2; color: #DC2626; font-size: 10.5px; font-weight: 500;">Closed / Off Duty</span>
-                  }
-                </div>
-
-                <span class="text-muted" style="font-size: 11px;">Edit &rarr;</span>
-              </div>
-            }
-          </div>
-        </div>
 
         <!-- Modal Footer Actions -->
         <div class="d-flex justify-content-end pt-3 border-top" style="gap: 10px;">
@@ -911,51 +801,62 @@
         <button type="button" class="btn btn-sm btn-light rounded-circle p-2" (click)="closeDocumentsModal()">✕</button>
       </div>
 
-      <!-- Council Info -->
-      <div class="p-2 px-3 rounded-3 mb-3 d-flex align-items-center justify-content-between" style="background: #F1F5F9; font-size: 13px;">
-        <span class="text-muted">Registration Authority: <strong class="text-dark">{{ documentsDoctor.registrationCouncil || 'Telangana State Medical Council (TSMC)' }}</strong></span>
-        <span class="badge bg-success" style="font-size: 11px;">All Verified</span>
-      </div>
-
       <!-- Document List -->
       <div class="d-flex align-items-center justify-content-between mb-2">
         <h6 style="font-size: 13.5px; font-weight: 700; color: #0F172A; margin: 0;">Submitted Credentials</h6>
-        <span class="text-muted small">Click any document to inspect</span>
-      </div>
-
-      <div class="d-flex flex-column gap-2 mb-4">
-        @for (docItem of (documentsDoctor.documents || getDefaultDocuments(documentsDoctor)); track docItem.name; let dIdx = $index) {
-          <div class="d-flex align-items-center justify-content-between p-3 rounded-3 border"
-            style="background: #FAFAFA; transition: all 0.2s ease; cursor: pointer;"
-            (click)="openCertificateViewer(docItem, documentsDoctor)">
-            <div class="d-flex align-items-center gap-3">
-              <span class="badge border font-monospace"
-                [ngClass]="docItem.type === 'PDF' ? 'bg-danger text-white' : (docItem.type === 'PNG' ? 'bg-info text-white' : 'bg-warning text-dark')"
-                style="font-size: 11px; padding: 6px 10px;">
-                {{ docItem.type }}
-              </span>
-              <div>
-                <div class="fw-semibold text-dark" style="font-size: 13.5px;">{{ docItem.name }}</div>
-                <span class="text-muted" style="font-size: 12px;">
-                  Reg No: {{ docItem.certificateNumber || documentsDoctor.registrationNumber || ('TGMC-' + (98420 + dIdx)) }} • Verified {{ docItem.verifiedDate || 'Oct 28, 2026' }}
-                </span>
-              </div>
-            </div>
-            <div class="d-flex align-items-center gap-2">
-              <span class="badge" style="background: #ECFDF5; color: #059669; padding: 5px 12px; border-radius: 12px; font-size: 12px;">Verified</span>
-              <button type="button" class="btn btn-sm btn-primary d-inline-flex align-items-center gap-1"
-                style="background: #2563EB; border: none; border-radius: 8px; font-size: 12px; padding: 5px 12px;"
-                (click)="openCertificateViewer(docItem, documentsDoctor); $event.stopPropagation()">
-                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                  <circle cx="12" cy="12" r="3" />
-                </svg>
-                View
-              </button>
-            </div>
-          </div>
+        @if (documentsDoctor.documents && documentsDoctor.documents.length > 0) {
+          <span class="text-muted small">Click any document to inspect</span>
         }
       </div>
+
+      @if (documentsDoctor.documents && documentsDoctor.documents.length > 0) {
+        <div class="d-flex flex-column gap-2 mb-4">
+          @for (docItem of documentsDoctor.documents; track docItem.name; let dIdx = $index) {
+            <div class="d-flex align-items-center justify-content-between p-3 rounded-3 border"
+              style="background: #FAFAFA; transition: all 0.2s ease; cursor: pointer;"
+              (click)="openCertificateViewer(docItem, documentsDoctor)">
+              <div class="d-flex align-items-center gap-3">
+                <span class="badge border font-monospace"
+                  [ngClass]="docItem.type === 'PDF' ? 'bg-danger text-white' : (docItem.type === 'PNG' ? 'bg-info text-white' : 'bg-warning text-dark')"
+                  style="font-size: 11px; padding: 6px 10px;">
+                  {{ docItem.type }}
+                </span>
+                <div>
+                  <div class="fw-semibold text-dark" style="font-size: 13.5px;">{{ docItem.name }}</div>
+                  @if (docItem.certificateNumber || docItem.verifiedDate) {
+                    <span class="text-muted" style="font-size: 12px;">
+                      @if (docItem.certificateNumber) {
+                        <span>Reg No: {{ docItem.certificateNumber }}</span>
+                      }
+                      @if (docItem.verifiedDate) {
+                        <span> • {{ docItem.verifiedDate }}</span>
+                      }
+                    </span>
+                  }
+                </div>
+              </div>
+              <div class="d-flex align-items-center gap-2">
+                <span class="badge" style="background: #ECFDF5; color: #059669; padding: 5px 12px; border-radius: 12px; font-size: 12px;">
+                  {{ docItem.status || 'Verified' }}
+                </span>
+                <button type="button" class="btn btn-sm btn-primary d-inline-flex align-items-center gap-1"
+                  style="background: #2563EB; border: none; border-radius: 8px; font-size: 12px; padding: 5px 12px;"
+                  (click)="openCertificateViewer(docItem, documentsDoctor); $event.stopPropagation()">
+                  <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                  View
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="p-4 text-center text-muted small bg-light rounded-3 mb-4 border">
+          No verification documents available for this doctor.
+        </div>
+      }
 
       <div class="d-flex justify-content-end pt-3 border-top">
         <button type="button" class="btn btn-sm btn-light" (click)="closeDocumentsModal()">Close</button>

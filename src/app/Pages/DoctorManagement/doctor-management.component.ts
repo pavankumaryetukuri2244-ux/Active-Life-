@@ -457,7 +457,7 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
   private getInitialDoctors(): DoctorItem[] {
     return [
       {
-        id: 'D001',
+        id: '1',
         numericId: 1,
         name: 'Dr. Ramesh',
         initial: 'R',
@@ -481,7 +481,7 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
         about: 'Road No. 10, Banjara Hills, Hyderabad, Telangana'
       },
       {
-        id: 'D002',
+        id: '2',
         numericId: 2,
         name: 'Dr. Rajesh',
         initial: 'R',
@@ -505,7 +505,7 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
         about: 'Road No. 10, Banjara Hills, Hyderabad, Telangana'
       },
       {
-        id: 'D003',
+        id: '3',
         numericId: 3,
         name: 'Dr. SHIVA',
         initial: 'S',
@@ -529,7 +529,7 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
         about: 'Road No. 10, Banjara Hills, Hyderabad, Telangana'
       },
       {
-        id: 'D004',
+        id: '4',
         numericId: 4,
         name: 'Dr. umesh',
         initial: 'U',
@@ -553,7 +553,7 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
         about: 'Road No. 10, Banjara Hills, Hyderabad, Telangana'
       },
       {
-        id: 'D005',
+        id: '5',
         numericId: 5,
         name: 'Dr. seshu',
         initial: 'S',
@@ -577,7 +577,7 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
         about: 'Road No. 10, Banjara Hills, Hyderabad, Telangana'
       },
       {
-        id: 'D007',
+        id: '7',
         numericId: 7,
         name: 'Dr. varsha',
         initial: 'V',
@@ -601,7 +601,7 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
         about: 'Road No. 10, Banjara Hills, Hyderabad, Telangana'
       },
       {
-        id: 'D008',
+        id: '8',
         numericId: 8,
         name: 'Dr. vamsi',
         initial: 'V',
@@ -625,7 +625,7 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
         about: 'Road No. 10, Banjara Hills, Hyderabad, Telangana'
       },
       {
-        id: 'D009',
+        id: '9',
         numericId: 9,
         name: 'Dr. Emily Roberts',
         initial: 'E',
@@ -722,6 +722,11 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
       try {
         const parsed = JSON.parse(cached);
         if (Array.isArray(parsed) && parsed.length > 0) {
+          parsed.forEach((p: any) => {
+            const raw = p.numericId || (p.id ? String(p.id).replace(/\D/g, '') : '');
+            p.id = raw ? String(parseInt(raw, 10)) : '1';
+            p.numericId = parseInt(p.id, 10);
+          });
           this.doctors = this.sortDoctorsAscending(parsed);
           this.filteredDoctors = [...this.doctors];
           this.updateStats();
@@ -765,8 +770,35 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
       : (doc.experience || '0 yrs');
 
     const rawNumId = doc.id ? Number(doc.id) : (doc.doctorId ? Number(doc.doctorId) : (index + 1));
-    const doctorId = doc.doctorId ? `D${String(doc.doctorId).padStart(3, '0')}` : (doc.id ? ('D' + String(doc.id).padStart(3, '0')) : `D${index + 1}`);
+    const doctorId = String(rawNumId);
     const specId = doc.specializationId ? Number(doc.specializationId) : this.getSpecializationIdByName(doc.specialization);
+
+    const rawDocs = doc.documents || doc.doctorDocuments || doc.verificationDocuments || doc.credentials || [];
+    let mappedDocs: DoctorDocument[] = [];
+    if (Array.isArray(rawDocs) && rawDocs.length > 0) {
+      mappedDocs = rawDocs.map((d: any, idx: number) => {
+        const docName = d.name || d.documentName || d.title || d.documentType || `Document ${idx + 1}`;
+        const docUrl = d.url || d.fileUrl || d.documentUrl || '';
+        let docType: 'PDF' | 'PNG' | 'JPG' = 'PDF';
+        if (docUrl.toLowerCase().endsWith('.png')) docType = 'PNG';
+        else if (docUrl.toLowerCase().endsWith('.jpg') || docUrl.toLowerCase().endsWith('.jpeg')) docType = 'JPG';
+        else if (d.type && ['PDF', 'PNG', 'JPG'].includes(d.type.toUpperCase())) docType = d.type.toUpperCase();
+
+        return {
+          id: d.id || idx + 1,
+          name: docName,
+          type: docType,
+          documentType: d.documentType || d.type || 'CERTIFICATE',
+          status: d.status || 'Verified',
+          verifiedDate: d.verifiedDate || d.createdAt || '',
+          url: docUrl,
+          certificateNumber: d.certificateNumber || d.regNumber || doc.registrationNumber || '',
+          issuer: d.issuer || doc.registrationCouncil || '',
+          issueDate: d.issueDate || '',
+          expiryDate: d.expiryDate || ''
+        };
+      });
+    }
 
     return {
       id: doctorId,
@@ -796,6 +828,7 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
       about: doc.about || doc.address || '',
       createdAt: doc.createdAt || '',
       allowedActions: Array.isArray(doc.allowedActions) ? doc.allowedActions : ['VIEW', 'EDIT', 'SET_AVAILABILITY', 'VIEW_DOCUMENTS', 'SET_INACTIVE'],
+      documents: mappedDocs,
       raw: doc
     };
   }
@@ -978,12 +1011,8 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
   public toggleDayOpen(dayItem: AvailabilityDay): void {
     dayItem.open = !dayItem.open;
     if (dayItem.open && (!dayItem.sessions || dayItem.sessions.length === 0)) {
-      const defaultHospitalId = (this.doctorAvailability?.hospitals && this.doctorAvailability.hospitals.length > 0)
-        ? this.doctorAvailability.hospitals[0].id
-        : 1;
       dayItem.sessions = [
-        { sessionNumber: 1, startTime: '09:00', endTime: '12:00', hospitalId: defaultHospitalId },
-        { sessionNumber: 2, startTime: '14:00', endTime: '18:00', hospitalId: defaultHospitalId }
+        { sessionNumber: 1, startTime: '09:00', endTime: '17:00' }
       ];
     }
   }
@@ -992,12 +1021,9 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
     if (!dayItem.sessions) {
       dayItem.sessions = [];
     }
-    const defaultHospitalId = (this.doctorAvailability?.hospitals && this.doctorAvailability.hospitals.length > 0)
-      ? this.doctorAvailability.hospitals[0].id
-      : 1;
     const nextSessionNum = dayItem.sessions.length + 1;
     let start = '09:00';
-    let end = '12:00';
+    let end = '17:00';
     if (dayItem.sessions.length === 1) {
       start = '14:00';
       end = '18:00';
@@ -1008,8 +1034,7 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
     dayItem.sessions.push({
       sessionNumber: nextSessionNum,
       startTime: start,
-      endTime: end,
-      hospitalId: defaultHospitalId
+      endTime: end
     });
   }
 
@@ -1085,15 +1110,10 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
     this.isSavingAvailability = true;
     this.updatingDay = dayItem.day;
 
-    const defaultHospId = (this.doctorAvailability.hospitals && this.doctorAvailability.hospitals.length > 0)
-      ? this.doctorAvailability.hospitals[0].id
-      : 1;
-
     const sanitizedSessions = (dayItem.open && Array.isArray(dayItem.sessions))
       ? dayItem.sessions.map((s, idx) => ({
           startTime: this.to24Hour(s.startTime || '09:00'),
-          endTime: this.to24Hour(s.endTime || '12:00'),
-          hospitalId: Number(s.hospitalId) || defaultHospId
+          endTime: this.to24Hour(s.endTime || '17:00')
         }))
       : [];
 
@@ -1144,27 +1164,22 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
 
   private normalizeAvailabilityData(data: any, doctor: DoctorItem, docId: number): DoctorAvailabilityData {
     const allDaysOrder = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
-    const existingDays: AvailabilityDay[] = Array.isArray(data.days) ? data.days : [];
-
-    const defaultHospId = Array.isArray(data.hospitals) && data.hospitals.length > 0
-      ? data.hospitals[0].id
-      : 1;
+    const existingDays: any[] = Array.isArray(data.days)
+      ? data.days
+      : (Array.isArray(data.availability) ? data.availability : (Array.isArray(data.schedule) ? data.schedule : []));
 
     const days: AvailabilityDay[] = allDaysOrder.map(dayName => {
-      const found = existingDays.find(d => String(d.day).toUpperCase() === dayName);
+      const found: any = existingDays.find((d: any) => String(d.day || d.dayOfWeek || '').toUpperCase() === dayName);
       if (found) {
-        const rawSessions = Array.isArray(found.sessions) ? found.sessions : [];
+        const rawSessions = Array.isArray(found.sessions) ? found.sessions : (Array.isArray(found.slots) ? found.slots : []);
         const mappedSessions: DaySession[] = rawSessions.map((s: any, idx: number) => ({
           sessionNumber: s.sessionNumber || idx + 1,
-          startTime: this.to24Hour(s.startTime || '09:00'),
-          endTime: this.to24Hour(s.endTime || '12:00'),
-          hospitalId: Number(s.hospitalId) || defaultHospId,
-          hospitalName: s.hospitalName || '',
-          location: s.location || ''
+          startTime: this.to24Hour(s.startTime || s.fromTime || '09:00'),
+          endTime: this.to24Hour(s.endTime || s.toTime || '17:00')
         }));
         return {
           day: dayName,
-          open: Boolean(found.open),
+          open: Boolean(found.open !== undefined ? found.open : (mappedSessions.length > 0)),
           sessions: mappedSessions
         };
       }
@@ -1175,78 +1190,31 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
       };
     });
 
-    const hospitals: DoctorHospital[] = Array.isArray(data.hospitals) && data.hospitals.length > 0
-      ? data.hospitals
-      : [
-          { id: 1, hospitalName: doctor.hospitalName || 'Apollo Hospital', location: 'Jubilee Hills' }
-        ];
-
     return {
       doctorId: Number(data.doctorId || docId),
       doctorName: data.doctorName || doctor.name,
-      offlineAppointments: data.offlineAppointments !== undefined ? Boolean(data.offlineAppointments) : true,
-      hospitals: hospitals,
+      offlineAppointments: false,
+      hospitals: [],
       days: days
     };
   }
 
   private getDefaultAvailability(doctor: DoctorItem, docId: number): DoctorAvailabilityData {
+    const allDaysOrder = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
     return {
       doctorId: docId,
       doctorName: doctor.name,
-      offlineAppointments: true,
-      hospitals: [
-        { id: 1, hospitalName: doctor.hospitalName || 'Apollo Hospital', location: 'Jubilee Hills' },
-        { id: 2, hospitalName: 'Yashoda Hospital', location: 'Somajiguda' },
-        { id: 3, hospitalName: 'Rainbow Children Hospital', location: 'Banjara Hills' }
-      ],
-      days: [
-        {
-          day: 'MONDAY',
-          open: true,
-          sessions: [
-            { sessionNumber: 1, startTime: '09:00', endTime: '12:00', hospitalId: 1, hospitalName: 'Apollo Hospital' },
-            { sessionNumber: 2, startTime: '14:00', endTime: '18:00', hospitalId: 1, hospitalName: 'Apollo Hospital' }
-          ]
-        },
-        {
-          day: 'TUESDAY',
-          open: false,
-          sessions: []
-        },
-        {
-          day: 'WEDNESDAY',
-          open: false,
-          sessions: []
-        },
-        {
-          day: 'THURSDAY',
-          open: false,
-          sessions: []
-        },
-        {
-          day: 'FRIDAY',
-          open: false,
-          sessions: []
-        },
-        {
-          day: 'SATURDAY',
-          open: false,
-          sessions: []
-        },
-        {
-          day: 'SUNDAY',
-          open: false,
-          sessions: []
-        }
-      ]
+      offlineAppointments: false,
+      hospitals: [],
+      days: allDaysOrder.map(dayName => ({
+        day: dayName,
+        open: false,
+        sessions: []
+      }))
     };
   }
 
   public openDocumentsModal(doctor: DoctorItem): void {
-    if (!doctor.documents || doctor.documents.length === 0) {
-      doctor.documents = this.getDefaultDocuments(doctor);
-    }
     this.documentsDoctor = doctor;
     this.isDocumentsModalOpen = true;
   }
@@ -1257,12 +1225,9 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
   }
 
   public openCertificateViewer(doc: DoctorDocument, doctor: DoctorItem): void {
-    if (!doctor.documents || doctor.documents.length === 0) {
-      doctor.documents = this.getDefaultDocuments(doctor);
-    }
     this.activeCertificateDoctor = doctor;
     this.activeCertificateDoc = doc;
-    const docs = doctor.documents;
+    const docs = doctor.documents || [];
     const idx = docs.findIndex(d => d.name === doc.name || (doc.id !== undefined && d.id === doc.id));
     this.activeDocIndex = idx >= 0 ? idx : 0;
     this.isCertificateViewerOpen = true;
