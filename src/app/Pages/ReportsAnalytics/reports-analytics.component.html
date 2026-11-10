@@ -5,13 +5,6 @@
       <h1 class="ra-page-title">Reports & Analytics</h1>
       <p class="ra-page-subtitle">Comprehensive insights and performance metrics</p>
     </div>
-    <div class="ra-header-actions">
-      <select class="ra-time-select" [(ngModel)]="selectedRange" (ngModelChange)="onRangeChange($event)">
-        @for (range of ranges; track range) {
-          <option [value]="range">{{ range }}</option>
-        }
-      </select>
-    </div>
   </div>
 
   <!-- 4 Top Stat Cards -->
