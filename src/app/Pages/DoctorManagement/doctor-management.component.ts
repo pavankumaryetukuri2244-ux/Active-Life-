@@ -1135,7 +1135,7 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
     return found ? found.hospitalName : (this.doctorAvailability.hospitals[0]?.hospitalName || 'Apollo Hospital');
   }
 
-  public updateDayAvailability(dayItem: AvailabilityDay, closeOnSuccess: boolean = false): void {
+  public updateDayAvailability(dayItem: AvailabilityDay, closeOnSuccess: boolean = true): void {
     if (!this.doctorAvailability) return;
     const targetId = Number(this.doctorAvailability.doctorId) || 1;
     this.isSavingAvailability = true;
