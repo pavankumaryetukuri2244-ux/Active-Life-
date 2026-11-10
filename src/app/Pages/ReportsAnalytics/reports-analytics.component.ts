@@ -12,12 +12,6 @@ export interface MetricCard {
   colorTheme: 'green' | 'blue' | 'purple' | 'amber';
 }
 
-export interface FeatureUsageSlice {
-  label: string;
-  percentage: number;
-  color: string;
-}
-
 @Component({
   selector: 'app-reports-analytics',
   templateUrl: './reports-analytics.component.html',
@@ -228,28 +222,6 @@ export interface FeatureUsageSlice {
       color: #10B981;
     }
 
-    /* Pie Slice Pills */
-    .ra-pie-pills {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 12px;
-      margin-top: 16px;
-    }
-
-    .ra-pie-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: #F8FAFC;
-      border: 1px solid #E2E8F0;
-      border-radius: 8px;
-      padding: 4px 10px;
-      font-size: 12px;
-      font-weight: 600;
-      color: #334155;
-    }
-
     .ra-legend-box {
       width: 12px;
       height: 12px;
@@ -381,63 +353,7 @@ export class ReportsAnalyticsComponent implements OnInit {
     }
   };
 
-  // 2. Feature Usage Distribution (Pie Chart)
-  public featureSlices: FeatureUsageSlice[] = [
-    { label: 'Wellness Content', percentage: 32, color: '#3B82F6' },
-    { label: 'Doctor Booking', percentage: 24, color: '#8B5CF6' },
-    { label: 'Preventive Care', percentage: 18, color: '#10B981' },
-    { label: 'Family Management', percentage: 15, color: '#F59E0B' },
-    { label: 'Health Records', percentage: 12, color: '#EF4444' }
-  ];
-
-  public featureUsageData: ChartConfiguration<'pie'>['data'] = {
-    labels: [
-      'Wellness Content',
-      'Doctor Booking',
-      'Preventive Care',
-      'Family Management',
-      'Health Records'
-    ],
-    datasets: [
-      {
-        data: [32, 24, 18, 15, 12],
-        backgroundColor: [
-          '#3B82F6',
-          '#8B5CF6',
-          '#10B981',
-          '#F59E0B',
-          '#EF4444'
-        ],
-        hoverBackgroundColor: [
-          '#2563EB',
-          '#7C3AED',
-          '#059669',
-          '#D97706',
-          '#DC2626'
-        ],
-        borderWidth: 2,
-        borderColor: '#FFFFFF'
-      }
-    ]
-  };
-
-  public featureUsageOptions: ChartConfiguration<'pie'>['options'] = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        display: false
-      },
-      tooltip: {
-        backgroundColor: '#0F172A',
-        callbacks: {
-          label: (ctx) => ` ${ctx.label}: ${ctx.raw}%`
-        }
-      }
-    }
-  };
-
-  // 3. Weekly Appointment Breakdown (Grouped Bar Chart)
+  // 2. Weekly Appointment Breakdown (Grouped Bar Chart)
   public appointmentBreakdownData: ChartConfiguration<'bar'>['data'] = {
     labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
     datasets: [

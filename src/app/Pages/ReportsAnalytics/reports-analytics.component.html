@@ -51,10 +51,10 @@
     }
   </div>
 
-  <!-- Row 1: User Engagement & Feature Usage -->
+  <!-- Row 1: User Engagement Trends -->
   <div class="row g-4 mb-4">
     <!-- User Engagement Trends (Area Line Chart) -->
-    <div class="col-12 col-lg-6">
+    <div class="col-12">
       <div class="ra-chart-card">
         <div class="ra-chart-header">
           <h2 class="ra-chart-title">User Engagement Trends</h2>
@@ -75,30 +75,6 @@
             <span class="ra-legend-line ra-legend-emerald"></span>
             <span>Active Users</span>
           </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Feature Usage Distribution (Pie Chart) -->
-    <div class="col-12 col-lg-6">
-      <div class="ra-chart-card">
-        <div class="ra-chart-header">
-          <h2 class="ra-chart-title">Feature Usage Distribution</h2>
-        </div>
-        <div class="ra-chart-body d-flex align-items-center justify-content-center" style="height: 300px; position: relative;">
-          <canvas baseChart
-            [data]="featureUsageData"
-            [options]="featureUsageOptions"
-            [type]="'pie'">
-          </canvas>
-        </div>
-        <div class="ra-pie-pills">
-          @for (slice of featureSlices; track slice.label) {
-            <div class="ra-pie-pill">
-              <span class="ra-legend-dot" [style.background-color]="slice.color"></span>
-              <span>{{ slice.label }} {{ slice.percentage }}%</span>
-            </div>
-          }
         </div>
       </div>
     </div>
