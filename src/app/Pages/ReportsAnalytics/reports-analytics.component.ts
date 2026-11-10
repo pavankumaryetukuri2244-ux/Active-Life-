@@ -243,7 +243,7 @@ export class ReportsAnalyticsComponent implements OnInit {
     },
     {
       title: 'Active Doctors',
-      value: '7',
+      value: '8',
       colorTheme: 'purple'
     },
     {
@@ -334,27 +334,27 @@ export class ReportsAnalyticsComponent implements OnInit {
     }
   };
 
-  // 2. Weekly Appointment Breakdown (Grouped Bar Chart)
+  // 2. Appointment Breakdown (Grouped Bar Chart)
   public appointmentBreakdownData: ChartConfiguration<'bar'>['data'] = {
-    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    labels: ['Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov'],
     datasets: [
       {
         label: 'Consultations',
-        data: [44, 51, 38, 61, 55, 42, 28],
+        data: [0, 0, 0, 0, 0, 3],
         backgroundColor: '#2563EB',
         hoverBackgroundColor: '#1D4ED8',
         borderRadius: 4,
-        barPercentage: 0.75,
-        categoryPercentage: 0.65
+        barPercentage: 0.7,
+        categoryPercentage: 0.6
       },
       {
         label: 'Follow-ups',
-        data: [23, 28, 19, 32, 29, 21, 14],
+        data: [0, 0, 0, 0, 0, 0],
         backgroundColor: '#10B981',
         hoverBackgroundColor: '#059669',
         borderRadius: 4,
-        barPercentage: 0.75,
-        categoryPercentage: 0.65
+        barPercentage: 0.7,
+        categoryPercentage: 0.6
       }
     ]
   };
@@ -389,9 +389,9 @@ export class ReportsAnalyticsComponent implements OnInit {
       },
       y: {
         min: 0,
-        max: 80,
+        max: 4,
         ticks: {
-          stepSize: 20,
+          stepSize: 1,
           color: '#94A3B8',
           font: { family: 'Inter', size: 11 }
         },
@@ -637,6 +637,50 @@ export class ReportsAnalyticsComponent implements OnInit {
             revYScale.ticks.stepSize = revStep;
             revYScale.ticks.callback = (val: any) => `${symbol}${val}`;
           }
+        }
+      }
+    }
+
+    // 4. Appointment Breakdown (Grouped Bar Chart)
+    if (Array.isArray(d.appointmentBreakdown) && d.appointmentBreakdown.length > 0) {
+      const aptLabels = d.appointmentBreakdown.map((t: any) => t.month);
+      const consultations = d.appointmentBreakdown.map((t: any) => Number(t.consultations ?? 0));
+      const followUps = d.appointmentBreakdown.map((t: any) => Number(t.followUps ?? 0));
+
+      const maxApt = Math.max(...consultations, ...followUps, 3);
+      const niceAptMax = Math.ceil(maxApt * 1.33) || 4;
+      const aptStep = niceAptMax <= 5 ? 1 : Math.ceil(niceAptMax / 4);
+
+      this.appointmentBreakdownData = {
+        labels: aptLabels,
+        datasets: [
+          {
+            label: 'Consultations',
+            data: consultations,
+            backgroundColor: '#2563EB',
+            hoverBackgroundColor: '#1D4ED8',
+            borderRadius: 4,
+            barPercentage: 0.7,
+            categoryPercentage: 0.6
+          },
+          {
+            label: 'Follow-ups',
+            data: followUps,
+            backgroundColor: '#10B981',
+            hoverBackgroundColor: '#059669',
+            borderRadius: 4,
+            barPercentage: 0.7,
+            categoryPercentage: 0.6
+          }
+        ]
+      };
+
+      if (this.appointmentBreakdownOptions && this.appointmentBreakdownOptions.scales && this.appointmentBreakdownOptions.scales['y']) {
+        const aptYScale: any = this.appointmentBreakdownOptions.scales['y'];
+        aptYScale.min = 0;
+        aptYScale.max = niceAptMax;
+        if (aptYScale.ticks) {
+          aptYScale.ticks.stepSize = aptStep;
         }
       }
     }
