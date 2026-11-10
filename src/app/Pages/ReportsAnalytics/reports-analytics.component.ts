@@ -1,6 +1,7 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ViewChildren, QueryList } from '@angular/core';
 import 'chart.js/auto';
 import { ChartConfiguration } from 'chart.js';
+import { BaseChartDirective } from 'ng2-charts';
 import { WebapiService } from '../../services/webapi.service';
 
 export interface MetricCard {
@@ -261,35 +262,38 @@ export interface FeatureUsageSlice {
   `]
 })
 export class ReportsAnalyticsComponent implements OnInit {
+  @ViewChildren(BaseChartDirective) charts?: QueryList<BaseChartDirective>;
+
   selectedRange: string = 'Last 30 days';
   ranges: string[] = ['Last 7 days', 'Last 30 days', 'Last 90 days', 'This Year'];
+  public liveAnalyticsData: any = null;
 
-  // Four Stat Cards matching exact Figma mockup
+  // Four Stat Cards matching exact Figma mockup & live API data
   metrics: MetricCard[] = [
     {
       title: 'Total Revenue',
-      value: '$75,000',
+      value: '₹500',
       trend: '+10.2%',
       trendPositive: true,
       colorTheme: 'green'
     },
     {
       title: 'Active Users',
-      value: '10,200',
+      value: '98',
       trend: '+12.1%',
       trendPositive: true,
       colorTheme: 'blue'
     },
     {
-      title: 'Avg. Session Time',
-      value: '8m 42s',
+      title: 'Active Doctors',
+      value: '7',
       trend: '+5.3%',
       trendPositive: true,
       colorTheme: 'purple'
     },
     {
       title: 'Monthly Appointments',
-      value: '1,847',
+      value: '3',
       trend: '+8.7%',
       trendPositive: true,
       colorTheme: 'amber'
@@ -298,11 +302,11 @@ export class ReportsAnalyticsComponent implements OnInit {
 
   // 1. User Engagement Trends (Area Line Chart)
   public engagementData: ChartConfiguration<'line'>['data'] = {
-    labels: ['Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'],
+    labels: ['Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov'],
     datasets: [
       {
         label: 'Total Users',
-        data: [7200, 8400, 9300, 10500, 11800, 13900],
+        data: [0, 0, 30, 87, 107, 107],
         borderColor: '#3B82F6',
         backgroundColor: 'rgba(59, 130, 246, 0.40)',
         borderWidth: 2.5,
@@ -316,7 +320,7 @@ export class ReportsAnalyticsComponent implements OnInit {
       },
       {
         label: 'Active Users',
-        data: [5100, 5900, 6700, 7500, 8800, 10200],
+        data: [0, 0, 23, 78, 98, 98],
         borderColor: '#10B981',
         backgroundColor: 'rgba(16, 185, 129, 0.45)',
         borderWidth: 2.5,
@@ -361,9 +365,9 @@ export class ReportsAnalyticsComponent implements OnInit {
       },
       y: {
         min: 0,
-        max: 14000,
+        max: 140,
         ticks: {
-          stepSize: 3500,
+          stepSize: 35,
           color: '#94A3B8',
           font: { family: 'Inter', size: 11 }
         },
@@ -515,11 +519,11 @@ export class ReportsAnalyticsComponent implements OnInit {
 
   // 4. Revenue Trends (Line Chart)
   public revenueTrendsData: ChartConfiguration<'line'>['data'] = {
-    labels: ['Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'],
+    labels: ['Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov'],
     datasets: [
       {
         label: 'Revenue',
-        data: [45000, 52000, 58000, 63000, 68000, 75000],
+        data: [0, 0, 0, 0, 0, 500],
         borderColor: '#F59E0B',
         backgroundColor: 'rgba(245, 158, 11, 0.08)',
         borderWidth: 2.5,
@@ -548,7 +552,7 @@ export class ReportsAnalyticsComponent implements OnInit {
         padding: 10,
         cornerRadius: 8,
         callbacks: {
-          label: (ctx) => ` Revenue: $${Number(ctx.raw).toLocaleString()}`
+          label: (ctx) => ` Revenue: ₹${Number(ctx.raw).toLocaleString()}`
         }
       }
     },
@@ -567,12 +571,12 @@ export class ReportsAnalyticsComponent implements OnInit {
       },
       y: {
         min: 0,
-        max: 80000,
+        max: 600,
         ticks: {
-          stepSize: 20000,
+          stepSize: 150,
           color: '#94A3B8',
           font: { family: 'Inter', size: 11 },
-          callback: (value) => value
+          callback: (value) => `₹${value}`
         },
         grid: {
           color: '#F1F5F9'
@@ -648,26 +652,173 @@ export class ReportsAnalyticsComponent implements OnInit {
   }
 
   fetchLiveStats(): void {
+    this.webApiService.GetAnalytics({}).subscribe({
+      next: (res: any) => {
+        if (res && res.success && res.data) {
+          this.applyAnalyticsData(res.data);
+        } else {
+          this.fallbackDashboardStats();
+        }
+      },
+      error: (err: any) => {
+        console.warn('[ReportsAnalytics] Analytics API error, falling back to dashboard stats', err);
+        this.fallbackDashboardStats();
+      }
+    });
+  }
+
+  private fallbackDashboardStats(): void {
     this.webApiService.GetDashboardStatistics().subscribe({
       next: (res: any) => {
         if (res && res.success && res.data) {
           if (res.data.totalUsers) {
-            this.metrics[1].value = res.data.totalUsers.toLocaleString();
+            this.metrics[1].value = Number(res.data.totalUsers).toLocaleString();
           }
           if (res.data.appointmentsCount) {
-            this.metrics[3].value = res.data.appointmentsCount.toLocaleString();
+            this.metrics[3].value = Number(res.data.appointmentsCount).toLocaleString();
           }
           this.cdr.detectChanges();
         }
       },
       error: (err: any) => {
-        console.warn('Dashboard statistics fallback active for analytics', err);
+        console.warn('[ReportsAnalytics] Dashboard stats fallback also failed', err);
       }
     });
   }
 
+  applyAnalyticsData(d: any): void {
+    if (!d) return;
+    this.liveAnalyticsData = d;
+
+    const currency = d.currency || 'INR';
+    const symbol = currency === 'INR' ? '₹' : (currency === 'USD' ? '$' : currency + ' ');
+
+    // 1. Metric Cards
+    if (d.totalRevenue !== undefined && d.totalRevenue !== null) {
+      this.metrics[0].value = `${symbol}${Number(d.totalRevenue).toLocaleString()}`;
+    }
+    if (d.activeUsers !== undefined && d.activeUsers !== null) {
+      this.metrics[1].value = Number(d.activeUsers).toLocaleString();
+    }
+    if (d.activeDoctors !== undefined && d.activeDoctors !== null) {
+      this.metrics[2].title = 'Active Doctors';
+      this.metrics[2].value = Number(d.activeDoctors).toLocaleString();
+    }
+    if (d.monthlyAppointments !== undefined && d.monthlyAppointments !== null) {
+      this.metrics[3].value = Number(d.monthlyAppointments).toLocaleString();
+    }
+
+    // 2. User Engagement Trends (Area Line Chart)
+    if (Array.isArray(d.userEngagementTrends) && d.userEngagementTrends.length > 0) {
+      const labels = d.userEngagementTrends.map((t: any) => t.month);
+      const totalUsers = d.userEngagementTrends.map((t: any) => Number(t.totalUsers ?? 0));
+      const activeUsers = d.userEngagementTrends.map((t: any) => Number(t.activeUsers ?? 0));
+
+      const maxVal = Math.max(...totalUsers, ...activeUsers, 10);
+      const niceMax = Math.ceil((maxVal * 1.25) / 10) * 10;
+      const stepSize = Math.max(Math.ceil(niceMax / 4), 1);
+
+      this.engagementData = {
+        labels: labels,
+        datasets: [
+          {
+            label: 'Total Users',
+            data: totalUsers,
+            borderColor: '#3B82F6',
+            backgroundColor: 'rgba(59, 130, 246, 0.40)',
+            borderWidth: 2.5,
+            fill: true,
+            tension: 0.35,
+            pointRadius: 4,
+            pointBackgroundColor: '#FFFFFF',
+            pointBorderColor: '#3B82F6',
+            pointBorderWidth: 2,
+            pointHoverRadius: 6
+          },
+          {
+            label: 'Active Users',
+            data: activeUsers,
+            borderColor: '#10B981',
+            backgroundColor: 'rgba(16, 185, 129, 0.45)',
+            borderWidth: 2.5,
+            fill: true,
+            tension: 0.35,
+            pointRadius: 4,
+            pointBackgroundColor: '#FFFFFF',
+            pointBorderColor: '#10B981',
+            pointBorderWidth: 2,
+            pointHoverRadius: 6
+          }
+        ]
+      };
+
+      if (this.engagementOptions && this.engagementOptions.scales && this.engagementOptions.scales['y']) {
+        const yScale: any = this.engagementOptions.scales['y'];
+        yScale.min = 0;
+        yScale.max = niceMax;
+        if (yScale.ticks) {
+          yScale.ticks.stepSize = stepSize;
+        }
+      }
+    }
+
+    // 3. Revenue Trends (Line Chart)
+    if (Array.isArray(d.revenueTrends) && d.revenueTrends.length > 0) {
+      const revLabels = d.revenueTrends.map((t: any) => t.month);
+      const revValues = d.revenueTrends.map((t: any) => Number(t.revenue ?? 0));
+
+      const maxRev = Math.max(...revValues, 100);
+      const niceRevMax = Math.ceil((maxRev * 1.2) / 100) * 100;
+      const revStep = Math.max(Math.ceil(niceRevMax / 4), 25);
+
+      this.revenueTrendsData = {
+        labels: revLabels,
+        datasets: [
+          {
+            label: 'Revenue',
+            data: revValues,
+            borderColor: '#F59E0B',
+            backgroundColor: 'rgba(245, 158, 11, 0.08)',
+            borderWidth: 2.5,
+            fill: true,
+            tension: 0.25,
+            pointRadius: 5,
+            pointBackgroundColor: '#F59E0B',
+            pointBorderColor: '#FFFFFF',
+            pointBorderWidth: 2,
+            pointHoverRadius: 7
+          }
+        ]
+      };
+
+      if (this.revenueTrendsOptions) {
+        if (this.revenueTrendsOptions.plugins?.tooltip?.callbacks) {
+          this.revenueTrendsOptions.plugins.tooltip.callbacks.label = (ctx) => ` Revenue: ${symbol}${Number(ctx.raw).toLocaleString()}`;
+        }
+        if (this.revenueTrendsOptions.scales && this.revenueTrendsOptions.scales['y']) {
+          const revYScale: any = this.revenueTrendsOptions.scales['y'];
+          revYScale.min = 0;
+          revYScale.max = niceRevMax;
+          if (revYScale.ticks) {
+            revYScale.ticks.stepSize = revStep;
+            revYScale.ticks.callback = (val: any) => `${symbol}${val}`;
+          }
+        }
+      }
+    }
+
+    this.cdr.detectChanges();
+    if (this.charts) {
+      this.charts.forEach(c => c.update());
+    }
+  }
+
   onRangeChange(range: string): void {
     this.selectedRange = range;
+    if (this.liveAnalyticsData) {
+      this.applyAnalyticsData(this.liveAnalyticsData);
+      return;
+    }
     if (range === 'Last 7 days') {
       this.metrics[0].value = '$18,500';
       this.metrics[1].value = '2,840';

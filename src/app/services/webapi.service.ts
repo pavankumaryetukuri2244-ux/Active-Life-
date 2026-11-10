@@ -769,4 +769,20 @@ export class WebapiService {
     const url = `${this.WebApi}/admin/api/masterdata/target-audiences`;
     return this.Http.get<any>(url, { headers });
   }
+
+  // ==========================================
+  // Analytics API Methods
+  // ==========================================
+  public GetAnalytics(body: any = {}) {
+    const token = localStorage.getItem('accessToken');
+    let headers = new HttpHeaders({
+      'Content-Type': 'application/json'
+    });
+    if (token && token !== 'null' && token !== 'undefined') {
+      const cleanToken = token.replace(/^"(.*)"$/, '$1').trim();
+      headers = headers.set('Authorization', 'Bearer ' + cleanToken);
+    }
+    const url = `${this.WebApi}/admin/api/analytics`;
+    return this.Http.post<any>(url, body, { headers });
+  }
 }
