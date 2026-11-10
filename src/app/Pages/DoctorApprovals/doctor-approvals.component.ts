@@ -140,47 +140,38 @@ export interface DoctorApprovalItem {
       color: #94A3B8 !important;
     }
 
-    /* Filter Chips Bar (Pending, Approved, Rejected, All) */
-    .da-filter-chip {
-      border-radius: 20px !important;
-      padding: 6px 16px !important;
-      font-size: 13px !important;
+    /* Filter Tabs Bar (All, Pending, Approved, Rejected) */
+    .da-filter-chip,
+    .um-tab-btn {
+      background: #FFFFFF !important;
+      border: 1px solid #E5E7EB !important;
+      color: #111827 !important;
+      border-radius: 8px !important;
+      height: 38px !important;
+      padding: 0 20px !important;
       font-weight: 500 !important;
-      cursor: pointer !important;
+      font-size: 13.5px !important;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
       transition: all 0.15s ease !important;
-      border: 1px solid #E2E8F0 !important;
-      background: #FFFFFF !important;
-      color: #475569 !important;
-      display: inline-flex !important;
-      align-items: center !important;
-      gap: 6px !important;
       outline: none !important;
-      line-height: 20px !important;
-    }
-    .da-filter-chip:hover {
-      background: #F8FAFC !important;
-      color: #0F172A !important;
-    }
-    .da-filter-chip.active {
-      background: #FFFFFF !important;
-      color: #0F172A !important;
-      border-color: #CBD5E1 !important;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important;
-      font-weight: 600 !important;
-    }
-
-    .da-count-badge {
+      cursor: pointer !important;
       display: inline-flex !important;
       align-items: center !important;
       justify-content: center !important;
-      background: #F59E0B !important;
+      letter-spacing: 0.01em !important;
+    }
+    .da-filter-chip:hover,
+    .um-tab-btn:hover {
+      background: #F8FAFC !important;
+      color: #0F172A !important;
+      border-color: #CBD5E1 !important;
+    }
+    .da-filter-chip.active,
+    .um-tab-btn.active {
+      background: #090D16 !important;
       color: #FFFFFF !important;
-      font-size: 11px !important;
-      font-weight: 700 !important;
-      width: 18px !important;
-      height: 18px !important;
-      border-radius: 50% !important;
-      margin-left: 2px !important;
+      border-color: #090D16 !important;
+      font-weight: 500 !important;
     }
 
     /* Doctor Approval Card */

@@ -73,56 +73,38 @@
           placeholder="Search by name, specialization, or request ID...">
       </div>
 
-      <!-- Filter Chips (Pending (3), Approved, Rejected, All) -->
-      <div class="d-flex flex-wrap align-items-center" style="gap: 10px;">
-        <!-- Pending Chip -->
+      <!-- Status Tab Filters (All, Pending, Approved, Rejected) matching User Management & Content Management -->
+      <div class="d-flex flex-wrap" style="gap: 8px;">
         <button
           type="button"
-          class="da-filter-chip"
-          [class.active]="activeTab === 'Pending'"
-          (click)="setTab('Pending')">
-          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="10"></circle>
-            <polyline points="12 6 12 12 16 14"></polyline>
-          </svg>
-          <span>Pending</span>
-          <span class="da-count-badge">{{ pendingCount }}</span>
-        </button>
-
-        <!-- Approved Chip -->
-        <button
-          type="button"
-          class="da-filter-chip"
-          [class.active]="activeTab === 'Approved'"
-          (click)="setTab('Approved')">
-          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="10"></circle>
-            <polyline points="9 12 11 14 15 10"></polyline>
-          </svg>
-          <span>Approved</span>
-        </button>
-
-        <!-- Rejected Chip -->
-        <button
-          type="button"
-          class="da-filter-chip"
-          [class.active]="activeTab === 'Rejected'"
-          (click)="setTab('Rejected')">
-          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="15" y1="9" x2="9" y2="15"></line>
-            <line x1="9" y1="9" x2="15" y2="15"></line>
-          </svg>
-          <span>Rejected</span>
-        </button>
-
-        <!-- All Chip -->
-        <button
-          type="button"
-          class="da-filter-chip"
+          class="um-tab-btn"
           [class.active]="activeTab === 'All'"
           (click)="setTab('All')">
-          <span>All</span>
+          All
+        </button>
+
+        <button
+          type="button"
+          class="um-tab-btn"
+          [class.active]="activeTab === 'Pending'"
+          (click)="setTab('Pending')">
+          Pending
+        </button>
+
+        <button
+          type="button"
+          class="um-tab-btn"
+          [class.active]="activeTab === 'Approved'"
+          (click)="setTab('Approved')">
+          Approved
+        </button>
+
+        <button
+          type="button"
+          class="um-tab-btn"
+          [class.active]="activeTab === 'Rejected'"
+          (click)="setTab('Rejected')">
+          Rejected
         </button>
       </div>
     </div>
