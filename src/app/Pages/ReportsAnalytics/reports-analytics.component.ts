@@ -7,8 +7,6 @@ import { WebapiService } from '../../services/webapi.service';
 export interface MetricCard {
   title: string;
   value: string;
-  trend: string;
-  trendPositive: boolean;
   colorTheme: 'green' | 'blue' | 'purple' | 'amber';
 }
 
@@ -72,8 +70,8 @@ export interface MetricCard {
       background: #FFFFFF !important;
       border: 1px solid #E2E8F0 !important;
       border-radius: 16px !important;
-      padding: 22px 24px !important;
-      min-height: 125px !important;
+      padding: 20px 24px !important;
+      min-height: 105px !important;
       display: flex !important;
       flex-direction: column !important;
       justify-content: space-between !important;
@@ -90,7 +88,7 @@ export interface MetricCard {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
 
     .ra-stat-label {
@@ -118,7 +116,7 @@ export interface MetricCard {
       font-size: 30px;
       font-weight: 700;
       line-height: 1.1;
-      margin: 0 0 8px 0;
+      margin: 4px 0 0 0;
       letter-spacing: -0.02em;
     }
 
@@ -126,15 +124,6 @@ export interface MetricCard {
     .ra-stat-val-blue { color: #2563EB; }
     .ra-stat-val-purple { color: #8B5CF6; }
     .ra-stat-val-amber { color: #F59E0B; }
-
-    .ra-trend-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 12.5px;
-      font-weight: 600;
-      color: #10B981;
-    }
 
     /* Chart Cards */
     .ra-chart-card {
@@ -245,29 +234,21 @@ export class ReportsAnalyticsComponent implements OnInit {
     {
       title: 'Total Revenue',
       value: '₹500',
-      trend: '+10.2%',
-      trendPositive: true,
       colorTheme: 'green'
     },
     {
       title: 'Active Users',
       value: '98',
-      trend: '+12.1%',
-      trendPositive: true,
       colorTheme: 'blue'
     },
     {
       title: 'Active Doctors',
       value: '7',
-      trend: '+5.3%',
-      trendPositive: true,
       colorTheme: 'purple'
     },
     {
       title: 'Monthly Appointments',
       value: '3',
-      trend: '+8.7%',
-      trendPositive: true,
       colorTheme: 'amber'
     }
   ];
