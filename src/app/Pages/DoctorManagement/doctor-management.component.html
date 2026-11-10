@@ -504,7 +504,7 @@
         <div class="alert alert-danger py-2 px-3 small mb-3 rounded-3">{{ formError }}</div>
       }
 
-      <form novalidate (ngSubmit)="saveDoctor()">
+      <form novalidate (submit)="$event.preventDefault(); saveDoctor($event)" (ngSubmit)="saveDoctor($event)">
         <div class="row g-3">
           <!-- Doctor Full Name -->
           <div class="col-md-6">
@@ -591,9 +591,10 @@
         </div>
 
         <div class="d-flex justify-content-end pt-3 border-top mt-4" style="gap: 12px;">
-          <button type="button" class="btn btn-light" [disabled]="isSubmitting" (click)="closeAddModal()">Cancel</button>
-          <button type="button" class="btn btn-primary d-flex align-items-center" [disabled]="isSubmitting"
-            (click)="saveDoctor()"
+          <button type="button" class="btn btn-light" (click)="closeAddModal()">Cancel</button>
+          <button type="button" class="btn btn-primary d-flex align-items-center"
+            (click)="saveDoctor($event)"
+            id="btn-update-doctor"
             style="background: linear-gradient(135deg, #7C3AED 0%, #9333EA 100%); border: none; border-radius: 10px; padding: 9px 20px; gap: 8px; cursor: pointer;">
             @if (isSubmitting) {
               <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
@@ -654,8 +655,6 @@
                     [style.fontWeight]="selectedAvailabilityDay === d.day ? '700' : '500'"
                     style="border-radius: 8px; border: none; padding: 6px 12px; font-size: 12.5px; white-space: nowrap; gap: 6px; flex: 1;"
                     (click)="selectAvailabilityDay(d.day)">
-              <span [style.background]="d.open ? '#22C55E' : '#94A3B8'"
-                    style="width: 7px; height: 7px; border-radius: 50%; display: inline-block;"></span>
               {{ formatDayName(d.day).slice(0, 3) }}
             </button>
           }
@@ -664,80 +663,58 @@
         <!-- Active Day Editor Card -->
         @if (activeAvailabilityDay) {
           <div class="p-3 rounded-3 mb-3 border bg-white" style="border-color: #E2E8F0 !important; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
-            <!-- Day Title & Open/Close Switch -->
+            <!-- Day Title -->
             <div class="d-flex align-items-center justify-content-between pb-3 border-bottom mb-3">
               <div>
                 <h5 class="fw-bold mb-0 text-dark" style="font-size: 15px;">
                   {{ formatDayName(activeAvailabilityDay.day) }} Consultation Schedule
                 </h5>
-                <span class="text-muted small">
-                  {{ activeAvailabilityDay.open ? 'Doctor is available for consultations on this day' : 'Doctor is marked off-duty on this day' }}
-                </span>
-              </div>
-
-              <div class="d-flex align-items-center" style="gap: 8px;">
-                <span class="badge"
-                      [style.background]="activeAvailabilityDay.open ? '#ECFDF5' : '#FFF1F2'"
-                      [style.color]="activeAvailabilityDay.open ? '#059669' : '#DC2626'"
-                      style="padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 12px;">
-                  {{ activeAvailabilityDay.open ? '● Open & Available' : '○ Closed / Off Duty' }}
-                </span>
-
-                <button type="button"
-                        class="btn btn-sm"
-                        [style.background]="activeAvailabilityDay.open ? '#EF4444' : '#2563EB'"
-                        style="color: #FFFFFF; font-size: 12px; font-weight: 600; padding: 5px 14px; border: none; border-radius: 8px;"
-                        (click)="toggleDayOpen(activeAvailabilityDay)">
-                  {{ activeAvailabilityDay.open ? 'Mark Off' : 'Set Open' }}
-                </button>
               </div>
             </div>
 
-            <!-- Active Day Sessions (When Open) -->
-            @if (activeAvailabilityDay.open) {
-              <div class="mb-3">
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                  <span class="fw-semibold text-dark small">Consultation Time Slots</span>
-                </div>
-
-                @if (!activeAvailabilityDay.sessions || activeAvailabilityDay.sessions.length === 0) {
-                  <div class="p-3 rounded-2 text-center text-muted small bg-light">
-                    No consultation sessions configured yet for this day.
-                  </div>
-                } @else {
-                  <div class="d-flex flex-column gap-2">
-                    @for (sess of activeAvailabilityDay.sessions; track $index; let sIdx = $index) {
-                      <div class="p-2 px-3 rounded-2 border d-flex align-items-center justify-content-between flex-wrap" style="background: #F8FAFC; border-color: #E2E8F0 !important; gap: 10px;">
-                        <div class="d-flex align-items-center" style="gap: 8px;">
-                          <span class="badge bg-secondary" style="font-size: 11px;">Slot {{ sIdx + 1 }}</span>
-                          <div class="d-flex align-items-center" style="gap: 4px;">
-                            <input type="time"
-                                   class="form-control form-control-sm"
-                                   [(ngModel)]="sess.startTime"
-                                   style="width: 105px; font-weight: 600; font-size: 12.5px;">
-                            <span class="text-muted small">to</span>
-                            <input type="time"
-                                   class="form-control form-control-sm"
-                                   [(ngModel)]="sess.endTime"
-                                   style="width: 105px; font-weight: 600; font-size: 12.5px;">
-                          </div>
-                        </div>
-
-                        @if (activeAvailabilityDay.sessions.length > 1) {
-                          <button type="button"
-                                  class="btn btn-sm btn-outline-danger p-1 px-2"
-                                  style="font-size: 12px; border-radius: 6px; line-height: 1;"
-                                  (click)="removeSession(activeAvailabilityDay, sIdx)"
-                                  title="Remove slot">
-                            ✕
-                          </button>
-                        }
-                      </div>
-                    }
-                  </div>
-                }
+            <!-- Active Day Sessions -->
+            <div class="mb-3">
+              <div class="d-flex align-items-center justify-content-between mb-2">
+                <span class="fw-semibold text-dark small">Consultation Sessions</span>
               </div>
-            }
+
+              @if (!activeAvailabilityDay.sessions || activeAvailabilityDay.sessions.length === 0) {
+                <div class="p-3 rounded-2 text-center text-muted small bg-light">
+                  No consultation sessions configured yet for this day.
+                </div>
+              } @else {
+                <div class="d-flex flex-column gap-2">
+                  @for (sess of activeAvailabilityDay.sessions; track $index; let sIdx = $index) {
+                    <div class="p-2 px-3 rounded-2 border d-flex align-items-center justify-content-between flex-wrap" style="background: #F8FAFC; border-color: #E2E8F0 !important; gap: 10px;">
+                      <div class="d-flex align-items-center" style="gap: 8px;">
+                        <span class="badge bg-secondary" style="font-size: 11px;">Session {{ sIdx + 1 }}</span>
+                        <div class="d-flex align-items-center" style="gap: 4px;">
+                          <input type="time"
+                                 class="form-control form-control-sm"
+                                 [(ngModel)]="sess.startTime"
+                                 style="width: 105px; font-weight: 600; font-size: 12.5px;">
+                          <span class="text-muted small">to</span>
+                          <input type="time"
+                                 class="form-control form-control-sm"
+                                 [(ngModel)]="sess.endTime"
+                                 style="width: 105px; font-weight: 600; font-size: 12.5px;">
+                        </div>
+                      </div>
+
+                      @if (activeAvailabilityDay.sessions.length > 1) {
+                        <button type="button"
+                                class="btn btn-sm btn-outline-danger p-1 px-2"
+                                style="font-size: 12px; border-radius: 6px; line-height: 1;"
+                                (click)="removeSession(activeAvailabilityDay, sIdx)"
+                                title="Remove session">
+                          ✕
+                        </button>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            </div>
 
             <!-- Single Day Update Action -->
             <div class="d-flex justify-content-end pt-2 border-top">

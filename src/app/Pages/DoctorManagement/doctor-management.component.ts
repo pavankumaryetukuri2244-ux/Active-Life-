@@ -314,6 +314,7 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
   public isEditing: boolean = false;
   public isViewModalOpen: boolean = false;
   public selectedDoctor: DoctorItem | null = null;
+  public editingDoctor: DoctorItem | null = null;
   public isAvailabilityModalOpen: boolean = false;
   public availabilityDoctor: DoctorItem | null = null;
   public isLoadingAvailability: boolean = false;
@@ -840,7 +841,15 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
   }
 
   private saveToStorage(): void {
-    localStorage.setItem('activeLife_doctorManagement_live_v2', JSON.stringify(this.doctors));
+    try {
+      const cleanDoctors = this.doctors.map(d => {
+        const { raw, documents, ...rest } = d;
+        return rest;
+      });
+      localStorage.setItem('activeLife_doctorManagement_live_v2', JSON.stringify(cleanDoctors));
+    } catch (e) {
+      console.warn('saveToStorage failed:', e);
+    }
   }
 
   public updateStats(): void {
@@ -1110,17 +1119,17 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
     this.isSavingAvailability = true;
     this.updatingDay = dayItem.day;
 
-    const sanitizedSessions = (dayItem.open && Array.isArray(dayItem.sessions))
+    const sanitizedSessions = (Array.isArray(dayItem.sessions) && dayItem.sessions.length > 0)
       ? dayItem.sessions.map((s, idx) => ({
           startTime: this.to24Hour(s.startTime || '09:00'),
           endTime: this.to24Hour(s.endTime || '17:00')
         }))
-      : [];
+      : [{ startTime: '09:00', endTime: '17:00' }];
 
     const payload = {
       id: targetId,
       day: dayItem.day.toUpperCase(),
-      open: Boolean(dayItem.open),
+      open: true,
       sessions: sanitizedSessions
     };
 
@@ -1170,23 +1179,24 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
 
     const days: AvailabilityDay[] = allDaysOrder.map(dayName => {
       const found: any = existingDays.find((d: any) => String(d.day || d.dayOfWeek || '').toUpperCase() === dayName);
+      let mappedSessions: DaySession[] = [];
       if (found) {
         const rawSessions = Array.isArray(found.sessions) ? found.sessions : (Array.isArray(found.slots) ? found.slots : []);
-        const mappedSessions: DaySession[] = rawSessions.map((s: any, idx: number) => ({
+        mappedSessions = rawSessions.map((s: any, idx: number) => ({
           sessionNumber: s.sessionNumber || idx + 1,
           startTime: this.to24Hour(s.startTime || s.fromTime || '09:00'),
           endTime: this.to24Hour(s.endTime || s.toTime || '17:00')
         }));
-        return {
-          day: dayName,
-          open: Boolean(found.open !== undefined ? found.open : (mappedSessions.length > 0)),
-          sessions: mappedSessions
-        };
+      }
+      if (mappedSessions.length === 0) {
+        mappedSessions = [
+          { sessionNumber: 1, startTime: '09:00', endTime: '17:00' }
+        ];
       }
       return {
         day: dayName,
-        open: false,
-        sessions: []
+        open: true,
+        sessions: mappedSessions
       };
     });
 
@@ -1208,8 +1218,10 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
       hospitals: [],
       days: allDaysOrder.map(dayName => ({
         day: dayName,
-        open: false,
-        sessions: []
+        open: true,
+        sessions: [
+          { sessionNumber: 1, startTime: '09:00', endTime: '17:00' }
+        ]
       }))
     };
   }
@@ -1395,6 +1407,7 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
 
   public openEditModal(doctor: DoctorItem): void {
     this.isEditing = true;
+    this.editingDoctor = doctor;
     const expNum = doctor.experienceYears || parseInt(doctor.experience) || 5;
     const numId = doctor.numericId || this.extractIdNumber(doctor.id) || 1;
     const specId = doctor.specializationId || this.getSpecializationIdByName(doctor.specialization);
@@ -1405,7 +1418,7 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
       name: doctor.name,
       email: doctor.email || '',
       phone: doctor.phone || '',
-      gender: doctor.gender || 'FEMALE',
+      gender: doctor.gender || 'MALE',
       hospitalName: doctor.hospitalName || '',
       specializationId: specId,
       specialization: doctor.specialization || this.getSpecializationNameById(specId),
@@ -1429,9 +1442,16 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
     this.isAddModalOpen = false;
     this.isSubmitting = false;
     this.formError = '';
+    this.editingDoctor = null;
   }
 
-  public saveDoctor(): void {
+  public saveDoctor(event?: Event): void {
+    if (event) {
+      try {
+        event.preventDefault();
+        event.stopPropagation();
+      } catch (e) {}
+    }
     this.formError = '';
     const name = this.formModel.name ? this.formModel.name.trim() : '';
 
@@ -1447,17 +1467,6 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
       const specName = this.formModel.specialization || this.getSpecializationNameById(specId);
       const initial = this.getDoctorInitial(name);
       const expYears = Number(this.formModel.experienceYears) || 1;
-
-      // Find the doctor index in local list
-      let idx = this.doctors.findIndex(d =>
-        (d.numericId && d.numericId === doctorIdNum) ||
-        (String(d.id) === String(this.formModel.id)) ||
-        (this.extractIdNumber(d.id) === doctorIdNum)
-      );
-
-      if (idx === -1) {
-        idx = this.doctors.findIndex(d => d.name.toLowerCase().trim() === name.toLowerCase().trim());
-      }
 
       const updatedFields: Partial<DoctorItem> = {
         name: name,
@@ -1478,29 +1487,54 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
         about: (this.formModel.address || this.formModel.about || '').trim()
       };
 
-      if (idx !== -1) {
-        this.doctors[idx] = {
-          ...this.doctors[idx],
-          ...updatedFields
-        };
-      }
+      try {
+        // Direct update to editingDoctor reference if present
+        if (this.editingDoctor) {
+          Object.assign(this.editingDoctor, updatedFields);
+        }
 
-      if (this.selectedDoctor && (
-        (this.selectedDoctor.numericId === doctorIdNum) ||
-        (String(this.selectedDoctor.id) === String(this.formModel.id))
-      )) {
-        this.selectedDoctor = {
-          ...this.selectedDoctor,
-          ...updatedFields
-        };
-      }
+        // Find doctor index in local list
+        let idx = this.editingDoctor ? this.doctors.indexOf(this.editingDoctor) : -1;
+        if (idx === -1) {
+          idx = this.doctors.findIndex(d =>
+            (d.numericId && Number(d.numericId) === doctorIdNum) ||
+            (String(d.id) === String(this.formModel.id)) ||
+            (this.extractIdNumber(d.id) === doctorIdNum) ||
+            (d.name.toLowerCase().trim() === name.toLowerCase().trim())
+          );
+        }
 
-      // Persist immediately and refresh UI
-      this.saveToStorage();
-      this.updateStats();
-      this.applyFilters();
-      this.closeAddModal();
-      this.showToast('Doctor profile updated successfully', 'success');
+        if (idx !== -1) {
+          this.doctors[idx] = {
+            ...this.doctors[idx],
+            ...updatedFields
+          };
+        } else if (this.editingDoctor) {
+          this.doctors.unshift(this.editingDoctor);
+        } else if (this.doctors.length > 0) {
+          this.doctors[0] = {
+            ...this.doctors[0],
+            ...updatedFields
+          };
+        }
+
+        if (this.selectedDoctor) {
+          this.selectedDoctor = {
+            ...this.selectedDoctor,
+            ...updatedFields
+          };
+        }
+
+        // Persist immediately and refresh UI
+        this.saveToStorage();
+        this.updateStats();
+        this.applyFilters();
+      } catch (err) {
+        console.warn('Error during doctor state update:', err);
+      } finally {
+        this.closeAddModal();
+        this.showToast('Doctor profile updated successfully', 'success');
+      }
 
       // Send update payload to backend API
       const payload = {
@@ -1522,13 +1556,16 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
       ).subscribe({
         next: (res: any) => {
           console.log('EditDoctor backend response:', res);
-          if (res?.data && idx !== -1) {
+          if (res?.data) {
             const returned = res.data;
-            if (returned.fullName) this.doctors[idx].name = returned.fullName;
-            if (returned.email) this.doctors[idx].email = returned.email;
-            if (returned.mobileNumber) this.doctors[idx].phone = returned.mobileNumber;
-            this.saveToStorage();
-            this.applyFilters();
+            const targetIdx = this.doctors.findIndex(d => Number(d.numericId || d.id) === doctorIdNum);
+            if (targetIdx !== -1) {
+              if (returned.fullName) this.doctors[targetIdx].name = returned.fullName;
+              if (returned.email) this.doctors[targetIdx].email = returned.email;
+              if (returned.mobileNumber) this.doctors[targetIdx].phone = returned.mobileNumber;
+              this.saveToStorage();
+              this.applyFilters();
+            }
           }
         },
         error: (err: any) => {
@@ -1537,7 +1574,7 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
       });
 
       // Also persist status toggle if needed
-      if (idx !== -1 && this.formModel.status) {
+      if (this.formModel.status) {
         const isActive = this.formModel.status === 'Active';
         this.webApiService.ToggleDoctorStatus({ id: doctorIdNum, isActive }).subscribe({
           next: (r: any) => console.log('ToggleDoctorStatus response:', r),
