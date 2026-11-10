@@ -801,7 +801,7 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
       });
     }
 
-    return {
+    const item: DoctorItem = {
       id: doctorId,
       numericId: rawNumId,
       name: cleanName,
@@ -832,6 +832,28 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
       documents: mappedDocs,
       raw: doc
     };
+
+    try {
+      const overridesStr = localStorage.getItem('activeLife_doctorEditOverrides_v1');
+      if (overridesStr) {
+        const overrides = JSON.parse(overridesStr);
+        const saved = overrides[String(rawNumId)] || overrides[doctorId];
+        if (saved) {
+          Object.assign(item, saved);
+        }
+      }
+    } catch (e) {}
+
+    return item;
+  }
+
+  private saveDoctorOverride(doctorId: number | string, updatedFields: Partial<DoctorItem>): void {
+    try {
+      const overridesStr = localStorage.getItem('activeLife_doctorEditOverrides_v1');
+      const overrides = overridesStr ? JSON.parse(overridesStr) : {};
+      overrides[String(doctorId)] = updatedFields;
+      localStorage.setItem('activeLife_doctorEditOverrides_v1', JSON.stringify(overrides));
+    } catch (e) {}
   }
 
   private getDoctorInitial(name: string): string {
@@ -1526,6 +1548,7 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
         }
 
         // Persist immediately and refresh UI
+        this.saveDoctorOverride(doctorIdNum, updatedFields);
         this.saveToStorage();
         this.updateStats();
         this.applyFilters();
