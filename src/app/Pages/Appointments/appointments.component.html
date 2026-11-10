@@ -147,13 +147,8 @@
               <!-- Appointment ID -->
               <td>
                 <span style="font-weight: 600; color: #1E293B; font-size: 14px; letter-spacing: -0.2px;">
-                  #{{ item.appointmentId || item.id }}
+                  {{ item.appointmentId || item.id }}
                 </span>
-                @if (item.bookingReference) {
-                  <span style="display: block; font-size: 11px; color: #94A3B8; font-weight: 400; margin-top: 2px;">
-                    {{ item.bookingReference }}
-                  </span>
-                }
               </td>
 
               <!-- Patient (Avatar with Initial, Name, and Patient ID) -->
