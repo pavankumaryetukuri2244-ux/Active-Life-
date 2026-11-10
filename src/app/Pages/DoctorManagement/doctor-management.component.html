@@ -676,11 +676,23 @@
             <div class="mb-3">
               <div class="d-flex align-items-center justify-content-between mb-2">
                 <span class="fw-semibold text-dark small">Consultation Sessions</span>
+                <button type="button"
+                        class="btn btn-sm btn-outline-primary d-inline-flex align-items-center"
+                        style="font-size: 12px; font-weight: 600; border-radius: 6px; padding: 3px 10px; gap: 4px;"
+                        (click)="addSession(activeAvailabilityDay)">
+                  + Add Session
+                </button>
               </div>
 
               @if (!activeAvailabilityDay.sessions || activeAvailabilityDay.sessions.length === 0) {
                 <div class="p-3 rounded-2 text-center text-muted small bg-light">
-                  No consultation sessions configured yet for this day.
+                  <p class="mb-2">No consultation sessions configured yet for this day.</p>
+                  <button type="button"
+                          class="btn btn-sm btn-primary"
+                          style="font-size: 12px; font-weight: 600; border-radius: 6px; padding: 4px 12px;"
+                          (click)="addSession(activeAvailabilityDay)">
+                    + Add Session
+                  </button>
                 </div>
               } @else {
                 <div class="d-flex flex-column gap-2">
@@ -701,15 +713,13 @@
                         </div>
                       </div>
 
-                      @if (activeAvailabilityDay.sessions.length > 1) {
-                        <button type="button"
-                                class="btn btn-sm btn-outline-danger p-1 px-2"
-                                style="font-size: 12px; border-radius: 6px; line-height: 1;"
-                                (click)="removeSession(activeAvailabilityDay, sIdx)"
-                                title="Remove session">
-                          ✕
-                        </button>
-                      }
+                      <button type="button"
+                              class="btn btn-sm btn-outline-danger p-1 px-2"
+                              style="font-size: 12px; border-radius: 6px; line-height: 1;"
+                              (click)="removeSession(activeAvailabilityDay, sIdx)"
+                              title="Remove session">
+                        ✕
+                      </button>
                     </div>
                   }
                 </div>

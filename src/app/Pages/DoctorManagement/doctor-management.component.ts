@@ -1146,12 +1146,12 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
           startTime: this.to24Hour(s.startTime || '09:00'),
           endTime: this.to24Hour(s.endTime || '17:00')
         }))
-      : [{ startTime: '09:00', endTime: '17:00' }];
+      : [];
 
     const payload = {
       id: targetId,
       day: dayItem.day.toUpperCase(),
-      open: true,
+      open: sanitizedSessions.length > 0,
       sessions: sanitizedSessions
     };
 
@@ -1210,14 +1210,9 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
           endTime: this.to24Hour(s.endTime || s.toTime || '17:00')
         }));
       }
-      if (mappedSessions.length === 0) {
-        mappedSessions = [
-          { sessionNumber: 1, startTime: '09:00', endTime: '17:00' }
-        ];
-      }
       return {
         day: dayName,
-        open: true,
+        open: mappedSessions.length > 0,
         sessions: mappedSessions
       };
     });
@@ -1240,10 +1235,8 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
       hospitals: [],
       days: allDaysOrder.map(dayName => ({
         day: dayName,
-        open: true,
-        sessions: [
-          { sessionNumber: 1, startTime: '09:00', endTime: '17:00' }
-        ]
+        open: false,
+        sessions: []
       }))
     };
   }
