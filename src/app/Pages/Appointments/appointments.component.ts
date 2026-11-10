@@ -1112,14 +1112,14 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
           this.updateStats();
           this.applyFilters();
           this.cdr.detectChanges();
-          this.showToast(res.message || `Appointment #${targetId} marked complete successfully`, 'success');
+          this.showToast(res.message || `Appointment ${targetId} marked complete successfully`, 'success');
         } else {
-          this.showToast(res?.message || `Appointment #${targetId} marked as Completed.`, 'success');
+          this.showToast(res?.message || `Appointment ${targetId} marked as Completed.`, 'success');
         }
       },
       error: (err: any) => {
         console.warn('MarkAppointmentComplete API error:', err);
-        this.showToast(`Appointment #${targetId} marked as Completed.`, 'success');
+        this.showToast(`Appointment ${targetId} marked as Completed.`, 'success');
         this.cdr.detectChanges();
       }
     });
@@ -1178,7 +1178,7 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
         this.updateStats();
         this.applyFilters();
         this.cdr.detectChanges();
-        this.showToast(res?.message || `Appointment #${targetId} cancelled successfully`, 'success');
+        this.showToast(res?.message || `Appointment ${targetId} cancelled successfully`, 'success');
         this.closeCancelModal();
       },
       error: (err: any) => {
@@ -1191,7 +1191,7 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
         this.updateStats();
         this.applyFilters();
         this.cdr.detectChanges();
-        this.showToast(`Appointment #${targetId} cancelled successfully`, 'success');
+        this.showToast(`Appointment ${targetId} cancelled successfully`, 'success');
         this.closeCancelModal();
       }
     });
