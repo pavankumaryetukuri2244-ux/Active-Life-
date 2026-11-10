@@ -504,60 +504,6 @@ export class ReportsAnalyticsComponent implements OnInit {
     }
   };
 
-  // 5. User Retention Analysis (Area Line Chart)
-  public retentionData: ChartConfiguration<'line'>['data'] = {
-    labels: ['Day 1', 'Day 7', 'Day 14', 'Day 30', 'Day 60', 'Day 90'],
-    datasets: [
-      {
-        label: 'Retention Rate',
-        data: [100, 68, 54, 42, 36, 31],
-        borderColor: '#8B5CF6',
-        backgroundColor: 'rgba(139, 92, 246, 0.15)',
-        borderWidth: 2.5,
-        fill: true,
-        tension: 0.35,
-        pointRadius: 4,
-        pointBackgroundColor: '#FFFFFF',
-        pointBorderColor: '#8B5CF6',
-        pointBorderWidth: 2,
-        pointHoverRadius: 6
-      }
-    ]
-  };
-
-  public retentionOptions: ChartConfiguration<'line'>['options'] = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: { display: false },
-      tooltip: {
-        backgroundColor: '#0F172A',
-        callbacks: {
-          label: (ctx) => ` Retention: ${ctx.raw}%`
-        }
-      }
-    },
-    scales: {
-      x: {
-        grid: { display: false },
-        border: { display: false },
-        ticks: { color: '#94A3B8', font: { family: 'Inter', size: 12 } }
-      },
-      y: {
-        min: 0,
-        max: 100,
-        ticks: {
-          stepSize: 25,
-          color: '#94A3B8',
-          font: { family: 'Inter', size: 11 },
-          callback: (val) => `${val}%`
-        },
-        grid: { color: '#F1F5F9' },
-        border: { display: false }
-      }
-    }
-  };
-
   constructor(
     private webApiService: WebapiService,
     private cdr: ChangeDetectorRef
