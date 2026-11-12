@@ -147,7 +147,7 @@
               <!-- Appointment ID -->
               <td>
                 <span style="font-weight: 600; color: #1E293B; font-size: 14px; letter-spacing: -0.2px;">
-                  {{ item.appointmentId || item.id }}
+                  {{ getAppointmentDisplayId(item) }}
                 </span>
               </td>
 
@@ -355,7 +355,7 @@
         <div class="d-flex align-items-center justify-content-between pb-3 border-bottom mb-3">
           <div>
             <h3 style="font-size: 18px; font-weight: 700; color: #0F172A; margin: 0;">
-              Appointment {{ selectedAppointment.appointmentId || selectedAppointment.id }}
+              Appointment {{ getAppointmentDisplayId(selectedAppointment) }}
             </h3>
             <span class="text-muted small">
               Consultation Overview
@@ -518,7 +518,7 @@
             </div>
             <div>
               <h4 style="font-size: 16px; font-weight: 700; color: #0F172A; margin: 0;">Appointment Notes</h4>
-              <span class="text-muted small">ID: {{ selectedAppointment.appointmentId || selectedAppointment.id }}</span>
+              <span class="text-muted small">ID: {{ getAppointmentDisplayId(selectedAppointment) }}</span>
             </div>
           </div>
           <button type="button" class="btn btn-sm btn-light rounded-circle p-2" (click)="closeNotesModal()">✕</button>
@@ -574,7 +574,7 @@
                 Cancel Appointment
               </h3>
               <span class="text-muted small">
-                Appointment {{ appointmentToCancel.appointmentId || appointmentToCancel.id }}
+                Appointment {{ getAppointmentDisplayId(appointmentToCancel) }}
               </span>
             </div>
           </div>
