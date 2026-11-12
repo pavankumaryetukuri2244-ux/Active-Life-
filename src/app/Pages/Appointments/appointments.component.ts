@@ -359,9 +359,9 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
   private destroy$: Subject<void> = new Subject<void>();
 
   // Stat Numbers
-  public totalAppointmentsCount: number = 3;
-  public todayAppointmentsCount: number = 1;
-  public scheduledCount: number = 2;
+  public totalAppointmentsCount: number = 4;
+  public todayAppointmentsCount: number = 0;
+  public scheduledCount: number = 0;
   public completedCount: number = 1;
 
   // Pagination
@@ -404,11 +404,11 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
     private webApiService: WebapiService,
     private cdr: ChangeDetectorRef
   ) {
-    this.appointments = this.getInitialAppointments();
+    this.appointments = this.sortAppointmentsAscending(this.getInitialAppointments());
     this.filteredAppointments = [...this.appointments];
-    this.totalAppointmentsCount = 3;
+    this.totalAppointmentsCount = 4;
     this.todayAppointmentsCount = 0;
-    this.scheduledCount = 1;
+    this.scheduledCount = 0;
     this.completedCount = 1;
   }
 
@@ -419,6 +419,7 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.initSearchDebounce();
+    this.loadCachedOrDefaultLive();
     this.loadAppointments();
   }
 
@@ -463,10 +464,42 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
     this.openDropdownId = null;
   }
 
+  // Helper methods for sorting appointments in ascending order by Appointment ID
+  public getAppointmentNumericId(item: AppointmentItem): number {
+    if (item.appointmentId !== undefined && item.appointmentId !== null && !isNaN(Number(item.appointmentId))) {
+      return Number(item.appointmentId);
+    }
+    if (item.dbId !== undefined && item.dbId !== null && !isNaN(Number(item.dbId))) {
+      return Number(item.dbId);
+    }
+    const extracted = this.extractIdNumber(item.id);
+    if (!isNaN(extracted) && extracted > 0) {
+      return extracted;
+    }
+    return 0;
+  }
+
+  public sortAppointmentsAscending(list: AppointmentItem[]): AppointmentItem[] {
+    if (!list || list.length === 0) return [];
+    return [...list].sort((a, b) => {
+      const numA = this.getAppointmentNumericId(a);
+      const numB = this.getAppointmentNumericId(b);
+      if (numA !== numB) {
+        return numA - numB; // Ascending numerical order: 1, 2, 3, 4...
+      }
+      return String(a.id || '').localeCompare(String(b.id || ''), undefined, { numeric: true });
+    });
+  }
+
   // Load from API
   public loadAppointments(): void {
     this.isLoading = true;
-    const payload: any = {}; // Request body {} as requested
+    const payload: any = {
+      page: 0,
+      size: 100,
+      sortBy: 'id',
+      sortOrder: 'ASC'
+    };
 
     console.log('[Appointments] Calling GetAppointments with payload:', payload);
 
@@ -498,7 +531,11 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
           }).filter((item: any): item is AppointmentItem => item !== null);
 
           if (mapped.length > 0) {
-            this.appointments = mapped;
+            const initialList = this.getInitialAppointments();
+            const existingIds = new Set(mapped.map(m => String(m.appointmentId || m.id)));
+            const missingFromApi = initialList.filter(init => !existingIds.has(String(init.appointmentId || init.id)));
+            const combined = [...mapped, ...missingFromApi];
+            this.appointments = this.sortAppointmentsAscending(combined);
             this.saveToStorage();
           }
         }
@@ -521,6 +558,12 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
     // Direct check for res.data.data from http://20.193.140.173:8085/admin/api/appointments/list
     if (res?.data?.data && Array.isArray(res.data.data)) {
       return res.data.data;
+    }
+    if (res?.data?.content && Array.isArray(res.data.content)) {
+      return res.data.content;
+    }
+    if (res?.data?.appointments && Array.isArray(res.data.appointments)) {
+      return res.data.appointments;
     }
 
     if (Array.isArray(res)) return res;
@@ -658,7 +701,11 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
             p.patientName === 'Sarah Johnson' && p.id === 'A001'
           );
           if (!isMock) {
-            this.appointments = parsed;
+            const initialList = this.getInitialAppointments();
+            const existingIds = new Set(parsed.map((m: any) => String(m.appointmentId || m.id)));
+            const missing = initialList.filter(init => !existingIds.has(String(init.appointmentId || init.id)));
+            const combined = [...parsed, ...missing];
+            this.appointments = this.sortAppointmentsAscending(combined);
             this.updateStats();
             this.applyFilters();
             return;
@@ -668,7 +715,7 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
         }
       } catch (e) {}
     }
-    this.appointments = this.getInitialAppointments();
+    this.appointments = this.sortAppointmentsAscending(this.getInitialAppointments());
     this.updateStats();
     this.applyFilters();
   }
@@ -729,6 +776,9 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
       );
     }
 
+    // Sort appointments in ascending order by Appointment ID (1, 2, 3, 4...)
+    result = this.sortAppointmentsAscending(result);
+
     this.totalPages = Math.ceil(result.length / this.pageSize) || 1;
     if (this.currentPage > this.totalPages) {
       this.currentPage = 1;
@@ -777,6 +827,32 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
         updatedAt: '2026-11-09T08:15:12.574457'
       },
       {
+        id: '2',
+        appointmentId: 2,
+        dbId: 2,
+        bookingReference: 'APT-2026-216440',
+        patientId: 'U664',
+        patientName: 'Pavan Kumar',
+        patientInitial: 'PK',
+        patientAvatarBg: '#A855F7',
+        patientPhone: '+91 98765 43210',
+        patientEmail: 'pavan.kumar@example.com',
+        doctorId: 'D007',
+        doctorName: 'Dr. varsha',
+        doctorSpecialization: 'Cardiology',
+        hospitalName: 'Apollo Hospital',
+        appointmentDate: '2026-11-07',
+        appointmentTime: '10:10 AM',
+        type: 'Consultation',
+        status: 'Cancelled',
+        allowedActions: ['VIEW_DETAILS'],
+        notes: 'Chest pain for 2 days',
+        amount: 500,
+        mode: 'AUDIO',
+        createdAt: '2026-11-07T04:23:36.440539',
+        updatedAt: '2026-11-07T04:23:36.44055'
+      },
+      {
         id: '3',
         appointmentId: 3,
         dbId: 3,
@@ -806,30 +882,30 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
         updatedAt: '2026-11-09T09:38:35.963562'
       },
       {
-        id: '2',
-        appointmentId: 2,
-        dbId: 2,
-        bookingReference: 'APT-2026-216440',
-        patientId: 'U664',
-        patientName: 'Pavan Kumar',
-        patientInitial: 'PK',
-        patientAvatarBg: '#A855F7',
-        patientPhone: '+91 98765 43210',
-        patientEmail: 'pavan.kumar@example.com',
-        doctorId: 'D007',
-        doctorName: 'Dr. varsha',
+        id: '4',
+        appointmentId: 4,
+        dbId: 4,
+        bookingReference: 'APT-2026-000004',
+        patientId: 'U078',
+        patientName: 'Mari',
+        patientInitial: 'MA',
+        patientAvatarBg: '#818CF8',
+        patientPhone: '+91 98765 43214',
+        patientEmail: 'mari@example.com',
+        doctorId: 'D010',
+        doctorName: 'Dr. Doctor',
         doctorSpecialization: 'Cardiology',
         hospitalName: 'Apollo Hospital',
-        appointmentDate: '2026-11-07',
-        appointmentTime: '10:10 AM',
+        appointmentDate: '2026-11-11',
+        appointmentTime: '01:15 PM',
         type: 'Consultation',
-        status: 'Scheduled',
-        allowedActions: ['VIEW_DETAILS', 'VIEW_NOTES', 'RESCHEDULE', 'MARK_COMPLETE', 'CANCEL'],
-        notes: 'Chest pain for 2 days',
+        status: 'Cancelled',
+        allowedActions: ['VIEW_DETAILS'],
+        notes: '',
         amount: 500,
-        mode: 'AUDIO',
-        createdAt: '2026-11-07T04:23:36.440539',
-        updatedAt: '2026-11-07T04:23:36.44055'
+        mode: 'OFFLINE',
+        createdAt: '2026-11-11T07:45:00.000000',
+        updatedAt: '2026-11-11T07:45:00.000000'
       }
     ];
   }
@@ -1074,10 +1150,10 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
     this.closeRescheduleModal();
   }
 
-  private extractIdNumber(val: any): number {
+  public extractIdNumber(val: any): number {
     if (typeof val === 'number') return val;
-    const match = String(val).match(/\d+/);
-    return match ? parseInt(match[0], 10) : 1;
+    const match = String(val || '').match(/\d+/);
+    return match ? parseInt(match[0], 10) : 0;
   }
 
   public markCompleted(item: AppointmentItem): void {
