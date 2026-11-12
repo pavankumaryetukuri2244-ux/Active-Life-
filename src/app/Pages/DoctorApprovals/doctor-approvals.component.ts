@@ -5,6 +5,7 @@ import { WebapiService } from '../../services/webapi.service';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 export interface VerificationDocument {
+  id?: number;
   name: string;
   type: string;
   status: 'Verified' | 'Pending' | 'Missing';
@@ -566,8 +567,8 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
         email: 'ramesh.kumar@example.com',
         location: 'Apollo Hospital',
         appliedDate: 'Applied Oct 28, 2026',
-        status: 'Approved',
-        verifiedDocsCount: 2,
+        status: 'Pending',
+        verifiedDocsCount: 0,
         totalDocsCount: 2,
         phone: '+919876543210',
         hospitalName: 'Apollo Hospital',
@@ -577,8 +578,8 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
           {
             name: 'Medical Council Registration (TELANGANA_MEDICAL_COUNCIL)',
             type: 'PNG',
-            status: 'Verified',
-            verifiedDate: 'Oct 29, 2026',
+            status: 'Pending',
+            verifiedDate: '',
             certificateNumber: 'TGMC-123456',
             issuer: 'Telangana State Medical Council (TSMC)',
             issueDate: '28 Oct 2026',
@@ -587,8 +588,8 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
           {
             name: 'Government Medical ID / Certificate',
             type: 'JPG',
-            status: 'Verified',
-            verifiedDate: 'Oct 28, 2026',
+            status: 'Pending',
+            verifiedDate: '',
             certificateNumber: 'NMC-ID-884910',
             issuer: 'National Medical Commission (NMC), Govt. of India',
             issueDate: '20 Jan 2021',
@@ -608,16 +609,16 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
         email: 'ramesh@example.com',
         location: 'Apollo Hospital',
         appliedDate: 'Applied Oct 29, 2026',
-        status: 'Approved',
-        verifiedDocsCount: 2,
+        status: 'Pending',
+        verifiedDocsCount: 0,
         totalDocsCount: 2,
         phone: '+919876543218',
         hospitalName: 'Apollo Hospital',
         qualification: 'MBBS',
         licenseNumber: 'TGMC-1234',
         documents: [
-          { name: 'Medical Board License (TELANGANA_MEDICAL_COUNCIL)', type: 'PNG', status: 'Verified', verifiedDate: 'Oct 29, 2026' },
-          { name: 'Degree Certificate', type: 'PNG', status: 'Verified', verifiedDate: 'Oct 29, 2026' }
+          { name: 'Medical Board License (TELANGANA_MEDICAL_COUNCIL)', type: 'PNG', status: 'Pending', verifiedDate: '' },
+          { name: 'Degree Certificate', type: 'PNG', status: 'Pending', verifiedDate: '' }
         ],
         notes: 'TELANGANA_MEDICAL_COUNCIL • Verified Practitioner'
       },
@@ -632,15 +633,15 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
         email: 'SHIVA@GMAIL.COM',
         location: 'Apollo Hospital',
         appliedDate: 'Applied Oct 30, 2026',
-        status: 'Approved',
-        verifiedDocsCount: 1,
+        status: 'Pending',
+        verifiedDocsCount: 0,
         totalDocsCount: 1,
         phone: '+919000878719',
         hospitalName: 'Apollo Hospital',
         qualification: 'MBBS',
         licenseNumber: 'TGMC-121',
         documents: [
-          { name: 'Registration Proof (TELANGANA_MEDICAL_COUNCIL)', type: 'PNG', status: 'Verified', verifiedDate: 'Oct 30, 2026' }
+          { name: 'Registration Proof (TELANGANA_MEDICAL_COUNCIL)', type: 'PNG', status: 'Pending', verifiedDate: '' }
         ],
         notes: 'TELANGANA_MEDICAL_COUNCIL'
       },
@@ -654,15 +655,15 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
         email: 'umesh@gmail.com',
         location: 'Apollo Hospital',
         appliedDate: 'Applied Oct 30, 2026',
-        status: 'Approved',
-        verifiedDocsCount: 1,
+        status: 'Pending',
+        verifiedDocsCount: 0,
         totalDocsCount: 1,
         phone: '+919000878718',
         hospitalName: 'Apollo Hospital',
         qualification: 'MBBS',
         licenseNumber: 'TGMC-100',
         documents: [
-          { name: 'State Medical Council Certificate', type: 'PNG', status: 'Verified', verifiedDate: 'Oct 30, 2026' }
+          { name: 'State Medical Council Certificate', type: 'PNG', status: 'Pending', verifiedDate: '' }
         ],
         notes: 'TELANGANA_MEDICAL_COUNCIL'
       },
@@ -676,15 +677,15 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
         email: 'seshu@gmail.com',
         location: 'Apollo Hospital',
         appliedDate: 'Applied Oct 30, 2026',
-        status: 'Approved',
-        verifiedDocsCount: 1,
+        status: 'Pending',
+        verifiedDocsCount: 0,
         totalDocsCount: 1,
         phone: '+919000012344',
         hospitalName: 'Apollo Hospital',
         qualification: 'MBBS',
         licenseNumber: 'TGMC-12309',
         documents: [
-          { name: 'Medical Council License', type: 'PNG', status: 'Verified', verifiedDate: 'Oct 30, 2026' }
+          { name: 'Medical Council License', type: 'PNG', status: 'Pending', verifiedDate: '' }
         ],
         notes: 'TELANGANA_MEDICAL_COUNCIL'
       },
@@ -698,16 +699,16 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
         email: 'varsha@example.com',
         location: 'Apollo Hospital',
         appliedDate: 'Applied Nov 3, 2026',
-        status: 'Approved',
-        verifiedDocsCount: 2,
+        status: 'Pending',
+        verifiedDocsCount: 0,
         totalDocsCount: 2,
         phone: '+917673996919',
         hospitalName: 'Apollo Hospital',
         qualification: 'MBBS',
         licenseNumber: 'TGMC-8907',
         documents: [
-          { name: 'State Medical Board License', type: 'JPG', status: 'Verified', verifiedDate: 'Nov 3, 2026' },
-          { name: 'Specialty Certification', type: 'JPG', status: 'Verified', verifiedDate: 'Nov 3, 2026' }
+          { name: 'State Medical Board License', type: 'JPG', status: 'Pending', verifiedDate: '' },
+          { name: 'Specialty Certification', type: 'JPG', status: 'Pending', verifiedDate: '' }
         ],
         notes: 'TELANGANA_MEDICAL_COUNCIL'
       },
@@ -721,15 +722,15 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
         email: 'vamsi@gmail.com',
         location: 'Apollo Hospital',
         appliedDate: 'Applied Nov 3, 2026',
-        status: 'Approved',
-        verifiedDocsCount: 1,
+        status: 'Pending',
+        verifiedDocsCount: 0,
         totalDocsCount: 1,
         phone: '+919922992200',
         hospitalName: 'Apollo Hospital',
         qualification: 'MBBS',
         licenseNumber: 'TGMC-12342',
         documents: [
-          { name: 'Medical Council Registration', type: 'PNG', status: 'Verified', verifiedDate: 'Nov 3, 2026' }
+          { name: 'Medical Council Registration', type: 'PNG', status: 'Pending', verifiedDate: '' }
         ],
         notes: 'TELANGANA_MEDICAL_COUNCIL'
       },
@@ -743,15 +744,15 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
         email: 'test@gmail.com',
         location: 'tete',
         appliedDate: 'Applied Nov 4, 2026',
-        status: 'Approved',
-        verifiedDocsCount: 1,
+        status: 'Pending',
+        verifiedDocsCount: 0,
         totalDocsCount: 1,
         phone: '+917878787878',
         hospitalName: 'tete',
         qualification: 'MBBS',
         licenseNumber: 'test',
         documents: [
-          { name: 'Registration Certificate (MCI)', type: 'PNG', status: 'Verified', verifiedDate: 'Nov 4, 2026' }
+          { name: 'Registration Certificate (MCI)', type: 'PNG', status: 'Pending', verifiedDate: '' }
         ],
         notes: 'Medical Council of India (MCI)'
       }
@@ -763,6 +764,27 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
                  (item.name ? overrides[item.name.trim().toLowerCase()] : undefined);
       if (ov) {
         item.status = ov;
+      }
+      if (item.documents) {
+        for (const doc of item.documents) {
+          const isViewed = this.isDocViewed(String(item.id), doc.name);
+          doc.status = isViewed ? 'Verified' : 'Pending';
+          if (!isViewed) {
+            doc.verifiedDate = '';
+          }
+        }
+        item.verifiedDocsCount = item.documents.filter(d => d.status === 'Verified').length;
+        item.totalDocsCount = item.documents.length;
+      }
+      // Core enforcement:
+      // If admin sees only 1 certificate (verifiedDocsCount < totalDocsCount), put status as Pending!
+      // If all certificates are verified, display Approved!
+      if (item.status !== 'Rejected') {
+        if (item.verifiedDocsCount < item.totalDocsCount) {
+          item.status = 'Pending';
+        } else if (item.verifiedDocsCount >= item.totalDocsCount && item.totalDocsCount > 0) {
+          item.status = 'Approved';
+        }
       }
       return item;
     });
@@ -851,6 +873,27 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
             if (ov) {
               item.status = ov;
             }
+            if (item.documents) {
+              for (const doc of item.documents) {
+                const isViewed = this.isDocViewed(String(item.id), doc.name);
+                doc.status = isViewed ? 'Verified' : 'Pending';
+                if (!isViewed) {
+                  doc.verifiedDate = '';
+                }
+              }
+              item.verifiedDocsCount = item.documents.filter(d => d.status === 'Verified').length;
+              item.totalDocsCount = item.documents.length;
+            }
+            // Enforce requirement:
+            // If only 1 certificate is verified (or 0), doctor status must be Pending!
+            // If all certificates are verified, display Approved!
+            if (item.status !== 'Rejected') {
+              if (item.verifiedDocsCount < item.totalDocsCount) {
+                item.status = 'Pending';
+              } else if (item.verifiedDocsCount >= item.totalDocsCount && item.totalDocsCount > 0) {
+                item.status = 'Approved';
+              }
+            }
             return item;
           }));
           if (this.pendingCount === 0 && this.activeTab === 'Pending') {
@@ -896,20 +939,75 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
 
     const expYrs = doc.experienceYears ? `${doc.experienceYears} yrs exp` : (doc.experience || '16 yrs exp');
     const docs = Array.isArray(doc.documents) ? doc.documents : [];
-    const totalCount = Math.max(docs.length, doc.totalDocumentsCount || 1);
-    const verifiedCount = doc.isVerified ? totalCount : Math.max(0, totalCount - 1);
+    
+    // Backend document counts and status keys
+    const backendTotalDocs = doc.totalDocumentsCount ?? doc.totalDocsCount;
+    const backendVerifiedDocs = doc.verifiedDocumentsCount ?? doc.verifiedDocsCount;
+    const backendIsAllVerified = doc.isAllDocumentsVerified ?? doc.isVerified;
 
-    const mappedDocuments: VerificationDocument[] = docs.map((d: any, dIdx: number) => ({
-      name: d.documentType === 'OTHER' ? `Registration Council Proof (${doc.registrationCouncil || 'Medical Council'})` : (d.documentType || (dIdx === 0 ? 'Medical Council Registration' : 'Government Medical ID / Certificate')),
-      type: (d.documentUrl && d.documentUrl.toLowerCase().endsWith('.pdf')) ? 'PDF' : ((d.documentUrl && d.documentUrl.toLowerCase().endsWith('.png')) ? 'PNG' : 'JPG'),
-      status: 'Verified',
-      verifiedDate: d.uploadedAt ? new Date(d.uploadedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Verified',
-      url: d.documentUrl || d.url || '',
-      certificateNumber: doc.registrationNumber || `TGMC-${10000 + index}`,
-      issuer: doc.registrationCouncil || 'Telangana State Medical Council (TSMC)',
-      issueDate: doc.createdAt ? new Date(doc.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Oct 28, 2026',
-      expiryDate: 'Oct 27, 2036'
-    }));
+    const mappedDocuments: VerificationDocument[] = docs.map((d: any, dIdx: number) => {
+      const docName = d.documentType === 'OTHER' ? `Registration Council Proof (${doc.registrationCouncil || 'Medical Council'})` : (d.documentType || (dIdx === 0 ? 'Medical Council Registration' : 'Government Medical ID / Certificate'));
+      const isBackendVerified = d.verificationStatus === 'VERIFIED' || d.isVerified === true || d.status === 'Verified';
+      const isLocallyViewed = this.isDocViewed(String(docId), docName);
+      const isVerified = isBackendVerified || isLocallyViewed;
+
+      return {
+        id: d.id || d.documentId,
+        name: docName,
+        type: (d.documentUrl && d.documentUrl.toLowerCase().endsWith('.pdf')) ? 'PDF' : ((d.documentUrl && d.documentUrl.toLowerCase().endsWith('.png')) ? 'PNG' : 'JPG'),
+        status: isVerified ? 'Verified' : 'Pending',
+        verifiedDate: isVerified ? (d.verifiedAt || d.uploadedAt ? new Date(d.verifiedAt || d.uploadedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Verified') : '',
+        url: d.documentUrl || d.url || '',
+        certificateNumber: d.certificateNumber || doc.registrationNumber || `TGMC-${10000 + index}`,
+        issuer: d.issuer || doc.registrationCouncil || 'Telangana State Medical Council (TSMC)',
+        issueDate: doc.createdAt ? new Date(doc.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Oct 28, 2026',
+        expiryDate: 'Oct 27, 2036'
+      };
+    });
+
+    const fallbackDocs: VerificationDocument[] = [
+      {
+        name: 'Medical Council Registration (' + (doc.registrationCouncil || 'TELANGANA_MEDICAL_COUNCIL') + ')',
+        type: 'PNG',
+        status: this.isDocViewed(String(docId), 'Medical Council Registration (' + (doc.registrationCouncil || 'TELANGANA_MEDICAL_COUNCIL') + ')') ? 'Verified' : 'Pending',
+        verifiedDate: '',
+        certificateNumber: doc.registrationNumber || 'TGMC-123456',
+        issuer: doc.registrationCouncil || 'Telangana State Medical Council (TSMC)',
+        issueDate: 'Oct 28, 2026',
+        expiryDate: 'Oct 27, 2036'
+      },
+      {
+        name: 'Government Medical ID / Certificate',
+        type: 'JPG',
+        status: this.isDocViewed(String(docId), 'Government Medical ID / Certificate') ? 'Verified' : 'Pending',
+        verifiedDate: '',
+        certificateNumber: 'NMC-GOV-' + (doc.id || '9812'),
+        issuer: 'National Medical Commission (NMC), Govt. of India',
+        issueDate: 'Jan 20, 2021',
+        expiryDate: 'Jan 19, 2031'
+      }
+    ];
+
+    const finalDocs = mappedDocuments.length > 0 ? mappedDocuments : fallbackDocs;
+    const finalVerifiedCount = backendVerifiedDocs !== undefined 
+      ? Number(backendVerifiedDocs) 
+      : finalDocs.filter(d => d.status === 'Verified').length;
+    const finalTotalCount = backendTotalDocs !== undefined 
+      ? Number(backendTotalDocs) 
+      : Math.max(finalDocs.length, 2);
+
+    // Enforcement:
+    // If admin has seen only 1 certificate (or 0), put status as Pending!
+    // If all certificates are verified, then display Approved!
+    if (status !== 'Rejected') {
+      if (finalVerifiedCount < finalTotalCount) {
+        status = 'Pending';
+      } else if (finalVerifiedCount >= finalTotalCount && finalTotalCount > 0) {
+        if (regStatus === 'APPROVED' || localOverride === 'Approved' || backendIsAllVerified) {
+          status = 'Approved';
+        }
+      }
+    }
 
     return {
       id: doc.id ? String(doc.id) : `REQ-${101 + index}`,
@@ -923,34 +1021,13 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
       location: doc.hospitalName || doc.address || (doc.pinCode ? `Pin: ${doc.pinCode}` : 'Hyderabad, Telangana'),
       appliedDate: doc.createdAt ? ('Applied ' + new Date(doc.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })) : 'Applied Recently',
       status: status,
-      verifiedDocsCount: verifiedCount || 2,
-      totalDocsCount: totalCount || 2,
+      verifiedDocsCount: finalVerifiedCount,
+      totalDocsCount: finalTotalCount,
       phone: doc.mobileNumber || doc.phone || '',
       hospitalName: doc.hospitalName || 'Apollo Hospital',
       qualification: doc.qualification || 'MBBS',
       licenseNumber: doc.registrationNumber || 'TGMC-123456',
-      documents: mappedDocuments.length > 0 ? mappedDocuments : [
-        {
-          name: 'Medical Council Registration (' + (doc.registrationCouncil || 'TELANGANA_MEDICAL_COUNCIL') + ')',
-          type: 'PNG',
-          status: 'Verified',
-          verifiedDate: 'Oct 29, 2026',
-          certificateNumber: doc.registrationNumber || 'TGMC-123456',
-          issuer: doc.registrationCouncil || 'Telangana State Medical Council (TSMC)',
-          issueDate: 'Oct 28, 2026',
-          expiryDate: 'Oct 27, 2036'
-        },
-        {
-          name: 'Government Medical ID / Certificate',
-          type: 'JPG',
-          status: 'Verified',
-          verifiedDate: 'Oct 28, 2026',
-          certificateNumber: 'NMC-GOV-' + (doc.id || '9812'),
-          issuer: 'National Medical Commission (NMC), Govt. of India',
-          issueDate: 'Jan 20, 2021',
-          expiryDate: 'Jan 19, 2031'
-        }
-      ],
+      documents: finalDocs,
       notes: doc.rejectionReason || (doc.registrationCouncil ? `${doc.registrationCouncil} • Verified Practitioner` : 'TELANGANA_MEDICAL_COUNCIL • Verified Practitioner')
     };
   }
@@ -1056,6 +1133,25 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
 
   public approve(item: DoctorApprovalItem): void {
     if (!item) return;
+
+    // Enforce threshold: Cannot approve if not all certificates are verified!
+    const verified = (item.documents || []).filter(d => d.status === 'Verified').length;
+    const total = item.totalDocsCount || (item.documents?.length || 1);
+
+    if (verified < total) {
+      item.status = 'Pending';
+      this.saveStatusOverride(String(item.id), 'Pending');
+      const numId = item.numericId || this.extractNumber(item.id);
+      if (numId) this.saveStatusOverride(String(numId), 'Pending');
+      this.saveToStorage();
+      this.updateStats();
+      this.applyFilters();
+      this.cdr.markForCheck();
+      this.cdr.detectChanges();
+      this.showToast(`Cannot approve: Only ${verified} of ${total} certificates verified. Status remains Pending until all certificates are verified.`, 'error');
+      return;
+    }
+
     const numId = item.numericId || this.extractNumber(item.id);
     const targetId = Number(numId || 1);
 
@@ -1183,12 +1279,31 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
 
   private applyStatusChange(item: DoctorApprovalItem, status: 'Approved' | 'Rejected', reason?: string): void {
     const numId = item.numericId || this.extractNumber(item.id);
-    item.status = status;
+
+    // If approving, strictly enforce that all documents are verified!
     if (status === 'Approved') {
-      item.verifiedDocsCount = item.totalDocsCount;
-    } else if (reason) {
+      const verified = (item.documents || []).filter(d => d.status === 'Verified').length;
+      const total = item.totalDocsCount || (item.documents?.length || 1);
+      if (verified < total) {
+        item.status = 'Pending';
+        this.saveStatusOverride(String(item.id), 'Pending');
+        if (numId) this.saveStatusOverride(String(numId), 'Pending');
+        this.saveToStorage();
+        this.updateStats();
+        this.applyFilters();
+        this.showToast(`Cannot approve: Only ${verified} of ${total} certificates verified. Status remains Pending.`, 'error');
+        return;
+      }
+    }
+
+    item.status = status;
+    if (status === 'Rejected' && reason) {
       item.notes = reason;
     }
+
+    // Keep verifiedDocsCount strictly matching actual verified documents count (do NOT auto-force to totalDocsCount!)
+    const verifiedCount = (item.documents || []).filter(d => d.status === 'Verified').length;
+    item.verifiedDocsCount = verifiedCount;
 
     this.requests = this.requests.map(r => {
       const rNum = r.numericId || this.extractNumber(r.id);
@@ -1200,7 +1315,7 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
         return {
           ...r,
           status: status,
-          verifiedDocsCount: status === 'Approved' ? r.totalDocsCount : r.verifiedDocsCount,
+          verifiedDocsCount: (r.documents || []).filter(d => d.status === 'Verified').length,
           notes: (status === 'Rejected' && reason) ? reason : r.notes
         };
       }
@@ -1217,7 +1332,7 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
         return {
           ...r,
           status: status,
-          verifiedDocsCount: status === 'Approved' ? r.totalDocsCount : r.verifiedDocsCount,
+          verifiedDocsCount: (r.documents || []).filter(d => d.status === 'Verified').length,
           notes: (status === 'Rejected' && reason) ? reason : r.notes
         };
       }
@@ -1228,7 +1343,104 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
     if (numId) this.saveStatusOverride(String(numId), status);
     if (item.name) this.saveStatusOverride(item.name.trim().toLowerCase(), status);
     this.saveToStorage();
-    this.syncWithDoctorManagement(item, status);
+    if (status === 'Approved' || status === 'Rejected') {
+      this.syncWithDoctorManagement(item, status);
+    }
+    this.updateStats();
+    this.applyFilters();
+    this.cdr.markForCheck();
+    this.cdr.detectChanges();
+  }
+
+  private getViewedDocsSet(): Set<string> {
+    try {
+      const raw = localStorage.getItem('activeLife_doctorViewedDocs_v1');
+      return raw ? new Set<string>(JSON.parse(raw)) : new Set<string>();
+    } catch (e) {
+      return new Set<string>();
+    }
+  }
+
+  private recordViewedDoc(doctorId: string, docName: string): void {
+    try {
+      const set = this.getViewedDocsSet();
+      set.add(`${doctorId}_${docName}`);
+      localStorage.setItem('activeLife_doctorViewedDocs_v1', JSON.stringify(Array.from(set)));
+    } catch (e) {}
+  }
+
+  public isDocViewed(doctorId: string, docName: string): boolean {
+    return this.getViewedDocsSet().has(`${doctorId}_${docName}`);
+  }
+
+  public markDocAsVerified(doc: VerificationDocument, doctor: DoctorApprovalItem): void {
+    if (!doc || !doctor) return;
+    doc.status = 'Verified';
+    if (!doc.verifiedDate) {
+      doc.verifiedDate = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+    this.recordViewedDoc(String(doctor.id), doc.name);
+
+    // Call backend API to record document verification
+    const numId = doctor.numericId || this.extractNumber(doctor.id);
+    if (numId) {
+      this.webApiService.VerifyDoctorDocument({
+        doctorId: Number(numId),
+        documentId: doc.id ? Number(doc.id) : undefined,
+        documentType: doc.name,
+        status: 'VERIFIED'
+      }).subscribe({
+        next: (res) => console.log('[DoctorApprovals] VerifyDoctorDocument API success:', res),
+        error: (err) => console.warn('[DoctorApprovals] VerifyDoctorDocument API notice (backend may be pending):', err)
+      });
+    }
+
+    const verifiedCount = (doctor.documents || []).filter(d => d.status === 'Verified').length;
+    const totalCount = doctor.totalDocsCount || (doctor.documents?.length || 1);
+    doctor.verifiedDocsCount = verifiedCount;
+
+    if (this.selectedItem && String(this.selectedItem.id) === String(doctor.id)) {
+      this.selectedItem.verifiedDocsCount = verifiedCount;
+    }
+
+    // Dynamic rule requested by user:
+    // "if the admin see only one certifcate put it has the pending if two and if all the certifactes are verfied then dipslay the approved"
+    if (doctor.status !== 'Rejected') {
+      if (verifiedCount < totalCount) {
+        doctor.status = 'Pending';
+        this.saveStatusOverride(String(doctor.id), 'Pending');
+        if (numId) this.saveStatusOverride(String(numId), 'Pending');
+      } else if (verifiedCount >= totalCount && totalCount > 0) {
+        doctor.status = 'Approved';
+        this.saveStatusOverride(String(doctor.id), 'Approved');
+        if (numId) this.saveStatusOverride(String(numId), 'Approved');
+        this.syncWithDoctorManagement(doctor, 'Approved');
+
+        // Automatically update approval status in backend when all certificates are verified
+        if (numId) {
+          this.webApiService.UpdateDoctorApprovalStatus({ id: Number(numId), status: 'APPROVED' }).subscribe({
+            next: (res) => console.log('[DoctorApprovals] Auto-approved doctor after all certificates verified:', res),
+            error: (err) => console.warn('[DoctorApprovals] UpdateDoctorApprovalStatus API notice:', err)
+          });
+        }
+        this.showToast(`All certificates verified (${verifiedCount}/${totalCount})! ${doctor.name} is now Approved.`, 'success');
+      }
+    }
+
+    const req = this.requests.find(r => String(r.id) === String(doctor.id));
+    if (req) {
+      req.verifiedDocsCount = verifiedCount;
+      req.status = doctor.status;
+      if (req.documents) {
+        const targetDoc = req.documents.find(x => x.name === doc.name);
+        if (targetDoc) {
+          targetDoc.status = 'Verified';
+          targetDoc.verifiedDate = doc.verifiedDate;
+        }
+      }
+    }
+
+    this.saveToStorage();
     this.updateStats();
     this.applyFilters();
     this.cdr.markForCheck();
@@ -1236,8 +1448,20 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
   }
 
   public review(item: DoctorApprovalItem): void {
+    if (item.documents) {
+      for (const doc of item.documents) {
+        const isViewed = this.isDocViewed(String(item.id), doc.name);
+        doc.status = isViewed ? 'Verified' : 'Pending';
+        if (!isViewed) {
+          doc.verifiedDate = '';
+        }
+      }
+      item.verifiedDocsCount = item.documents.filter(d => d.status === 'Verified').length;
+    }
     this.selectedItem = item;
     this.isReviewModalOpen = true;
+    this.cdr.markForCheck();
+    this.cdr.detectChanges();
   }
 
   public closeReviewModal(): void {
@@ -1257,6 +1481,10 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
     const idx = docs.findIndex(d => d.name === doc.name);
     this.activeDocIndex = idx >= 0 ? idx : 0;
     this.isCertificateViewerOpen = true;
+
+    // Admin views document: now mark as Verified!
+    this.markDocAsVerified(doc, doctor);
+
     this.cdr.markForCheck();
     this.cdr.detectChanges();
   }
@@ -1276,6 +1504,9 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
     if (index >= 0 && index < docs.length) {
       this.activeDocIndex = index;
       this.activeCertificateDoc = docs[index];
+
+      // Admin views document: mark selected certificate as Verified!
+      this.markDocAsVerified(docs[index], this.activeCertificateDoctor);
     }
   }
 

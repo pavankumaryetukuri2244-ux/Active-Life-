@@ -682,6 +682,26 @@ export class WebapiService {
     return this.Http.post<any>(url, payload, { headers });
   }
 
+  public VerifyDoctorDocument(body: { doctorId: number; documentId?: number; documentType?: string; status: 'VERIFIED' | 'PENDING' | 'REJECTED' }) {
+    const token = localStorage.getItem('accessToken');
+    let headers = new HttpHeaders({
+      'Content-Type': 'application/json'
+    });
+    if (token && token !== 'null' && token !== 'undefined') {
+      const cleanToken = token.replace(/^"(.*)"$/, '$1').trim();
+      headers = headers.set('Authorization', 'Bearer ' + cleanToken);
+    }
+    const payload = {
+      doctorId: Number(body.doctorId),
+      documentId: body.documentId ? Number(body.documentId) : undefined,
+      documentType: body.documentType,
+      status: body.status || 'VERIFIED'
+    };
+    const url = `${this.WebApi}/admin/api/doctor-approvals/verify-document`;
+    console.log('[WebapiService] POST VerifyDoctorDocument:', url, payload);
+    return this.Http.post<any>(url, payload, { headers });
+  }
+
   // ==========================================
   // Appointment Management API Methods
   // ==========================================

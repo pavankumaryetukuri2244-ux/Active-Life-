@@ -173,60 +173,59 @@
             </div>
 
             <!-- Documents Verified Progress Bar -->
-          <div class="mb-0" style="cursor: pointer;" (click)="item.documents && item.documents.length > 0 ? openCertificateViewer(item.documents[0], item) : review(item)" title="Click to view certificates">
-            <div class="d-flex align-items-center justify-content-between" style="font-size: 12px; color: #64748B;">
-                <span class="d-flex align-items-center gap-1">
-                  <span>Documents verified</span>
-                  <span style="color: #2563EB; font-size: 11.5px; font-weight: 500;">· View</span>
-                </span>
+            <div class="mb-0">
+              <div class="d-flex align-items-center justify-content-between" style="font-size: 12px; color: #64748B;">
+                <span>Documents verified</span>
                 <span style="font-weight: 600; color: #0F172A;">
                   {{ item.verifiedDocsCount }}/{{ item.totalDocsCount }}
                 </span>
               </div>
               <div class="da-progress-track">
                 <div class="da-progress-fill"
-                  [style.width.%]="(item.verifiedDocsCount / item.totalDocsCount) * 100"
+                  [style.width.%]="item.totalDocsCount ? ((item.verifiedDocsCount / item.totalDocsCount) * 100) : 0"
                   [style.background]="item.status === 'Approved' ? '#16A34A' : (item.status === 'Rejected' ? '#DC2626' : '#F59E0B')">
                 </div>
               </div>
-          </div>
+            </div>
 
-          <!-- Card Footer Action Buttons matching Figma -->
-          <div class="d-flex align-items-center justify-content-between pt-3 border-top flex-wrap" style="gap: 8px; margin-top: 14px;">
-            <!-- Review Button -->
-            <button type="button" class="da-btn-action da-btn-review flex-grow-1" (click)="review(item)">
-              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                <circle cx="12" cy="12" r="3"></circle>
-              </svg>
-              <span>Review</span>
-            </button>
+            <!-- Card Footer Action Buttons matching Figma -->
+            <div class="d-flex align-items-center justify-content-between pt-3 border-top flex-wrap" style="gap: 8px; margin-top: 14px;">
+              <!-- Review Button -->
+              <button type="button" class="da-btn-action da-btn-review flex-grow-1" (click)="review(item)">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <span>Review</span>
+              </button>
 
-            <!-- Reject Button -->
-            <button
-              type="button"
-              class="da-btn-action da-btn-reject flex-grow-1"
-              (click)="openRejectModal(item)">
-              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="15" y1="9" x2="9" y2="15"></line>
-                <line x1="9" y1="9" x2="15" y2="15"></line>
-              </svg>
-              <span>Reject</span>
-            </button>
+              <!-- Reject & Approve Buttons (shown in All and Pending chips, hidden in Approved and Rejected chips) -->
+              @if (activeTab === 'All' || activeTab === 'Pending' || item.status === 'Pending') {
+                <button
+                  type="button"
+                  class="da-btn-action da-btn-reject flex-grow-1"
+                  (click)="openRejectModal(item)">
+                  <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="15" y1="9" x2="9" y2="15"></line>
+                    <line x1="9" y1="9" x2="15" y2="15"></line>
+                  </svg>
+                  <span>Reject</span>
+                </button>
 
-            <!-- Approve Button -->
-            <button
-              type="button"
-              class="da-btn-action da-btn-approve flex-grow-1"
-              (click)="approve(item)">
-              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="10"></circle>
-                <polyline points="9 12 11 14 15 10"></polyline>
-              </svg>
-              <span>Approve</span>
-            </button>
-          </div>
+                <!-- Approve Button -->
+                <button
+                  type="button"
+                  class="da-btn-action da-btn-approve flex-grow-1"
+                  (click)="approve(item)">
+                  <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="9 12 11 14 15 10"></polyline>
+                  </svg>
+                  <span>Approve</span>
+                </button>
+              }
+            </div>
         </div>
       </div>
     }
@@ -345,7 +344,7 @@
                     {{ doc.name }}
                   </span>
                   <span class="text-muted" style="font-size: 11.5px;">
-                    Click to view &amp; inspect certificate • {{ doc.verifiedDate || 'Verified' }}
+                    Click to view &amp; inspect certificate • {{ doc.status === 'Verified' ? (doc.verifiedDate || 'Verified') : 'Pending verification' }}
                   </span>
                 </div>
               </div>
@@ -382,18 +381,20 @@
           <button type="button" class="btn btn-light" (click)="closeReviewModal()">
             Close
           </button>
-          <button
-            type="button"
-            class="btn btn-outline-danger d-inline-flex align-items-center gap-2"
-            (click)="openRejectModal(selectedItem)">
-            Reject Application
-          </button>
-          <button
-            type="button"
-            class="btn btn-success d-inline-flex align-items-center gap-2"
-            (click)="approve(selectedItem)">
-            Approve Doctor
-          </button>
+          @if (activeTab === 'All' || activeTab === 'Pending' || selectedItem.status === 'Pending') {
+            <button
+              type="button"
+              class="btn btn-outline-danger d-inline-flex align-items-center gap-2"
+              (click)="openRejectModal(selectedItem)">
+              Reject Application
+            </button>
+            <button
+              type="button"
+              class="btn btn-success d-inline-flex align-items-center gap-2"
+              (click)="approve(selectedItem)">
+              Approve Doctor
+            </button>
+          }
         </div>
       </div>
     </div>

@@ -154,15 +154,15 @@
               <!-- Patient (Avatar with Initial, Name, and Patient ID) -->
               <td>
                 <div class="d-flex align-items-center" style="gap: 12px;">
-                  <div class="apt-patient-avatar" [style.background]="item.patientAvatarBg">
-                    {{ item.patientInitial }}
+                  <div class="apt-patient-avatar" [style.background]="getPatientAvatarBg(item)">
+                    {{ getPatientInitial(item) }}
                   </div>
                   <div>
                     <div style="font-weight: 600; color: #0F172A; font-size: 13.5px; line-height: 1.3;">
-                      {{ item.patientName }}
+                      {{ getPatientDisplayName(item) }}
                     </div>
                     <span style="font-size: 12px; color: #94A3B8;">
-                      {{ item.patientId }}
+                      {{ getPatientDisplayId(item) }}
                     </span>
                   </div>
                 </div>
@@ -396,8 +396,8 @@
           <div class="col-6">
             <div class="p-3 rounded-3 border bg-light">
               <div class="text-muted mb-1" style="font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.5px;">Patient Details</div>
-              <div class="fw-bold text-dark fs-6">{{ selectedAppointment.patientName }}</div>
-              <div class="text-secondary small">{{ selectedAppointment.patientId }}</div>
+              <div class="fw-bold text-dark fs-6">{{ getPatientDisplayName(selectedAppointment) }}</div>
+              <div class="text-secondary small">{{ getPatientDisplayId(selectedAppointment) }}</div>
               <div class="text-secondary small">{{ selectedAppointment.patientPhone || 'N/A' }}</div>
               <div class="text-secondary small">{{ selectedAppointment.patientEmail || 'N/A' }}</div>
             </div>
@@ -478,7 +478,7 @@
         </div>
 
         <p class="small text-muted mb-3">
-          Select a new date and time for <strong>{{ selectedAppointment.patientName }}</strong> with <strong>{{ selectedAppointment.doctorName }}</strong>.
+          Select a new date and time for <strong>{{ getPatientDisplayName(selectedAppointment) }}</strong> with <strong>{{ selectedAppointment.doctorName }}</strong>.
         </p>
 
         <div class="mb-3">
@@ -528,7 +528,7 @@
         <div class="p-3 rounded-3 mb-3" style="background: #F8FAFC; border: 1px solid #E2E8F0; font-size: 13px;">
           <div class="d-flex justify-content-between mb-1">
             <span class="text-muted">Patient:</span>
-            <span class="fw-semibold text-dark">{{ selectedAppointment.patientName }} ({{ selectedAppointment.patientId }})</span>
+            <span class="fw-semibold text-dark">{{ getPatientDisplayName(selectedAppointment) }} ({{ getPatientDisplayId(selectedAppointment) }})</span>
           </div>
           <div class="d-flex justify-content-between mb-1">
             <span class="text-muted">Doctor:</span>
@@ -585,7 +585,7 @@
         <div class="p-3 rounded-3 mb-3" style="background: #F8FAFC; border: 1px solid #E2E8F0; font-size: 13px;">
           <div class="d-flex justify-content-between mb-1">
             <span class="text-muted">Patient:</span>
-            <span class="fw-semibold text-dark">{{ appointmentToCancel.patientName }} ({{ appointmentToCancel.patientId }})</span>
+            <span class="fw-semibold text-dark">{{ getPatientDisplayName(appointmentToCancel) }} ({{ getPatientDisplayId(appointmentToCancel) }})</span>
           </div>
           <div class="d-flex justify-content-between mb-1">
             <span class="text-muted">Doctor:</span>
