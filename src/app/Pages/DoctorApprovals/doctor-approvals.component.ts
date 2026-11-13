@@ -768,24 +768,33 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
       if (ov) {
         item.status = ov;
       }
-      if (item.documents) {
-        for (const doc of item.documents) {
-          const isViewed = this.isDocViewed(String(item.id), doc.name);
-          doc.status = isViewed ? 'Verified' : 'Pending';
-          if (!isViewed) {
-            doc.verifiedDate = '';
+      if (item.status === 'Approved') {
+        if (item.documents) {
+          for (const doc of item.documents) {
+            doc.status = 'Verified';
+            if (!doc.verifiedDate) {
+              doc.verifiedDate = 'Verified';
+            }
+            this.recordViewedDoc(String(item.id), doc.name);
           }
+          item.verifiedDocsCount = item.documents.length;
+          item.totalDocsCount = item.documents.length;
+        } else {
+          item.verifiedDocsCount = item.totalDocsCount;
         }
-        item.verifiedDocsCount = item.documents.filter(d => d.status === 'Verified').length;
-        item.totalDocsCount = item.documents.length;
-      }
-      // Core enforcement:
-      // If admin sees only 1 certificate (verifiedDocsCount < totalDocsCount), put status as Pending!
-      // If all certificates are verified, display Approved!
-      if (item.status !== 'Rejected') {
-        if (item.verifiedDocsCount < item.totalDocsCount) {
-          item.status = 'Pending';
-        } else if (item.verifiedDocsCount >= item.totalDocsCount && item.totalDocsCount > 0) {
+      } else if (item.status === 'Pending') {
+        if (item.documents) {
+          for (const doc of item.documents) {
+            const isViewed = this.isDocViewed(String(item.id), doc.name);
+            doc.status = isViewed ? 'Verified' : 'Pending';
+            if (!isViewed) {
+              doc.verifiedDate = '';
+            }
+          }
+          item.verifiedDocsCount = item.documents.filter(d => d.status === 'Verified').length;
+          item.totalDocsCount = item.documents.length;
+        }
+        if (item.verifiedDocsCount >= item.totalDocsCount && item.totalDocsCount > 0) {
           item.status = 'Approved';
         }
       }
@@ -876,24 +885,33 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
             if (ov) {
               item.status = ov;
             }
-            if (item.documents) {
-              for (const doc of item.documents) {
-                const isViewed = this.isDocViewed(String(item.id), doc.name);
-                doc.status = isViewed ? 'Verified' : 'Pending';
-                if (!isViewed) {
-                  doc.verifiedDate = '';
+            if (item.status === 'Approved') {
+              if (item.documents) {
+                for (const doc of item.documents) {
+                  doc.status = 'Verified';
+                  if (!doc.verifiedDate) {
+                    doc.verifiedDate = 'Verified';
+                  }
+                  this.recordViewedDoc(String(item.id), doc.name);
                 }
+                item.verifiedDocsCount = item.documents.length;
+                item.totalDocsCount = item.documents.length;
+              } else {
+                item.verifiedDocsCount = item.totalDocsCount;
               }
-              item.verifiedDocsCount = item.documents.filter(d => d.status === 'Verified').length;
-              item.totalDocsCount = item.documents.length;
-            }
-            // Enforce requirement:
-            // If only 1 certificate is verified (or 0), doctor status must be Pending!
-            // If all certificates are verified, display Approved!
-            if (item.status !== 'Rejected') {
-              if (item.verifiedDocsCount < item.totalDocsCount) {
-                item.status = 'Pending';
-              } else if (item.verifiedDocsCount >= item.totalDocsCount && item.totalDocsCount > 0) {
+            } else if (item.status === 'Pending') {
+              if (item.documents) {
+                for (const doc of item.documents) {
+                  const isViewed = this.isDocViewed(String(item.id), doc.name);
+                  doc.status = isViewed ? 'Verified' : 'Pending';
+                  if (!isViewed) {
+                    doc.verifiedDate = '';
+                  }
+                }
+                item.verifiedDocsCount = item.documents.filter(d => d.status === 'Verified').length;
+                item.totalDocsCount = item.documents.length;
+              }
+              if (item.verifiedDocsCount >= item.totalDocsCount && item.totalDocsCount > 0) {
                 item.status = 'Approved';
               }
             }
@@ -998,23 +1016,26 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
     ];
 
     const finalDocs = mappedDocuments.length > 0 ? mappedDocuments : fallbackDocs;
-    const finalVerifiedCount = backendVerifiedDocs !== undefined 
+    let finalVerifiedCount = backendVerifiedDocs !== undefined 
       ? Number(backendVerifiedDocs) 
       : finalDocs.filter(d => d.status === 'Verified').length;
-    const finalTotalCount = backendTotalDocs !== undefined 
+    let finalTotalCount = backendTotalDocs !== undefined 
       ? Number(backendTotalDocs) 
-      : Math.max(finalDocs.length, 2);
+      : Math.max(finalDocs.length, 1);
 
-    // Enforcement:
-    // If admin has seen only 1 certificate (or 0), put status as Pending!
-    // If all certificates are verified, then display Approved!
-    if (status !== 'Rejected') {
-      if (finalVerifiedCount < finalTotalCount) {
-        status = 'Pending';
-      } else if (finalVerifiedCount >= finalTotalCount && finalTotalCount > 0) {
-        if (regStatus === 'APPROVED' || localOverride === 'Approved' || backendIsAllVerified) {
-          status = 'Approved';
+    if (status === 'Approved') {
+      finalDocs.forEach(d => {
+        d.status = 'Verified';
+        if (!d.verifiedDate) {
+          d.verifiedDate = 'Verified';
         }
+        this.recordViewedDoc(String(docId), d.name);
+      });
+      finalVerifiedCount = finalDocs.length;
+      finalTotalCount = finalDocs.length;
+    } else if (status === 'Pending') {
+      if (finalVerifiedCount >= finalTotalCount && finalTotalCount > 0) {
+        status = 'Approved';
       }
     }
 
@@ -1143,22 +1164,34 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
   public approve(item: DoctorApprovalItem): void {
     if (!item) return;
 
-    // Enforce threshold: Cannot approve if not all certificates are verified!
-    const verified = (item.documents || []).filter(d => d.status === 'Verified').length;
-    const total = item.totalDocsCount || (item.documents?.length || 1);
+    // Per user requirement:
+    // "automatically when we click on the approve you are approving both documents"
+    // When admin clicks Approve, all documents for this doctor are approved/verified!
+    if (item.documents && item.documents.length > 0) {
+      item.documents.forEach((doc, idx) => {
+        doc.status = 'Verified';
+        if (!doc.verifiedDate) {
+          doc.verifiedDate = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+        this.recordViewedDoc(String(item.id), doc.name);
 
-    if (verified < total) {
-      item.status = 'Pending';
-      this.saveStatusOverride(String(item.id), 'Pending');
-      const numId = item.numericId || this.extractNumber(item.id);
-      if (numId) this.saveStatusOverride(String(numId), 'Pending');
-      this.saveToStorage();
-      this.updateStats();
-      this.applyFilters();
-      this.cdr.markForCheck();
-      this.cdr.detectChanges();
-      this.showToast(`Cannot approve: Only ${verified} of ${total} certificates verified. Status remains Pending until all certificates are verified.`, 'error');
-      return;
+        const targetDocId = doc.id !== undefined
+          ? Number(doc.id)
+          : (item.numericId ? (Number(item.numericId) * 10 + idx + 1) : (idx + 1));
+
+        // Call backend API to verify each document
+        this.webApiService.VerifyDoctorDocument({
+          documentId: targetDocId,
+          isVerified: true
+        }).subscribe({
+          next: (res: any) => console.log(`[DoctorApprovals] Auto-verified document ${doc.name}:`, res),
+          error: (err: any) => console.warn(`[DoctorApprovals] VerifyDoctorDocument API notice:`, err)
+        });
+      });
+      item.verifiedDocsCount = item.documents.length;
+      item.totalDocsCount = item.documents.length;
+    } else {
+      item.verifiedDocsCount = item.totalDocsCount;
     }
 
     const numId = item.numericId || this.extractNumber(item.id);
@@ -1289,19 +1322,19 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
   private applyStatusChange(item: DoctorApprovalItem, status: 'Approved' | 'Rejected', reason?: string): void {
     const numId = item.numericId || this.extractNumber(item.id);
 
-    // If approving, strictly enforce that all documents are verified!
     if (status === 'Approved') {
-      const verified = (item.documents || []).filter(d => d.status === 'Verified').length;
-      const total = item.totalDocsCount || (item.documents?.length || 1);
-      if (verified < total) {
-        item.status = 'Pending';
-        this.saveStatusOverride(String(item.id), 'Pending');
-        if (numId) this.saveStatusOverride(String(numId), 'Pending');
-        this.saveToStorage();
-        this.updateStats();
-        this.applyFilters();
-        this.showToast(`Cannot approve: Only ${verified} of ${total} certificates verified. Status remains Pending.`, 'error');
-        return;
+      if (item.documents && item.documents.length > 0) {
+        item.documents.forEach(d => {
+          d.status = 'Verified';
+          if (!d.verifiedDate) {
+            d.verifiedDate = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+          }
+          this.recordViewedDoc(String(item.id), d.name);
+        });
+        item.verifiedDocsCount = item.documents.length;
+        item.totalDocsCount = item.documents.length;
+      } else {
+        item.verifiedDocsCount = item.totalDocsCount;
       }
     }
 
@@ -1310,8 +1343,9 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
       item.notes = reason;
     }
 
-    // Keep verifiedDocsCount strictly matching actual verified documents count (do NOT auto-force to totalDocsCount!)
-    const verifiedCount = (item.documents || []).filter(d => d.status === 'Verified').length;
+    const verifiedCount = status === 'Approved'
+      ? (item.totalDocsCount || (item.documents?.length || 2))
+      : (item.documents || []).filter(d => d.status === 'Verified').length;
     item.verifiedDocsCount = verifiedCount;
 
     this.requests = this.requests.map(r => {
@@ -1321,10 +1355,17 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
         (numId && rNum === numId) ||
         (r.name && item.name && r.name.trim().toLowerCase() === item.name.trim().toLowerCase())
       ) {
+        if (status === 'Approved' && r.documents) {
+          r.documents.forEach(d => {
+            d.status = 'Verified';
+            if (!d.verifiedDate) d.verifiedDate = 'Verified';
+            this.recordViewedDoc(String(r.id), d.name);
+          });
+        }
         return {
           ...r,
           status: status,
-          verifiedDocsCount: (r.documents || []).filter(d => d.status === 'Verified').length,
+          verifiedDocsCount: status === 'Approved' ? (r.totalDocsCount || (r.documents?.length || 2)) : (r.documents || []).filter(d => d.status === 'Verified').length,
           notes: (status === 'Rejected' && reason) ? reason : r.notes
         };
       }
@@ -1338,10 +1379,17 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
         (numId && rNum === numId) ||
         (r.name && item.name && r.name.trim().toLowerCase() === item.name.trim().toLowerCase())
       ) {
+        if (status === 'Approved' && r.documents) {
+          r.documents.forEach(d => {
+            d.status = 'Verified';
+            if (!d.verifiedDate) d.verifiedDate = 'Verified';
+            this.recordViewedDoc(String(r.id), d.name);
+          });
+        }
         return {
           ...r,
           status: status,
-          verifiedDocsCount: (r.documents || []).filter(d => d.status === 'Verified').length,
+          verifiedDocsCount: status === 'Approved' ? (r.totalDocsCount || (r.documents?.length || 2)) : (r.documents || []).filter(d => d.status === 'Verified').length,
           notes: (status === 'Rejected' && reason) ? reason : r.notes
         };
       }
@@ -1432,12 +1480,8 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
 
     // Dynamic rule requested by user:
     // "if the admin see only one certifcate put it has the pending if two and if all the certifactes are verfied then dipslay the approved"
-    if (doctor.status !== 'Rejected') {
-      if (verifiedCount < totalCount) {
-        doctor.status = 'Pending';
-        this.saveStatusOverride(String(doctor.id), 'Pending');
-        if (numId) this.saveStatusOverride(String(numId), 'Pending');
-      } else if (verifiedCount >= totalCount && totalCount > 0) {
+    if (doctor.status === 'Pending') {
+      if (verifiedCount >= totalCount && totalCount > 0) {
         doctor.status = 'Approved';
         this.saveStatusOverride(String(doctor.id), 'Approved');
         if (numId) this.saveStatusOverride(String(numId), 'Approved');

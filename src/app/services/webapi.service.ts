@@ -652,8 +652,9 @@ export class WebapiService {
     let headers = new HttpHeaders({
       'Content-Type': 'application/json'
     });
-    if (token) {
-      headers = headers.set('Authorization', 'Bearer ' + token);
+    if (token && token !== 'null' && token !== 'undefined') {
+      const cleanToken = token.replace(/^"(.*)"$/, '$1').trim();
+      headers = headers.set('Authorization', 'Bearer ' + cleanToken);
     }
     const url = `${this.WebApi}/admin/api/doctor-approvals/list`;
     return this.Http.post<any>(url, filters, { headers });
@@ -682,7 +683,7 @@ export class WebapiService {
     return this.Http.post<any>(url, payload, { headers });
   }
 
-  public VerifyDoctorDocument(body: { documentId: number | string; isVerified?: boolean; [key: string]: any }) {
+  public VerifyDoctorDocument(body: { documentId: number | string; isVerified?: boolean;[key: string]: any }) {
     const token = localStorage.getItem('accessToken');
     let headers = new HttpHeaders({
       'Content-Type': 'application/json'

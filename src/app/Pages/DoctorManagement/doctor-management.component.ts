@@ -781,7 +781,9 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
     const initial = this.getDoctorInitial(cleanName);
     const avatarBg = this.avatarColors[index % this.avatarColors.length];
 
-    const status: 'Active' | 'Inactive' = (doc.status === 'Active' || doc.isActive === true) ? 'Active' : 'Inactive';
+    const rawNumId = doc.id ? Number(doc.id) : (doc.doctorId ? Number(doc.doctorId) : (index + 1));
+    const doctorId = String(rawNumId);
+    let status: 'Active' | 'Inactive' = (doc.status === 'Active' || doc.isActive === true) ? 'Active' : 'Inactive';
 
     let approval: 'Approved' | 'Pending' | 'Rejected' = 'Pending';
     const regStatus = (doc.registrationStatus || doc.approval || '').toString().toUpperCase();
@@ -795,12 +797,23 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
       approval = doc.approval;
     }
 
+    try {
+      const statusOverridesStr = localStorage.getItem('activeLife_doctorStatusOverrides_v1');
+      if (statusOverridesStr) {
+        const statusOverrides = JSON.parse(statusOverridesStr);
+        const ov = statusOverrides[String(rawNumId)] || statusOverrides[doctorId] || (cleanName ? statusOverrides[cleanName.trim().toLowerCase()] : undefined);
+        if (ov) {
+          approval = ov;
+          if (ov === 'Approved') status = 'Active';
+          else if (ov === 'Rejected') status = 'Inactive';
+        }
+      }
+    } catch (e) {}
+
     const expYrs = doc.experienceYears !== undefined && doc.experienceYears !== null
       ? `${doc.experienceYears} yrs`
       : (doc.experience || '0 yrs');
 
-    const rawNumId = doc.id ? Number(doc.id) : (doc.doctorId ? Number(doc.doctorId) : (index + 1));
-    const doctorId = String(rawNumId);
     const specId = doc.specializationId ? Number(doc.specializationId) : this.getSpecializationIdByName(doc.specialization);
 
     const rawDocs = doc.documents || doc.doctorDocuments || doc.verificationDocuments || doc.credentials || [];
