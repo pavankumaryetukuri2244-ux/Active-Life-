@@ -253,7 +253,7 @@
                           }
                         }
 
-                        <!-- 2. PENDING DOCTORS: view & edit -->
+                        <!-- 2. PENDING DOCTORS: view & set active/inactive (Only approved doctors can be edited) -->
                         @else if (doc.approval === 'Pending') {
                           <!-- View -->
                           <button class="dropdown-action-btn" (click)="viewDoctor(doc); closeDropdown()">
@@ -262,15 +262,6 @@
                               <circle cx="12" cy="12" r="3" />
                             </svg>
                             View
-                          </button>
-
-                          <!-- Edit -->
-                          <button class="dropdown-action-btn" (click)="openEditModal(doc); closeDropdown()">
-                            <svg width="15" height="15" fill="none" stroke="#64748B" stroke-width="1.8" viewBox="0 0 24 24">
-                              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                            </svg>
-                            Edit
                           </button>
 
                           <div style="height: 1px; background: #F1F5F9; margin: 4px 0;"></div>
@@ -295,7 +286,7 @@
                           }
                         }
 
-                        <!-- 3. REJECTED DOCTORS: view, edit and set active/inactive -->
+                        <!-- 3. REJECTED DOCTORS: view and set active/inactive (Only approved doctors can be edited) -->
                         @else if (doc.approval === 'Rejected') {
                           <!-- View -->
                           <button class="dropdown-action-btn" (click)="viewDoctor(doc); closeDropdown()">
@@ -304,15 +295,6 @@
                               <circle cx="12" cy="12" r="3" />
                             </svg>
                             View
-                          </button>
-
-                          <!-- Edit -->
-                          <button class="dropdown-action-btn" (click)="openEditModal(doc); closeDropdown()">
-                            <svg width="15" height="15" fill="none" stroke="#64748B" stroke-width="1.8" viewBox="0 0 24 24">
-                              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                            </svg>
-                            Edit
                           </button>
 
                           <div style="height: 1px; background: #F1F5F9; margin: 4px 0;"></div>
@@ -506,32 +488,60 @@
 
       <form novalidate (submit)="$event.preventDefault(); saveDoctor($event)">
         <div class="row g-3">
+          <!-- Read-only fields in Edit Mode: Doctor ID & Approval Status -->
+          @if (isEditing) {
+            <!-- Doctor ID -->
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold text-dark">Doctor ID</label>
+              <input type="text" class="form-control bg-light" [value]="formModel.id" disabled readonly style="cursor: not-allowed;">
+              <div class="form-text text-muted" style="font-size: 11px;">Doctor ID cannot be modified</div>
+            </div>
+
+            <!-- Approval Status -->
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold text-dark">Approval Status</label>
+              <div class="form-control bg-light d-flex align-items-center" style="cursor: not-allowed; min-height: 38px;">
+                <span class="badge" [ngClass]="{
+                  'bg-success-subtle text-success': formModel.approval === 'Approved',
+                  'bg-warning-subtle text-warning': formModel.approval === 'Pending',
+                  'bg-danger-subtle text-danger': formModel.approval === 'Rejected'
+                }">{{ formModel.approval }}</span>
+                <span class="ms-2 text-muted small">(Read-only)</span>
+              </div>
+              <div class="form-text text-muted" style="font-size: 11px;">Approval status cannot be modified</div>
+            </div>
+          }
+
           <!-- Doctor Full Name -->
           <div class="col-md-6">
             <label class="form-label small fw-semibold text-dark">Doctor Full Name <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" [(ngModel)]="formModel.name" name="name" placeholder="e.g. Dr. Emily Roberts" required>
+            <input type="text" class="form-control" [(ngModel)]="formModel.name" name="name" maxlength="255" placeholder="e.g. Dr. Emily Roberts" required>
+            <div class="form-text text-muted" style="font-size: 11px;">Max 255 chars; letters, spaces and dots only</div>
           </div>
 
           <!-- Email Address -->
           <div class="col-md-6">
             <label class="form-label small fw-semibold text-dark">Email Address <span class="text-danger">*</span></label>
-            <input type="email" class="form-control" [(ngModel)]="formModel.email" name="email" placeholder="e.g. emily.roberts@hospital.com" required>
+            <input type="email" class="form-control" [(ngModel)]="formModel.email" name="email" maxlength="255" placeholder="e.g. doctor@hospital.com" required>
+            <div class="form-text text-muted" style="font-size: 11px;">Max 255 chars; valid email; unique except current doctor</div>
           </div>
 
           <!-- Mobile Number -->
           <div class="col-md-6">
             <label class="form-label small fw-semibold text-dark">Mobile Number <span class="text-danger">*</span></label>
-            <input type="tel" class="form-control" [(ngModel)]="formModel.phone" name="phone" placeholder="e.g. +919876543710" required>
+            <input type="tel" class="form-control" [(ngModel)]="formModel.phone" name="phone" maxlength="20" placeholder="e.g. +919876543210" required>
+            <div class="form-text text-muted" style="font-size: 11px;">Max 20 chars; +91 and 10 digits; first digit 6–9</div>
           </div>
 
           <!-- Gender -->
           <div class="col-md-6">
             <label class="form-label small fw-semibold text-dark">Gender <span class="text-danger">*</span></label>
             <select class="form-select" [(ngModel)]="formModel.gender" name="gender" required>
-              <option value="FEMALE">Female</option>
-              <option value="MALE">Male</option>
-              <option value="OTHER">Other</option>
+              <option value="MALE">MALE</option>
+              <option value="FEMALE">FEMALE</option>
+              <option value="OTHER">OTHER</option>
             </select>
+            <div class="form-text text-muted" style="font-size: 11px;">Enum: MALE, FEMALE, OTHER</div>
           </div>
 
           <!-- Specialization -->
@@ -547,46 +557,64 @@
           <!-- Qualification -->
           <div class="col-md-6">
             <label class="form-label small fw-semibold text-dark">Qualification <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" [(ngModel)]="formModel.qualification" name="qualification" placeholder="e.g. MD, MBBS" required>
+            <input type="text" class="form-control" [(ngModel)]="formModel.qualification" name="qualification" maxlength="255" placeholder="e.g. MBBS, MD" required>
+            <div class="form-text text-muted" style="font-size: 11px;">Max 255 characters</div>
           </div>
 
           <!-- Hospital / Clinic -->
           <div class="col-md-6">
             <label class="form-label small fw-semibold text-dark">Hospital / Clinic <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" [(ngModel)]="formModel.hospitalName" name="hospitalName" placeholder="e.g. City Hospital" required>
+            <input type="text" class="form-control" [(ngModel)]="formModel.hospitalName" name="hospitalName" maxlength="255" placeholder="e.g. Apollo Hospital" required>
+            <div class="form-text text-muted" style="font-size: 11px;">Max 255 characters</div>
           </div>
 
           <!-- Consultation Fee -->
           <div class="col-md-6">
             <label class="form-label small fw-semibold text-dark">Consultation Fee (₹) <span class="text-danger">*</span></label>
             <input type="number" class="form-control" [(ngModel)]="formModel.consultationFee" name="consultationFee" min="0" placeholder="e.g. 500" required>
-          </div>
-
-          <!-- Address -->
-          <div class="col-md-8">
-            <label class="form-label small fw-semibold text-dark">Address <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" [(ngModel)]="formModel.address" name="address" placeholder="e.g. Banjara Hills, Hyderabad" required>
+            <div class="form-text text-muted" style="font-size: 11px;">Number; >= 0</div>
           </div>
 
           <!-- Pin Code -->
-          <div class="col-md-4">
+          <div class="col-md-6">
             <label class="form-label small fw-semibold text-dark">Pin Code <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" [(ngModel)]="formModel.pinCode" name="pinCode" placeholder="e.g. 500034" required>
+            <input type="text" class="form-control" [(ngModel)]="formModel.pinCode" name="pinCode" maxlength="10" placeholder="e.g. 500034" required>
+            <div class="form-text text-muted" style="font-size: 11px;">Max 10 chars; exactly 6 digits</div>
+          </div>
+
+          <!-- Professional Experience Start Date -->
+          <div class="col-md-6">
+            <label class="form-label small fw-semibold text-dark">Professional Experience Start Date</label>
+            <input type="date" class="form-control" [ngModel]="formModel.experienceStartDate" (ngModelChange)="onExperienceDateChange($event)" [max]="todayDate" name="experienceStartDate">
+            <div class="form-text text-muted" style="font-size: 11px;">yyyy-MM-dd; must not be in future</div>
           </div>
 
           <!-- Experience (Years) -->
           <div class="col-md-6">
             <label class="form-label small fw-semibold text-dark">Experience (Years)</label>
-            <input type="number" class="form-control" [(ngModel)]="formModel.experienceYears" name="experienceYears" min="1" max="50">
+            <input type="number" class="form-control" [(ngModel)]="formModel.experienceYears" name="experienceYears" min="0" max="60" placeholder="e.g. 10">
+            <div class="form-text text-muted" style="font-size: 11px;">Clinical experience in years</div>
           </div>
 
-          <!-- Status -->
+          <!-- Registration Number -->
           <div class="col-md-6">
-            <label class="form-label small fw-semibold text-dark">Status</label>
-            <select class="form-select" [(ngModel)]="formModel.status" name="status">
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
-            </select>
+            <label class="form-label small fw-semibold text-dark">Medical Registration Number</label>
+            <input type="text" class="form-control" [(ngModel)]="formModel.registrationNumber" name="registrationNumber" maxlength="100" placeholder="e.g. TGMC-123456">
+            <div class="form-text text-muted" style="font-size: 11px;">Unique across all doctors</div>
+          </div>
+
+          <!-- Website / Profile URL -->
+          <div class="col-md-6">
+            <label class="form-label small fw-semibold text-dark">Website / Profile URL</label>
+            <input type="url" class="form-control" [(ngModel)]="formModel.url" name="url" placeholder="e.g. https://apollohospitals.com">
+            <div class="form-text text-muted" style="font-size: 11px;">Valid URL format (optional)</div>
+          </div>
+
+          <!-- Address -->
+          <div class="col-12">
+            <label class="form-label small fw-semibold text-dark">Address <span class="text-danger">*</span></label>
+            <textarea class="form-control" [(ngModel)]="formModel.address" name="address" rows="2" maxlength="500" placeholder="e.g. Road No. 10, Jubilee Hills, Hyderabad" required></textarea>
+            <div class="form-text text-muted" style="font-size: 11px;">Max 500 characters</div>
           </div>
         </div>
 

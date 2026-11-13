@@ -62,6 +62,7 @@ export interface DoctorItem {
   specializationId?: number;
   experience: string; // e.g. '12 yrs'
   experienceYears?: number;
+  experienceStartDate?: string;
   status: 'Active' | 'Inactive';
   approval: 'Approved' | 'Pending' | 'Rejected';
   rating: number; // e.g. 4.8 or 0 for N/A
@@ -72,6 +73,7 @@ export interface DoctorItem {
   qualification?: string;
   address?: string;
   pinCode?: string;
+  url?: string;
   consultationFee?: number;
   registrationNumber?: string;
   registrationCouncil?: string;
@@ -96,6 +98,9 @@ export interface DoctorForm {
   qualification: string;
   address: string;
   pinCode: string;
+  url?: string;
+  registrationNumber?: string;
+  experienceStartDate?: string;
   consultationFee: number | string;
   experienceYears: number | string;
   patientsCount: number | string;
@@ -468,6 +473,7 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
         specializationId: 1,
         experience: '16 yrs',
         experienceYears: 16,
+        experienceStartDate: '2010-06-01',
         status: 'Active',
         approval: 'Approved',
         rating: 4.8,
@@ -478,6 +484,8 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
         qualification: 'MBBS',
         address: 'Road No. 10, Banjara Hills, Hyderabad, Telangana',
         pinCode: '500034',
+        url: 'https://apollohospitals.com',
+        registrationNumber: 'TGMC-123451',
         consultationFee: 500,
         about: 'Road No. 10, Banjara Hills, Hyderabad, Telangana'
       },
@@ -492,6 +500,7 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
         specializationId: 1,
         experience: '16 yrs',
         experienceYears: 16,
+        experienceStartDate: '2010-06-01',
         status: 'Active',
         approval: 'Approved',
         rating: 4.9,
@@ -502,6 +511,8 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
         qualification: 'MBBS',
         address: 'Road No. 10, Banjara Hills, Hyderabad, Telangana',
         pinCode: '500034',
+        url: 'https://apollohospitals.com',
+        registrationNumber: 'TGMC-123452',
         consultationFee: 500,
         about: 'Road No. 10, Banjara Hills, Hyderabad, Telangana'
       },
@@ -516,6 +527,7 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
         specializationId: 1,
         experience: '16 yrs',
         experienceYears: 16,
+        experienceStartDate: '2010-06-01',
         status: 'Active',
         approval: 'Approved',
         rating: 4.8,
@@ -526,6 +538,8 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
         qualification: 'MBBS',
         address: 'Road No. 10, Banjara Hills, Hyderabad, Telangana',
         pinCode: '500034',
+        url: 'https://apollohospitals.com',
+        registrationNumber: 'TGMC-123453',
         consultationFee: 500,
         about: 'Road No. 10, Banjara Hills, Hyderabad, Telangana'
       },
@@ -540,6 +554,7 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
         specializationId: 1,
         experience: '16 yrs',
         experienceYears: 16,
+        experienceStartDate: '2010-06-01',
         status: 'Active',
         approval: 'Approved',
         rating: 4.6,
@@ -550,6 +565,8 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
         qualification: 'MBBS',
         address: 'Road No. 10, Banjara Hills, Hyderabad, Telangana',
         pinCode: '500034',
+        url: 'https://apollohospitals.com',
+        registrationNumber: 'TGMC-123454',
         consultationFee: 500,
         about: 'Road No. 10, Banjara Hills, Hyderabad, Telangana'
       },
@@ -564,6 +581,7 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
         specializationId: 1,
         experience: '16 yrs',
         experienceYears: 16,
+        experienceStartDate: '2010-06-01',
         status: 'Active',
         approval: 'Approved',
         rating: 4.7,
@@ -574,6 +592,8 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
         qualification: 'MBBS',
         address: 'Road No. 10, Banjara Hills, Hyderabad, Telangana',
         pinCode: '500034',
+        url: 'https://apollohospitals.com',
+        registrationNumber: 'TGMC-123455',
         consultationFee: 500,
         about: 'Road No. 10, Banjara Hills, Hyderabad, Telangana'
       },
@@ -588,6 +608,7 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
         specializationId: 1,
         experience: '16 yrs',
         experienceYears: 16,
+        experienceStartDate: '2010-06-01',
         status: 'Active',
         approval: 'Approved',
         rating: 4.8,
@@ -598,6 +619,8 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
         qualification: 'MBBS',
         address: 'Road No. 10, Banjara Hills, Hyderabad, Telangana',
         pinCode: '500034',
+        url: 'https://apollohospitals.com',
+        registrationNumber: 'TGMC-123457',
         consultationFee: 500,
         about: 'Road No. 10, Banjara Hills, Hyderabad, Telangana'
       },
@@ -612,6 +635,7 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
         specializationId: 1,
         experience: '16 yrs',
         experienceYears: 16,
+        experienceStartDate: '2010-06-01',
         status: 'Active',
         approval: 'Approved',
         rating: 4.9,
@@ -622,6 +646,8 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
         qualification: 'MBBS',
         address: 'Road No. 10, Banjara Hills, Hyderabad, Telangana',
         pinCode: '500034',
+        url: 'https://apollohospitals.com',
+        registrationNumber: 'TGMC-123458',
         consultationFee: 500,
         about: 'Road No. 10, Banjara Hills, Hyderabad, Telangana'
       },
@@ -636,6 +662,7 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
         specializationId: 1,
         experience: '5 yrs',
         experienceYears: 5,
+        experienceStartDate: '2021-06-01',
         status: 'Active',
         approval: 'Approved',
         rating: 4.8,
@@ -646,6 +673,8 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
         qualification: 'MD',
         address: 'Banjara Hills, Hyderabad',
         pinCode: '500034',
+        url: 'https://cityhospital.org',
+        registrationNumber: 'TGMC-123459',
         consultationFee: 500,
         about: 'Banjara Hills, Hyderabad'
       }
@@ -812,6 +841,7 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
       specializationId: specId,
       experience: expYrs,
       experienceYears: doc.experienceYears !== undefined ? Number(doc.experienceYears) : 5,
+      experienceStartDate: doc.experienceStartDate || doc.experienceDate || '',
       status: status,
       approval: approval,
       rating: doc.rating !== undefined ? Number(doc.rating) : 0,
@@ -822,6 +852,7 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
       qualification: doc.qualification || '',
       address: doc.address || doc.about || '',
       pinCode: doc.pinCode || '',
+      url: doc.url || doc.website || '',
       consultationFee: doc.consultationFee !== undefined ? Number(doc.consultationFee) : 500,
       registrationNumber: doc.registrationNumber || '',
       registrationCouncil: doc.registrationCouncil || '',
@@ -1420,7 +1451,189 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
     this.isAddModalOpen = true;
   }
 
+  public get todayDate(): string {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  public onExperienceDateChange(dateStr: string): void {
+    this.formModel.experienceStartDate = dateStr;
+    if (!dateStr) return;
+    const start = new Date(dateStr);
+    const now = new Date();
+    if (!isNaN(start.getTime()) && start <= now) {
+      let years = now.getFullYear() - start.getFullYear();
+      const monthDiff = now.getMonth() - start.getMonth();
+      if (monthDiff < 0 || (monthDiff === 0 && now.getDate() < start.getDate())) {
+        years--;
+      }
+      if (years >= 0) {
+        this.formModel.experienceYears = years;
+      }
+    }
+  }
+
+  public validateDoctorForm(): string | null {
+    // 1. Approved doctors only check for editing
+    if (this.isEditing) {
+      const approval = (this.editingDoctor?.approval || this.formModel.approval || '').toUpperCase();
+      if (approval !== 'APPROVED') {
+        return 'Only approved doctors can be edited';
+      }
+    }
+
+    // 2. Doctor Name: Max 255 chars; letters, spaces and dots only
+    const name = (this.formModel.name || '').trim();
+    if (!name) {
+      return 'Doctor full name is required';
+    }
+    if (name.length > 255) {
+      return 'Doctor name must not exceed 255 characters';
+    }
+    const nameRegex = /^[A-Za-z\s.]+$/;
+    if (!nameRegex.test(name)) {
+      return 'Doctor name must contain letters, spaces and dots only';
+    }
+
+    // 3. Email: Max 255 chars; valid email; unique except current doctor
+    const email = (this.formModel.email || '').trim();
+    if (!email) {
+      return 'Please enter a valid email address';
+    }
+    if (email.length > 255) {
+      return 'Email address must not exceed 255 characters';
+    }
+    const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+    if (!emailRegex.test(email)) {
+      return 'Please enter a valid email address';
+    }
+    const currentDocId = Number(this.formModel.numericId || this.extractIdNumber(this.formModel.id) || (this.editingDoctor?.numericId || this.extractIdNumber(this.editingDoctor?.id)));
+    const duplicateEmail = this.doctors.find(d => {
+      const otherId = Number(d.numericId || this.extractIdNumber(d.id));
+      if (this.isEditing && otherId === currentDocId) return false;
+      return d.email && d.email.trim().toLowerCase() === email.toLowerCase();
+    });
+    if (duplicateEmail) {
+      return 'Email address is already in use by another doctor';
+    }
+
+    // 4. Mobile Number: Max 20 chars; +91 and 10 digits; first digit 6–9. ^\+91[6-9][0-9]{9}$
+    const phone = (this.formModel.phone || '').trim();
+    if (!phone) {
+      return 'Mobile number must start with 6, 7, 8, or 9 and be 10 digits';
+    }
+    if (phone.length > 20) {
+      return 'Mobile number must not exceed 20 characters';
+    }
+    const phoneRegex = /^\+91[6-9][0-9]{9}$/;
+    if (!phoneRegex.test(phone)) {
+      return 'Mobile number must start with 6, 7, 8, or 9 and be 10 digits';
+    }
+    const duplicatePhone = this.doctors.find(d => {
+      const otherId = Number(d.numericId || this.extractIdNumber(d.id));
+      if (this.isEditing && otherId === currentDocId) return false;
+      return d.phone && d.phone.trim() === phone;
+    });
+    if (duplicatePhone) {
+      return 'Mobile number is already in use by another doctor';
+    }
+
+    // 5. Gender: Enum: MALE, FEMALE, OTHER. Only the listed values are allowed.
+    const gender = (this.formModel.gender || '').trim().toUpperCase();
+    if (!['MALE', 'FEMALE', 'OTHER'].includes(gender)) {
+      return 'Gender must be MALE, FEMALE, or OTHER';
+    }
+
+    // 6. Hospital Name: Max 255 characters
+    const hospitalName = (this.formModel.hospitalName || '').trim();
+    if (hospitalName && hospitalName.length > 255) {
+      return 'Hospital name must not exceed 255 characters';
+    }
+
+    // 7. Pin Code: Max 10 chars; exactly 6 digits. ^[0-9]{6}$
+    const pinCode = (this.formModel.pinCode || '').trim();
+    if (!pinCode) {
+      return 'Pin code must be 6 digits';
+    }
+    if (pinCode.length > 10) {
+      return 'Pin code must not exceed 10 characters';
+    }
+    const pinRegex = /^[0-9]{6}$/;
+    if (!pinRegex.test(pinCode)) {
+      return 'Pin code must be 6 digits';
+    }
+
+    // 8. Address: Max 500 characters
+    const address = (this.formModel.address || '').trim();
+    if (address && address.length > 500) {
+      return 'Address must not exceed 500 characters';
+    }
+
+    // 9. URL: Valid URL format if provided
+    const url = (this.formModel.url || '').trim();
+    if (url) {
+      const urlRegex = /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/[^\s]*)?$/;
+      if (!urlRegex.test(url)) {
+        return 'Please enter a valid URL format';
+      }
+    }
+
+    // 10. Qualification: Max 255 characters
+    const qualification = (this.formModel.qualification || '').trim();
+    if (qualification && qualification.length > 255) {
+      return 'Qualification must not exceed 255 characters';
+    }
+
+    // 11. Consultation Fees: Number; >= 0
+    const fee = Number(this.formModel.consultationFee);
+    if (this.formModel.consultationFee === '' || this.formModel.consultationFee === null || this.formModel.consultationFee === undefined || isNaN(fee) || fee < 0) {
+      return 'Consultation fee must be greater than or equal to 0';
+    }
+
+    // 12. Professional Experience: yyyy-MM-dd; must not be in future
+    const expDate = (this.formModel.experienceStartDate || '').trim();
+    if (expDate) {
+      const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+      if (!dateRegex.test(expDate)) {
+        return 'Experience start date must be in yyyy-MM-dd format';
+      }
+      const parsedDate = new Date(expDate);
+      if (isNaN(parsedDate.getTime())) {
+        return 'Please enter a valid experience start date';
+      }
+      const today = new Date();
+      today.setHours(23, 59, 59, 999);
+      if (parsedDate > today) {
+        return 'Experience start date cannot be in the future';
+      }
+    }
+
+    // 13. Registration Number Uniqueness
+    const regNumber = (this.formModel.registrationNumber || '').trim();
+    if (regNumber) {
+      const duplicateReg = this.doctors.find(d => {
+        const otherId = Number(d.numericId || this.extractIdNumber(d.id));
+        if (this.isEditing && otherId === currentDocId) return false;
+        return d.registrationNumber && d.registrationNumber.trim().toLowerCase() === regNumber.toLowerCase();
+      });
+      if (duplicateReg) {
+        return 'Registration number is already in use by another doctor';
+      }
+    }
+
+    return null;
+  }
+
   public openEditModal(doctor: DoctorItem): void {
+    const approval = (doctor.approval || '').toUpperCase();
+    if (approval !== 'APPROVED') {
+      this.showToast('Only approved doctors can be edited', 'error');
+      return;
+    }
+
     this.isEditing = true;
     this.editingDoctor = doctor;
     const expNum = doctor.experienceYears || parseInt(doctor.experience) || 5;
@@ -1430,16 +1643,19 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
     this.formModel = {
       id: doctor.id,
       numericId: numId,
-      name: doctor.name,
+      name: doctor.name || '',
       email: doctor.email || '',
       phone: doctor.phone || '',
-      gender: doctor.gender || 'MALE',
+      gender: (doctor.gender || 'MALE').toUpperCase(),
       hospitalName: doctor.hospitalName || '',
       specializationId: specId,
       specialization: doctor.specialization || this.getSpecializationNameById(specId),
       qualification: doctor.qualification || '',
       address: doctor.address || doctor.about || '',
       pinCode: doctor.pinCode || '',
+      url: doctor.url || '',
+      registrationNumber: doctor.registrationNumber || '',
+      experienceStartDate: doctor.experienceStartDate || '',
       consultationFee: doctor.consultationFee !== undefined ? doctor.consultationFee : 500,
       experienceYears: expNum,
       patientsCount: doctor.patientsCount,
@@ -1468,47 +1684,52 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
       } catch (e) {}
     }
     this.formError = '';
-    const name = this.formModel.name ? this.formModel.name.trim() : '';
 
-    if (!name) {
-      this.formError = 'Please enter doctor full name.';
-      this.showToast('Please enter doctor full name', 'error');
+    const validationError = this.validateDoctorForm();
+    if (validationError) {
+      this.formError = validationError;
+      this.showToast(validationError, 'error');
       return;
     }
 
+    const name = this.formModel.name ? this.formModel.name.trim() : '';
+
     if (this.isEditing) {
-      const doctorIdNum = Number(this.formModel.numericId || this.extractIdNumber(this.formModel.id) || 1);
+      const doctorIdNum = Number(this.formModel.numericId || this.extractIdNumber(this.formModel.id) || (this.editingDoctor?.numericId || this.extractIdNumber(this.editingDoctor?.id)) || 1);
       const specId = Number(this.formModel.specializationId || this.getSpecializationIdByName(this.formModel.specialization) || 1);
       const specName = this.formModel.specialization || this.getSpecializationNameById(specId);
       const initial = this.getDoctorInitial(name);
       const expYears = Number(this.formModel.experienceYears) || 1;
 
+      // Partial update: Only fields included in the request are updated.
+      // Omitted/null fields remain unchanged according to the supplied contract.
+      // Cannot edit: Approval status, active/inactive status, Keycloak user ID and Doctor ID.
       const updatedFields: Partial<DoctorItem> = {
         name: name,
         initial: initial,
         email: (this.formModel.email || '').trim(),
         phone: (this.formModel.phone || '').trim(),
-        gender: this.formModel.gender || 'MALE',
+        gender: (this.formModel.gender || 'MALE').toUpperCase(),
         hospitalName: (this.formModel.hospitalName || '').trim(),
         specialization: specName,
         specializationId: specId,
         qualification: (this.formModel.qualification || '').trim(),
-        address: (this.formModel.address || this.formModel.about || '').trim(),
+        address: (this.formModel.address || '').trim(),
         pinCode: (this.formModel.pinCode || '').trim(),
-        consultationFee: Number(this.formModel.consultationFee) || 500,
+        consultationFee: Number(this.formModel.consultationFee) || 0,
         experience: `${expYears} yrs`,
         experienceYears: expYears,
-        status: (this.formModel.status as 'Active' | 'Inactive') || 'Active',
-        about: (this.formModel.address || this.formModel.about || '').trim()
+        experienceStartDate: (this.formModel.experienceStartDate || '').trim(),
+        registrationNumber: (this.formModel.registrationNumber || '').trim(),
+        url: (this.formModel.url || '').trim(),
+        about: (this.formModel.address || '').trim()
       };
 
       try {
-        // Direct update to editingDoctor reference if present
         if (this.editingDoctor) {
           Object.assign(this.editingDoctor, updatedFields);
         }
 
-        // Find doctor index in local list
         let idx = this.editingDoctor ? this.doctors.indexOf(this.editingDoctor) : -1;
         if (idx === -1) {
           idx = this.doctors.findIndex(d =>
@@ -1526,21 +1747,15 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
           };
         } else if (this.editingDoctor) {
           this.doctors.unshift(this.editingDoctor);
-        } else if (this.doctors.length > 0) {
-          this.doctors[0] = {
-            ...this.doctors[0],
-            ...updatedFields
-          };
         }
 
-        if (this.selectedDoctor) {
+        if (this.selectedDoctor && (Number(this.selectedDoctor.numericId || this.extractIdNumber(this.selectedDoctor.id)) === doctorIdNum)) {
           this.selectedDoctor = {
             ...this.selectedDoctor,
             ...updatedFields
           };
         }
 
-        // Persist immediately and refresh UI
         this.saveDoctorOverride(doctorIdNum, updatedFields);
         this.saveToStorage();
         this.updateStats();
@@ -1552,20 +1767,25 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
         this.showToast('Doctor profile updated successfully', 'success');
       }
 
-      // Send update payload to backend API
-      const payload = {
-        id: doctorIdNum,
-        fullName: name,
-        email: (this.formModel.email || '').trim(),
-        mobileNumber: (this.formModel.phone || '').trim(),
-        gender: this.formModel.gender || 'MALE',
-        hospitalName: (this.formModel.hospitalName || '').trim(),
-        specializationId: specId,
-        qualification: (this.formModel.qualification || '').trim(),
-        address: (this.formModel.address || this.formModel.about || '').trim(),
-        pinCode: (this.formModel.pinCode || '').trim(),
-        consultationFee: Number(this.formModel.consultationFee) || 500
+      // Send partial update payload to backend API (only populated fields, without approval status, status, or keycloak ID)
+      const payload: any = {
+        id: doctorIdNum
       };
+      if (name) payload.fullName = name;
+      if (this.formModel.email?.trim()) payload.email = this.formModel.email.trim();
+      if (this.formModel.phone?.trim()) payload.mobileNumber = this.formModel.phone.trim();
+      if (this.formModel.gender) payload.gender = this.formModel.gender.trim().toUpperCase();
+      if (this.formModel.hospitalName?.trim()) payload.hospitalName = this.formModel.hospitalName.trim();
+      if (specId) payload.specializationId = specId;
+      if (this.formModel.qualification?.trim()) payload.qualification = this.formModel.qualification.trim();
+      if (this.formModel.address?.trim()) payload.address = this.formModel.address.trim();
+      if (this.formModel.pinCode?.trim()) payload.pinCode = this.formModel.pinCode.trim();
+      if (this.formModel.consultationFee !== undefined && this.formModel.consultationFee !== '') {
+        payload.consultationFee = Number(this.formModel.consultationFee);
+      }
+      if (this.formModel.experienceStartDate?.trim()) payload.experienceStartDate = this.formModel.experienceStartDate.trim();
+      if (this.formModel.registrationNumber?.trim()) payload.registrationNumber = this.formModel.registrationNumber.trim();
+      if (this.formModel.url?.trim()) payload.url = this.formModel.url.trim();
 
       this.webApiService.EditDoctor(payload).pipe(
         takeUntil(this.destroy$)
@@ -1589,15 +1809,6 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
         }
       });
 
-      // Also persist status toggle if needed
-      if (this.formModel.status) {
-        const isActive = this.formModel.status === 'Active';
-        this.webApiService.ToggleDoctorStatus({ id: doctorIdNum, isActive }).subscribe({
-          next: (r: any) => console.log('ToggleDoctorStatus response:', r),
-          error: (e: any) => console.warn('ToggleDoctorStatus notice:', e)
-        });
-      }
-
       return;
     }
 
@@ -1608,6 +1819,7 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
     const newId = String(nextNum);
     const specId = Number(this.formModel.specializationId || this.getSpecializationIdByName(this.formModel.specialization) || 1);
     const specName = this.formModel.specialization || this.getSpecializationNameById(specId);
+    const expYears = Number(this.formModel.experienceYears || 1);
 
     const newDoctor: DoctorItem = {
       id: newId,
@@ -1618,20 +1830,23 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
       patientsCount: Number(this.formModel.patientsCount) || 0,
       specialization: specName,
       specializationId: specId,
-      experience: `${this.formModel.experienceYears || 1} yrs`,
-      experienceYears: Number(this.formModel.experienceYears || 1),
+      experience: `${expYears} yrs`,
+      experienceYears: expYears,
+      experienceStartDate: (this.formModel.experienceStartDate || '').trim(),
+      registrationNumber: (this.formModel.registrationNumber || '').trim(),
+      url: (this.formModel.url || '').trim(),
       status: this.formModel.status || 'Active',
       approval: this.formModel.approval || 'Approved',
       rating: Number(this.formModel.rating) || 4.8,
-      email: this.formModel.email || '',
-      phone: this.formModel.phone || '',
-      gender: this.formModel.gender || 'MALE',
-      hospitalName: this.formModel.hospitalName || '',
-      qualification: this.formModel.qualification || '',
-      address: this.formModel.address || '',
-      pinCode: this.formModel.pinCode || '',
+      email: (this.formModel.email || '').trim(),
+      phone: (this.formModel.phone || '').trim(),
+      gender: (this.formModel.gender || 'MALE').toUpperCase(),
+      hospitalName: (this.formModel.hospitalName || '').trim(),
+      qualification: (this.formModel.qualification || '').trim(),
+      address: (this.formModel.address || '').trim(),
+      pinCode: (this.formModel.pinCode || '').trim(),
       consultationFee: Number(this.formModel.consultationFee) || 500,
-      about: this.formModel.about || this.formModel.address || ''
+      about: (this.formModel.address || '').trim()
     };
 
     this.doctors.unshift(newDoctor);
@@ -1673,6 +1888,9 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
       qualification: 'MBBS',
       address: '',
       pinCode: '',
+      url: '',
+      registrationNumber: '',
+      experienceStartDate: '',
       consultationFee: 500,
       experienceYears: 5,
       patientsCount: 0,
