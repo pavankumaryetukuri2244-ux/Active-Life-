@@ -1384,6 +1384,7 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
 
   public markDocAsVerified(doc: VerificationDocument, doctor: DoctorApprovalItem): void {
     if (!doc || !doctor) return;
+    const numId = doctor.numericId || this.extractNumber(doctor.id);
     doc.status = 'Verified';
     if (!doc.verifiedDate) {
       doc.verifiedDate = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -1395,7 +1396,7 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
     const docIndex = (doctor.documents || []).findIndex(d => d.name === doc.name);
     const targetDocId = doc.id !== undefined
       ? Number(doc.id)
-      : (doctor.numericId ? (Number(doctor.numericId) * 10 + (docIndex >= 0 ? docIndex + 1 : 1)) : 2);
+      : (numId ? (Number(numId) * 10 + (docIndex >= 0 ? docIndex + 1 : 1)) : 2);
 
     this.webApiService.VerifyDoctorDocument({
       documentId: targetDocId,
