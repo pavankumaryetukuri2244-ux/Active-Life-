@@ -682,7 +682,7 @@ export class WebapiService {
     return this.Http.post<any>(url, payload, { headers });
   }
 
-  public VerifyDoctorDocument(body: { doctorId: number; documentId?: number; documentType?: string; status: 'VERIFIED' | 'PENDING' | 'REJECTED' }) {
+  public VerifyDoctorDocument(body: { documentId: number | string; isVerified?: boolean; [key: string]: any }) {
     const token = localStorage.getItem('accessToken');
     let headers = new HttpHeaders({
       'Content-Type': 'application/json'
@@ -692,10 +692,8 @@ export class WebapiService {
       headers = headers.set('Authorization', 'Bearer ' + cleanToken);
     }
     const payload = {
-      doctorId: Number(body.doctorId),
-      documentId: body.documentId ? Number(body.documentId) : undefined,
-      documentType: body.documentType,
-      status: body.status || 'VERIFIED'
+      documentId: Number(body.documentId),
+      isVerified: body.isVerified !== undefined ? Boolean(body.isVerified) : true
     };
     const url = `${this.WebApi}/admin/api/doctor-approvals/verify-document`;
     console.log('[WebapiService] POST VerifyDoctorDocument:', url, payload);

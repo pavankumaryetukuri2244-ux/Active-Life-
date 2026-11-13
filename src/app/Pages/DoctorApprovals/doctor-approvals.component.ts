@@ -3,6 +3,7 @@ import { Subject } from 'rxjs';
 import { takeUntil, finalize, timeout } from 'rxjs/operators';
 import { WebapiService } from '../../services/webapi.service';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { environment } from '../../../environments/environment';
 
 export interface VerificationDocument {
   id?: number;
@@ -576,6 +577,7 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
         licenseNumber: 'TGMC-123456',
         documents: [
           {
+            id: 1,
             name: 'Medical Council Registration (TELANGANA_MEDICAL_COUNCIL)',
             type: 'PNG',
             status: 'Pending',
@@ -586,6 +588,7 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
             expiryDate: '27 Oct 2036'
           },
           {
+            id: 2,
             name: 'Government Medical ID / Certificate',
             type: 'JPG',
             status: 'Pending',
@@ -617,8 +620,8 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
         qualification: 'MBBS',
         licenseNumber: 'TGMC-1234',
         documents: [
-          { name: 'Medical Board License (TELANGANA_MEDICAL_COUNCIL)', type: 'PNG', status: 'Pending', verifiedDate: '' },
-          { name: 'Degree Certificate', type: 'PNG', status: 'Pending', verifiedDate: '' }
+          { id: 3, name: 'Medical Board License (TELANGANA_MEDICAL_COUNCIL)', type: 'PNG', status: 'Pending', verifiedDate: '' },
+          { id: 4, name: 'Degree Certificate', type: 'PNG', status: 'Pending', verifiedDate: '' }
         ],
         notes: 'TELANGANA_MEDICAL_COUNCIL • Verified Practitioner'
       },
@@ -641,7 +644,7 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
         qualification: 'MBBS',
         licenseNumber: 'TGMC-121',
         documents: [
-          { name: 'Registration Proof (TELANGANA_MEDICAL_COUNCIL)', type: 'PNG', status: 'Pending', verifiedDate: '' }
+          { id: 5, name: 'Registration Proof (TELANGANA_MEDICAL_COUNCIL)', type: 'PNG', status: 'Pending', verifiedDate: '' }
         ],
         notes: 'TELANGANA_MEDICAL_COUNCIL'
       },
@@ -663,7 +666,7 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
         qualification: 'MBBS',
         licenseNumber: 'TGMC-100',
         documents: [
-          { name: 'State Medical Council Certificate', type: 'PNG', status: 'Pending', verifiedDate: '' }
+          { id: 6, name: 'State Medical Council Certificate', type: 'PNG', status: 'Pending', verifiedDate: '' }
         ],
         notes: 'TELANGANA_MEDICAL_COUNCIL'
       },
@@ -685,7 +688,7 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
         qualification: 'MBBS',
         licenseNumber: 'TGMC-12309',
         documents: [
-          { name: 'Medical Council License', type: 'PNG', status: 'Pending', verifiedDate: '' }
+          { id: 7, name: 'Medical Council License', type: 'PNG', status: 'Pending', verifiedDate: '' }
         ],
         notes: 'TELANGANA_MEDICAL_COUNCIL'
       },
@@ -707,8 +710,8 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
         qualification: 'MBBS',
         licenseNumber: 'TGMC-8907',
         documents: [
-          { name: 'State Medical Board License', type: 'JPG', status: 'Pending', verifiedDate: '' },
-          { name: 'Specialty Certification', type: 'JPG', status: 'Pending', verifiedDate: '' }
+          { id: 8, name: 'State Medical Board License', type: 'JPG', status: 'Pending', verifiedDate: '' },
+          { id: 9, name: 'Specialty Certification', type: 'JPG', status: 'Pending', verifiedDate: '' }
         ],
         notes: 'TELANGANA_MEDICAL_COUNCIL'
       },
@@ -730,7 +733,7 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
         qualification: 'MBBS',
         licenseNumber: 'TGMC-12342',
         documents: [
-          { name: 'Medical Council Registration', type: 'PNG', status: 'Pending', verifiedDate: '' }
+          { id: 10, name: 'Medical Council Registration', type: 'PNG', status: 'Pending', verifiedDate: '' }
         ],
         notes: 'TELANGANA_MEDICAL_COUNCIL'
       },
@@ -752,7 +755,7 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
         qualification: 'MBBS',
         licenseNumber: 'test',
         documents: [
-          { name: 'Registration Certificate (MCI)', type: 'PNG', status: 'Pending', verifiedDate: '' }
+          { id: 11, name: 'Registration Certificate (MCI)', type: 'PNG', status: 'Pending', verifiedDate: '' }
         ],
         notes: 'Medical Council of India (MCI)'
       }
@@ -951,13 +954,17 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
       const isLocallyViewed = this.isDocViewed(String(docId), docName);
       const isVerified = isBackendVerified || isLocallyViewed;
 
+      const rawUrl = d.documentUrl || d.url || '';
+      const fullUrl = (rawUrl && rawUrl.startsWith('/')) ? (`${environment.serviceUrl}${rawUrl}`) : rawUrl;
+      const targetDocId = d.id !== undefined ? Number(d.id) : (d.documentId !== undefined ? Number(d.documentId) : (index * 10 + dIdx + 1));
+
       return {
-        id: d.id || d.documentId,
+        id: targetDocId,
         name: docName,
-        type: (d.documentUrl && d.documentUrl.toLowerCase().endsWith('.pdf')) ? 'PDF' : ((d.documentUrl && d.documentUrl.toLowerCase().endsWith('.png')) ? 'PNG' : 'JPG'),
+        type: (rawUrl && rawUrl.toLowerCase().endsWith('.pdf')) ? 'PDF' : ((rawUrl && rawUrl.toLowerCase().endsWith('.png')) ? 'PNG' : 'JPG'),
         status: isVerified ? 'Verified' : 'Pending',
         verifiedDate: isVerified ? (d.verifiedAt || d.uploadedAt ? new Date(d.verifiedAt || d.uploadedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Verified') : '',
-        url: d.documentUrl || d.url || '',
+        url: fullUrl,
         certificateNumber: d.certificateNumber || doc.registrationNumber || `TGMC-${10000 + index}`,
         issuer: d.issuer || doc.registrationCouncil || 'Telangana State Medical Council (TSMC)',
         issueDate: doc.createdAt ? new Date(doc.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Oct 28, 2026',
@@ -967,6 +974,7 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
 
     const fallbackDocs: VerificationDocument[] = [
       {
+        id: Number(doc.id ? Number(doc.id) * 10 + 1 : 1),
         name: 'Medical Council Registration (' + (doc.registrationCouncil || 'TELANGANA_MEDICAL_COUNCIL') + ')',
         type: 'PNG',
         status: this.isDocViewed(String(docId), 'Medical Council Registration (' + (doc.registrationCouncil || 'TELANGANA_MEDICAL_COUNCIL') + ')') ? 'Verified' : 'Pending',
@@ -977,6 +985,7 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
         expiryDate: 'Oct 27, 2036'
       },
       {
+        id: Number(doc.id ? Number(doc.id) * 10 + 2 : 2),
         name: 'Government Medical ID / Certificate',
         type: 'JPG',
         status: this.isDocViewed(String(docId), 'Government Medical ID / Certificate') ? 'Verified' : 'Pending',
@@ -1381,19 +1390,36 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
     }
     this.recordViewedDoc(String(doctor.id), doc.name);
 
-    // Call backend API to record document verification
-    const numId = doctor.numericId || this.extractNumber(doctor.id);
-    if (numId) {
-      this.webApiService.VerifyDoctorDocument({
-        doctorId: Number(numId),
-        documentId: doc.id ? Number(doc.id) : undefined,
-        documentType: doc.name,
-        status: 'VERIFIED'
-      }).subscribe({
-        next: (res) => console.log('[DoctorApprovals] VerifyDoctorDocument API success:', res),
-        error: (err) => console.warn('[DoctorApprovals] VerifyDoctorDocument API notice (backend may be pending):', err)
-      });
-    }
+    // Call backend API: POST /admin/api/doctor-approvals/verify-document
+    // Request body: { "documentId": 2, "isVerified": true }
+    const docIndex = (doctor.documents || []).findIndex(d => d.name === doc.name);
+    const targetDocId = doc.id !== undefined
+      ? Number(doc.id)
+      : (doctor.numericId ? (Number(doctor.numericId) * 10 + (docIndex >= 0 ? docIndex + 1 : 1)) : 2);
+
+    this.webApiService.VerifyDoctorDocument({
+      documentId: targetDocId,
+      isVerified: true
+    }).subscribe({
+      next: (res: any) => {
+        console.log('[DoctorApprovals] VerifyDoctorDocument API success:', res);
+        if (res?.data?.verifiedAt) {
+          doc.verifiedDate = new Date(res.data.verifiedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+        if (res?.data?.documentUrl) {
+          const rawUrl = res.data.documentUrl;
+          doc.url = rawUrl.startsWith('http') ? rawUrl : (`${environment.serviceUrl}${rawUrl}`);
+        }
+        if (res?.message) {
+          this.showToast(res.message, 'success');
+        }
+        this.saveToStorage();
+        this.cdr.markForCheck();
+      },
+      error: (err: any) => {
+        console.warn('[DoctorApprovals] VerifyDoctorDocument API error:', err);
+      }
+    });
 
     const verifiedCount = (doctor.documents || []).filter(d => d.status === 'Verified').length;
     const totalCount = doctor.totalDocsCount || (doctor.documents?.length || 1);
