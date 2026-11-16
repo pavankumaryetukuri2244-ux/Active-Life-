@@ -801,7 +801,7 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
       const statusOverridesStr = localStorage.getItem('activeLife_doctorStatusOverrides_v1');
       if (statusOverridesStr) {
         const statusOverrides = JSON.parse(statusOverridesStr);
-        const ov = statusOverrides[String(rawNumId)] || statusOverrides[doctorId] || (cleanName ? statusOverrides[cleanName.trim().toLowerCase()] : undefined);
+        const ov = statusOverrides[String(rawNumId)] || statusOverrides[doctorId];
         if (ov) {
           approval = ov;
           if (ov === 'Approved') status = 'Active';
@@ -991,7 +991,6 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
       overrides[String(doctor.id)] = status;
       const numId = this.extractIdNumber(doctor.id);
       if (numId) overrides[String(numId)] = status;
-      if (doctor.name) overrides[doctor.name.trim().toLowerCase()] = status;
       localStorage.setItem('activeLife_doctorStatusOverrides_v1', JSON.stringify(overrides));
     } catch (e) {}
 

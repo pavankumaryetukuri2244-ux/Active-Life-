@@ -217,12 +217,22 @@
                 <button
                   type="button"
                   class="da-btn-action da-btn-approve flex-grow-1"
+                  [class.da-btn-approve-locked]="item.status === 'Pending' && item.verifiedDocsCount < item.totalDocsCount"
+                  [title]="item.status === 'Pending' && item.verifiedDocsCount < item.totalDocsCount ? 'View all certificates first before approving' : 'Approve Doctor'"
                   (click)="approve(item)">
-                  <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <polyline points="9 12 11 14 15 10"></polyline>
-                  </svg>
-                  <span>Approve</span>
+                  @if (item.status === 'Pending' && item.verifiedDocsCount < item.totalDocsCount) {
+                    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                    <span>Approve (View Certs)</span>
+                  } @else {
+                    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <polyline points="9 12 11 14 15 10"></polyline>
+                    </svg>
+                    <span>Approve</span>
+                  }
                 </button>
               }
             </div>
@@ -391,8 +401,22 @@
             <button
               type="button"
               class="btn btn-success d-inline-flex align-items-center gap-2"
+              [disabled]="selectedItem.status === 'Pending' && selectedItem.verifiedDocsCount < selectedItem.totalDocsCount"
+              [title]="selectedItem.verifiedDocsCount < selectedItem.totalDocsCount ? 'Please view all certificates first' : 'Approve Doctor'"
               (click)="approve(selectedItem)">
-              Approve Doctor
+              @if (selectedItem.status === 'Pending' && selectedItem.verifiedDocsCount < selectedItem.totalDocsCount) {
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+                <span>View Certs to Approve ({{ selectedItem.verifiedDocsCount }}/{{ selectedItem.totalDocsCount }})</span>
+              } @else {
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="9 12 11 14 15 10"></polyline>
+                </svg>
+                <span>Approve Doctor</span>
+              }
             </button>
           }
         </div>
@@ -630,9 +654,14 @@
               (click)="openRejectModal(activeCertificateDoctor)">
               Reject Application
             </button>
-            <button type="button" class="btn btn-sm btn-success"
+            <button type="button" class="btn btn-sm btn-success d-inline-flex align-items-center gap-1"
+              [disabled]="activeCertificateDoctor.status === 'Pending' && activeCertificateDoctor.verifiedDocsCount < activeCertificateDoctor.totalDocsCount"
+              [title]="activeCertificateDoctor.verifiedDocsCount < activeCertificateDoctor.totalDocsCount ? 'View all certificates first' : 'Approve Doctor'"
               (click)="approve(activeCertificateDoctor)">
-              Approve Doctor
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              <span>Approve Doctor</span>
             </button>
           </div>
         </div>

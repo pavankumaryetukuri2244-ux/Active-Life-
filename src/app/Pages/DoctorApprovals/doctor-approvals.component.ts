@@ -38,6 +38,10 @@ export interface DoctorApprovalItem {
   licenseNumber?: string;
   documents?: VerificationDocument[];
   notes?: string;
+  registrationStatus?: string;
+  approvalStatus?: string;
+  approval?: string;
+  [key: string]: any;
 }
 
 @Component({
@@ -264,11 +268,22 @@ export interface DoctorApprovalItem {
       background: #FFFFFF !important;
       border-color: #BBF7D0 !important;
       color: #16A34A !important;
+      transition: all 0.2s ease !important;
     }
     .da-btn-approve:hover {
       background: #F0FDF4 !important;
       border-color: #86EFAC !important;
       color: #15803D !important;
+    }
+    .da-btn-approve-locked {
+      background: #F8FAFC !important;
+      border-color: #E2E8F0 !important;
+      color: #64748B !important;
+    }
+    .da-btn-approve-locked:hover {
+      background: #FEF3C7 !important;
+      border-color: #FCD34D !important;
+      color: #D97706 !important;
     }
 
     /* Empty State - Clean, centered, non-stretching */
@@ -763,8 +778,7 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
     return list.map(item => {
       const numId = this.extractNumber(item.id);
       const ov = overrides[String(item.id)] ||
-                 (numId ? overrides[String(numId)] : undefined) ||
-                 (item.name ? overrides[item.name.trim().toLowerCase()] : undefined);
+                 (numId ? overrides[String(numId)] : undefined);
       if (ov) {
         item.status = ov;
       }
@@ -775,7 +789,6 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
             if (!doc.verifiedDate) {
               doc.verifiedDate = 'Verified';
             }
-            this.recordViewedDoc(String(item.id), doc.name);
           }
           item.verifiedDocsCount = item.documents.length;
           item.totalDocsCount = item.documents.length;
@@ -791,11 +804,8 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
               doc.verifiedDate = '';
             }
           }
-          item.verifiedDocsCount = item.documents.filter(d => d.status === 'Verified').length;
+          item.verifiedDocsCount = item.documents.filter((d: VerificationDocument) => d.status === 'Verified').length;
           item.totalDocsCount = item.documents.length;
-        }
-        if (item.verifiedDocsCount >= item.totalDocsCount && item.totalDocsCount > 0) {
-          item.status = 'Approved';
         }
       }
       return item;
@@ -880,10 +890,16 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
           this.requests = this.sortApprovalsAscending(parsed.map((item: DoctorApprovalItem) => {
             const numId = this.extractNumber(item.id);
             const ov = overrides[String(item.id)] ||
-                       (numId ? overrides[String(numId)] : undefined) ||
-                       (item.name ? overrides[item.name.trim().toLowerCase()] : undefined);
+                       (numId ? overrides[String(numId)] : undefined);
             if (ov) {
               item.status = ov;
+            } else {
+              const regStatus = (item.registrationStatus || item.approvalStatus || item.approval || '').toString().toUpperCase();
+              if (regStatus === 'APPROVED') {
+                item.status = 'Approved';
+              } else {
+                item.status = 'Pending';
+              }
             }
             if (item.status === 'Approved') {
               if (item.documents) {
@@ -892,7 +908,6 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
                   if (!doc.verifiedDate) {
                     doc.verifiedDate = 'Verified';
                   }
-                  this.recordViewedDoc(String(item.id), doc.name);
                 }
                 item.verifiedDocsCount = item.documents.length;
                 item.totalDocsCount = item.documents.length;
@@ -908,11 +923,8 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
                     doc.verifiedDate = '';
                   }
                 }
-                item.verifiedDocsCount = item.documents.filter(d => d.status === 'Verified').length;
+                item.verifiedDocsCount = item.documents.filter((d: VerificationDocument) => d.status === 'Verified').length;
                 item.totalDocsCount = item.documents.length;
-              }
-              if (item.verifiedDocsCount >= item.totalDocsCount && item.totalDocsCount > 0) {
-                item.status = 'Approved';
               }
             }
             return item;
@@ -942,17 +954,23 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
     const docId = doc.id ? String(doc.id) : `REQ-${101 + index}`;
     const numId = this.extractNumber(docId);
     const overrides = this.loadStatusOverrides();
+    // Strictly match override by doctor unique ID or numeric ID; NEVER match by doctor name!
     const localOverride = overrides[String(docId)] ||
-                          (numId ? overrides[String(numId)] : undefined) ||
-                          (cleanName ? overrides[cleanName.trim().toLowerCase()] : undefined);
+                          (numId ? overrides[String(numId)] : undefined);
 
     let status: 'Pending' | 'Approved' | 'Rejected' = 'Pending';
-    const regStatus = (doc.registrationStatus || doc.status || '').toString().toUpperCase();
+    const regStatus = (doc.registrationStatus || doc.approvalStatus || doc.approval || '').toString().toUpperCase();
     if (localOverride) {
       status = localOverride;
     } else if (regStatus === 'APPROVED') {
       status = 'Approved';
     } else if (regStatus === 'REJECTED') {
+      status = 'Rejected';
+    } else if (regStatus === 'PENDING') {
+      status = 'Pending';
+    } else if (doc.status && doc.status.toString().toUpperCase() === 'APPROVED') {
+      status = 'Approved';
+    } else if (doc.status && doc.status.toString().toUpperCase() === 'REJECTED') {
       status = 'Rejected';
     } else {
       status = 'Pending';
@@ -1018,7 +1036,7 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
     const finalDocs = mappedDocuments.length > 0 ? mappedDocuments : fallbackDocs;
     let finalVerifiedCount = backendVerifiedDocs !== undefined 
       ? Number(backendVerifiedDocs) 
-      : finalDocs.filter(d => d.status === 'Verified').length;
+      : finalDocs.filter((d: VerificationDocument) => d.status === 'Verified').length;
     let finalTotalCount = backendTotalDocs !== undefined 
       ? Number(backendTotalDocs) 
       : Math.max(finalDocs.length, 1);
@@ -1029,15 +1047,11 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
         if (!d.verifiedDate) {
           d.verifiedDate = 'Verified';
         }
-        this.recordViewedDoc(String(docId), d.name);
       });
       finalVerifiedCount = finalDocs.length;
       finalTotalCount = finalDocs.length;
-    } else if (status === 'Pending') {
-      if (finalVerifiedCount >= finalTotalCount && finalTotalCount > 0) {
-        status = 'Approved';
-      }
     }
+    // Note: Pending doctors must remain Pending until explicitly accepted/approved by admin!
 
     return {
       id: doc.id ? String(doc.id) : `REQ-${101 + index}`,
@@ -1075,22 +1089,18 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
     try {
       const stored = localStorage.getItem('activeLife_doctorStatusOverrides_v1');
       if (stored) {
-        Object.assign(overrides, JSON.parse(stored));
-      }
-    } catch {}
-    try {
-      const dmStored = localStorage.getItem('activeLife_doctorManagement_live_v2');
-      if (dmStored) {
-        const dmList = JSON.parse(dmStored);
-        if (Array.isArray(dmList)) {
-          for (const d of dmList) {
-            if (d.approval && (d.approval === 'Approved' || d.approval === 'Rejected' || d.approval === 'Pending')) {
-              if (d.id) overrides[String(d.id)] = d.approval;
-              const dNum = this.extractNumber(d.id);
-              if (dNum) overrides[String(dNum)] = d.approval;
-              if (d.name) overrides[d.name.trim().toLowerCase()] = d.approval;
-            }
+        const parsed = JSON.parse(stored);
+        let hasInvalidKeys = false;
+        for (const key of Object.keys(parsed)) {
+          // Strictly keep only valid numeric IDs or REQ-xxx IDs. Discard any doctor names!
+          if (/^(REQ-\d+|\d+)$/i.test(key.trim())) {
+            overrides[key.trim()] = parsed[key];
+          } else {
+            hasInvalidKeys = true;
           }
+        }
+        if (hasInvalidKeys) {
+          localStorage.setItem('activeLife_doctorStatusOverrides_v1', JSON.stringify(overrides));
         }
       }
     } catch {}
@@ -1108,8 +1118,7 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
             const dNum = this.extractNumber(d.id);
             if (
               String(d.id) === String(item.id) ||
-              (numId && dNum === numId) ||
-              (d.name && item.name && d.name.trim().toLowerCase() === item.name.trim().toLowerCase())
+              (numId && dNum === numId)
             ) {
               return {
                 ...d,
@@ -1126,8 +1135,9 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
   }
 
   private saveStatusOverride(id: string, status: 'Pending' | 'Approved' | 'Rejected'): void {
+    if (!id || !/^(REQ-\d+|\d+)$/i.test(String(id).trim())) return;
     const overrides = this.loadStatusOverrides();
-    overrides[String(id)] = status;
+    overrides[String(id).trim()] = status;
     localStorage.setItem('activeLife_doctorStatusOverrides_v1', JSON.stringify(overrides));
   }
 
@@ -1164,34 +1174,15 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
   public approve(item: DoctorApprovalItem): void {
     if (!item) return;
 
-    // Per user requirement:
-    // "automatically when we click on the approve you are approving both documents"
-    // When admin clicks Approve, all documents for this doctor are approved/verified!
-    if (item.documents && item.documents.length > 0) {
-      item.documents.forEach((doc, idx) => {
-        doc.status = 'Verified';
-        if (!doc.verifiedDate) {
-          doc.verifiedDate = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-        }
-        this.recordViewedDoc(String(item.id), doc.name);
+    const totalCount = item.totalDocsCount || (item.documents?.length || 1);
+    const verifiedCount = (item.documents || []).filter((d: VerificationDocument) => d.status === 'Verified').length;
 
-        const targetDocId = doc.id !== undefined
-          ? Number(doc.id)
-          : (item.numericId ? (Number(item.numericId) * 10 + idx + 1) : (idx + 1));
-
-        // Call backend API to verify each document
-        this.webApiService.VerifyDoctorDocument({
-          documentId: targetDocId,
-          isVerified: true
-        }).subscribe({
-          next: (res: any) => console.log(`[DoctorApprovals] Auto-verified document ${doc.name}:`, res),
-          error: (err: any) => console.warn(`[DoctorApprovals] VerifyDoctorDocument API notice:`, err)
-        });
-      });
-      item.verifiedDocsCount = item.documents.length;
-      item.totalDocsCount = item.documents.length;
-    } else {
-      item.verifiedDocsCount = item.totalDocsCount;
+    // Strict requirement: Admin MUST view and verify all certificates before approving!
+    // Do NOT directly approve if certificates have not been viewed.
+    if (item.status === 'Pending' && verifiedCount < totalCount) {
+      this.showToast(`Please view all certificates (${verifiedCount}/${totalCount} verified) before approving ${item.name}.`, 'error');
+      this.review(item);
+      return;
     }
 
     const numId = item.numericId || this.extractNumber(item.id);
@@ -1345,18 +1336,17 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
 
     const verifiedCount = status === 'Approved'
       ? (item.totalDocsCount || (item.documents?.length || 2))
-      : (item.documents || []).filter(d => d.status === 'Verified').length;
+      : (item.documents || []).filter((d: VerificationDocument) => d.status === 'Verified').length;
     item.verifiedDocsCount = verifiedCount;
 
     this.requests = this.requests.map(r => {
       const rNum = r.numericId || this.extractNumber(r.id);
       if (
         String(r.id) === String(item.id) ||
-        (numId && rNum === numId) ||
-        (r.name && item.name && r.name.trim().toLowerCase() === item.name.trim().toLowerCase())
+        (numId && rNum === numId)
       ) {
         if (status === 'Approved' && r.documents) {
-          r.documents.forEach(d => {
+          r.documents.forEach((d: VerificationDocument) => {
             d.status = 'Verified';
             if (!d.verifiedDate) d.verifiedDate = 'Verified';
             this.recordViewedDoc(String(r.id), d.name);
@@ -1365,7 +1355,7 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
         return {
           ...r,
           status: status,
-          verifiedDocsCount: status === 'Approved' ? (r.totalDocsCount || (r.documents?.length || 2)) : (r.documents || []).filter(d => d.status === 'Verified').length,
+          verifiedDocsCount: status === 'Approved' ? (r.totalDocsCount || (r.documents?.length || 2)) : (r.documents || []).filter((d: VerificationDocument) => d.status === 'Verified').length,
           notes: (status === 'Rejected' && reason) ? reason : r.notes
         };
       }
@@ -1376,11 +1366,10 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
       const rNum = r.numericId || this.extractNumber(r.id);
       if (
         String(r.id) === String(item.id) ||
-        (numId && rNum === numId) ||
-        (r.name && item.name && r.name.trim().toLowerCase() === item.name.trim().toLowerCase())
+        (numId && rNum === numId)
       ) {
         if (status === 'Approved' && r.documents) {
-          r.documents.forEach(d => {
+          r.documents.forEach((d: VerificationDocument) => {
             d.status = 'Verified';
             if (!d.verifiedDate) d.verifiedDate = 'Verified';
             this.recordViewedDoc(String(r.id), d.name);
@@ -1389,7 +1378,7 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
         return {
           ...r,
           status: status,
-          verifiedDocsCount: status === 'Approved' ? (r.totalDocsCount || (r.documents?.length || 2)) : (r.documents || []).filter(d => d.status === 'Verified').length,
+          verifiedDocsCount: status === 'Approved' ? (r.totalDocsCount || (r.documents?.length || 2)) : (r.documents || []).filter((d: VerificationDocument) => d.status === 'Verified').length,
           notes: (status === 'Rejected' && reason) ? reason : r.notes
         };
       }
@@ -1398,7 +1387,6 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
 
     this.saveStatusOverride(String(item.id), status);
     if (numId) this.saveStatusOverride(String(numId), status);
-    if (item.name) this.saveStatusOverride(item.name.trim().toLowerCase(), status);
     this.saveToStorage();
     if (status === 'Approved' || status === 'Rejected') {
       this.syncWithDoctorManagement(item, status);
@@ -1470,31 +1458,22 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
       }
     });
 
-    const verifiedCount = (doctor.documents || []).filter(d => d.status === 'Verified').length;
+    const verifiedCount = (doctor.documents || []).filter((d: VerificationDocument) => d.status === 'Verified').length;
     const totalCount = doctor.totalDocsCount || (doctor.documents?.length || 1);
     doctor.verifiedDocsCount = verifiedCount;
 
     if (this.selectedItem && String(this.selectedItem.id) === String(doctor.id)) {
       this.selectedItem.verifiedDocsCount = verifiedCount;
     }
+    if (this.activeCertificateDoctor && String(this.activeCertificateDoctor.id) === String(doctor.id)) {
+      this.activeCertificateDoctor.verifiedDocsCount = verifiedCount;
+    }
 
     // Dynamic rule requested by user:
-    // "if the admin see only one certifcate put it has the pending if two and if all the certifactes are verfied then dipslay the approved"
+    // Admin views certificates -> when all certificates are verified, inform admin they can now approve!
     if (doctor.status === 'Pending') {
       if (verifiedCount >= totalCount && totalCount > 0) {
-        doctor.status = 'Approved';
-        this.saveStatusOverride(String(doctor.id), 'Approved');
-        if (numId) this.saveStatusOverride(String(numId), 'Approved');
-        this.syncWithDoctorManagement(doctor, 'Approved');
-
-        // Automatically update approval status in backend when all certificates are verified
-        if (numId) {
-          this.webApiService.UpdateDoctorApprovalStatus({ id: Number(numId), status: 'APPROVED' }).subscribe({
-            next: (res) => console.log('[DoctorApprovals] Auto-approved doctor after all certificates verified:', res),
-            error: (err) => console.warn('[DoctorApprovals] UpdateDoctorApprovalStatus API notice:', err)
-          });
-        }
-        this.showToast(`All certificates verified (${verifiedCount}/${totalCount})! ${doctor.name} is now Approved.`, 'success');
+        this.showToast(`All certificates verified (${verifiedCount}/${totalCount})! You can now click Approve to approve ${doctor.name}.`, 'success');
       }
     }
 
@@ -1527,7 +1506,7 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
           doc.verifiedDate = '';
         }
       }
-      item.verifiedDocsCount = item.documents.filter(d => d.status === 'Verified').length;
+      item.verifiedDocsCount = item.documents.filter((d: VerificationDocument) => d.status === 'Verified').length;
     }
     this.selectedItem = item;
     this.isReviewModalOpen = true;
