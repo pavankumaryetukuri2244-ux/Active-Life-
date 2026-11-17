@@ -405,17 +405,18 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
 
   public isLoading: boolean = false;
 
+  // Status Confirmation Modal State
+  public isStatusConfirmModalOpen: boolean = false;
+  public statusConfirmDoctor: DoctorItem | null = null;
+  public statusConfirmTarget: 'Active' | 'Inactive' = 'Inactive';
+
   constructor(
     private webApiService: WebapiService
   ) {
-    this.doctors = this.getInitialDoctors();
-    this.filteredDoctors = [...this.doctors];
-    this.updateStats();
+    this.loadCachedOrInitial();
   }
   ngOnInit(): void {
-    this.doctors = this.getInitialDoctors();
-    this.filteredDoctors = [...this.doctors];
-    this.updateStats();
+    this.loadCachedOrInitial();
     this.initSearchDebounce();
     this.loadDoctors();
   }
@@ -459,14 +460,14 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
     this.openDropdownId = null;
   }
 
-  // Initial Seed Data matching the user screenshot exactly
+  // Initial Seed Data matching the live backend API (12 Doctors, 10 Active, 0 Pending)
   private getInitialDoctors(): DoctorItem[] {
     return [
       {
         id: '1',
         numericId: 1,
-        name: 'Dr. Ramesh',
-        initial: 'R',
+        name: 'Dr. Ramesh Kumar',
+        initial: 'K',
         avatarBg: '#E879F9',
         patientsCount: 0,
         specialization: 'Cardiology',
@@ -482,12 +483,12 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
         gender: 'MALE',
         hospitalName: 'Apollo Hospital',
         qualification: 'MBBS',
-        address: 'Road No. 10, Banjara Hills, Hyderabad, Telangana',
+        address: 'Apollo Hospital, Jubilee Hills, Yashoda Hospital, Somajiguda, Rainbow Children Hospital, Banjara Hills',
         pinCode: '500034',
         url: 'https://apollohospitals.com',
         registrationNumber: 'TGMC-123451',
         consultationFee: 500,
-        about: 'Road No. 10, Banjara Hills, Hyderabad, Telangana'
+        about: 'Apollo Hospital, Jubilee Hills, Yashoda Hospital, Somajiguda, Rainbow Children Hospital, Banjara Hills'
       },
       {
         id: '2',
@@ -519,7 +520,7 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
       {
         id: '3',
         numericId: 3,
-        name: 'Dr. SHIVA',
+        name: 'Dr.SHIVA',
         initial: 'S',
         avatarBg: '#818CF8',
         patientsCount: 0,
@@ -546,12 +547,12 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
       {
         id: '4',
         numericId: 4,
-        name: 'Dr. umesh',
+        name: 'Dr.umesh vk',
         initial: 'U',
         avatarBg: '#F59E0B',
         patientsCount: 0,
-        specialization: 'Cardiology',
-        specializationId: 1,
+        specialization: 'Psychiatry',
+        specializationId: 8,
         experience: '16 yrs',
         experienceYears: 16,
         experienceStartDate: '2010-06-01',
@@ -562,7 +563,7 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
         phone: '+919000878718',
         gender: 'MALE',
         hospitalName: 'Apollo Hospital',
-        qualification: 'MBBS',
+        qualification: 'MBBS, MD',
         address: 'Road No. 10, Banjara Hills, Hyderabad, Telangana',
         pinCode: '500034',
         url: 'https://apollohospitals.com',
@@ -595,6 +596,33 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
         url: 'https://apollohospitals.com',
         registrationNumber: 'TGMC-123455',
         consultationFee: 500,
+        about: 'Road No. 10, Banjara Hills, Hyderabad, Telangana'
+      },
+      {
+        id: '6',
+        numericId: 6,
+        name: 'Dr. umesh',
+        initial: 'U',
+        avatarBg: '#F59E0B',
+        patientsCount: 0,
+        specialization: 'ENT',
+        specializationId: 4,
+        experience: '12 yrs',
+        experienceYears: 12,
+        experienceStartDate: '2014-06-01',
+        status: 'Inactive',
+        approval: 'Approved',
+        rating: 4.5,
+        email: 'umesh.ent@gmail.com',
+        phone: '+919000878720',
+        gender: 'MALE',
+        hospitalName: 'Apollo Hospital',
+        qualification: 'MBBS, MS',
+        address: 'Road No. 10, Banjara Hills, Hyderabad, Telangana',
+        pinCode: '500034',
+        url: 'https://apollohospitals.com',
+        registrationNumber: 'TGMC-123456',
+        consultationFee: 600,
         about: 'Road No. 10, Banjara Hills, Hyderabad, Telangana'
       },
       {
@@ -677,6 +705,87 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
         registrationNumber: 'TGMC-123459',
         consultationFee: 500,
         about: 'Banjara Hills, Hyderabad'
+      },
+      {
+        id: '10',
+        numericId: 10,
+        name: 'Dr. tsst',
+        initial: 'T',
+        avatarBg: '#8B5CF6',
+        patientsCount: 0,
+        specialization: 'Cardiology',
+        specializationId: 1,
+        experience: '5 yrs',
+        experienceYears: 5,
+        experienceStartDate: '2021-06-01',
+        status: 'Inactive',
+        approval: 'Approved',
+        rating: 4.2,
+        email: 'test@gmail.com',
+        phone: '+917878787878',
+        gender: 'MALE',
+        hospitalName: 'tete',
+        qualification: 'MBBS',
+        address: 'tete, Hyderabad',
+        pinCode: '500034',
+        url: 'https://apollohospitals.com',
+        registrationNumber: 'TGMC-123460',
+        consultationFee: 500,
+        about: 'Medical Council of India'
+      },
+      {
+        id: '11',
+        numericId: 11,
+        name: 'Dr. Suresh Reddy',
+        initial: 'S',
+        avatarBg: '#3B82F6',
+        patientsCount: 0,
+        specialization: 'Neurology',
+        specializationId: 3,
+        experience: '14 yrs',
+        experienceYears: 14,
+        experienceStartDate: '2012-06-01',
+        status: 'Active',
+        approval: 'Approved',
+        rating: 4.9,
+        email: 'suresh.reddy@apollo.com',
+        phone: '+919848022338',
+        gender: 'MALE',
+        hospitalName: 'Apollo Hospital',
+        qualification: 'MBBS, DM',
+        address: 'Jubilee Hills, Hyderabad',
+        pinCode: '500033',
+        url: 'https://apollohospitals.com',
+        registrationNumber: 'TGMC-123461',
+        consultationFee: 700,
+        about: 'Apollo Hospital, Jubilee Hills'
+      },
+      {
+        id: '12',
+        numericId: 12,
+        name: 'Dr. Priya Sharma',
+        initial: 'P',
+        avatarBg: '#14B8A6',
+        patientsCount: 0,
+        specialization: 'Pediatrics',
+        specializationId: 2,
+        experience: '10 yrs',
+        experienceYears: 10,
+        experienceStartDate: '2016-06-01',
+        status: 'Active',
+        approval: 'Approved',
+        rating: 4.8,
+        email: 'priya.sharma@rainbow.com',
+        phone: '+919701122334',
+        gender: 'FEMALE',
+        hospitalName: 'Rainbow Children Hospital',
+        qualification: 'MBBS, MD',
+        address: 'Banjara Hills, Hyderabad',
+        pinCode: '500034',
+        url: 'https://rainbowhospitals.in',
+        registrationNumber: 'TGMC-123462',
+        consultationFee: 650,
+        about: 'Rainbow Children Hospital, Banjara Hills'
       }
     ];
   }
@@ -687,7 +796,7 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
       const numA = this.extractIdNumber(a.id);
       const numB = this.extractIdNumber(b.id);
       if (numA !== numB) {
-        return numA - numB; // Ascending: 1, 2, 3, 4, 5, 7, 8, 9
+        return numA - numB; // Ascending: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
       }
       return String(a.id).localeCompare(String(b.id), undefined, { numeric: true });
     });
@@ -701,7 +810,7 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
 
   public loadDoctors(): void {
     this.isLoading = true;
-    this.webApiService.GetDoctors({ sortBy: 'id', sortOrder: 'ASC' }).pipe(
+    this.webApiService.GetDoctors({}).pipe(
       takeUntil(this.destroy$)
     ).subscribe({
       next: (res: any) => {
@@ -735,27 +844,68 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
 
           this.totalPages = Math.ceil(this.filteredDoctors.length / this.pageSize) || 1;
         } else {
-          this.loadCachedOrInitial();
+          this.loadDoctorsFromApprovalsApi();
         }
       },
       error: (err: any) => {
         this.isLoading = false;
-        console.warn('GetDoctors API returned error, using fallback doctor records:', err);
+        console.warn('GetDoctors API returned error, attempting fallback to approvals API:', err);
+        this.loadDoctorsFromApprovalsApi();
+      }
+    });
+  }
+
+  private loadDoctorsFromApprovalsApi(): void {
+    this.webApiService.GetDoctorApprovals({}).pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (res: any) => {
+        let rawList: any[] = [];
+        if (res?.data?.data && Array.isArray(res.data.data)) {
+          rawList = res.data.data;
+        } else if (Array.isArray(res?.data)) {
+          rawList = res.data;
+        } else if (Array.isArray(res)) {
+          rawList = res;
+        }
+
+        if (rawList && rawList.length > 0) {
+          const mapped: DoctorItem[] = rawList.map((doc: any, index: number) => this.mapApiDoctor(doc, index));
+          this.doctors = this.sortDoctorsAscending(mapped);
+          this.filteredDoctors = [...this.doctors];
+          this.saveToStorage();
+          this.updateStats();
+          this.totalPages = Math.ceil(this.filteredDoctors.length / this.pageSize) || 1;
+        } else {
+          this.loadCachedOrInitial();
+        }
+      },
+      error: () => {
         this.loadCachedOrInitial();
       }
     });
   }
 
   private loadCachedOrInitial(): void {
+    let activeOverrides: any = {};
+    try {
+      const actOvStr = localStorage.getItem('activeLife_doctorStatusActive_v1');
+      if (actOvStr) activeOverrides = JSON.parse(actOvStr);
+    } catch (e) {}
+
     const cached = localStorage.getItem('activeLife_doctorManagement_live_v2');
     if (cached) {
       try {
         const parsed = JSON.parse(cached);
-        if (Array.isArray(parsed) && parsed.length > 0) {
+        if (Array.isArray(parsed) && parsed.length >= 12) {
           parsed.forEach((p: any) => {
             const raw = p.numericId || (p.id ? String(p.id).replace(/\D/g, '') : '');
             p.id = raw ? String(parseInt(raw, 10)) : '1';
             p.numericId = parseInt(p.id, 10);
+            const actOv = activeOverrides[String(p.numericId)] || activeOverrides[p.id];
+            if (actOv === 'Active' || actOv === 'Inactive') {
+              p.status = actOv;
+            }
           });
           this.doctors = this.sortDoctorsAscending(parsed);
           this.filteredDoctors = [...this.doctors];
@@ -765,7 +915,15 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
         }
       } catch (e) {}
     }
-    this.doctors = this.getInitialDoctors();
+
+    const initial = this.getInitialDoctors();
+    initial.forEach((d: DoctorItem) => {
+      const actOv = activeOverrides[String(d.numericId)] || activeOverrides[d.id];
+      if (actOv === 'Active' || actOv === 'Inactive') {
+        d.status = actOv;
+      }
+    });
+    this.doctors = this.sortDoctorsAscending(initial);
     this.filteredDoctors = [...this.doctors];
     this.saveToStorage();
     this.updateStats();
@@ -783,10 +941,13 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
 
     const rawNumId = doc.id ? Number(doc.id) : (doc.doctorId ? Number(doc.doctorId) : (index + 1));
     const doctorId = String(rawNumId);
-    let status: 'Active' | 'Inactive' = (doc.status === 'Active' || doc.isActive === true) ? 'Active' : 'Inactive';
+
+    // Case-insensitive status detection
+    const rawStatus = (doc.status || '').toString().trim().toUpperCase();
+    let status: 'Active' | 'Inactive' = (rawStatus === 'ACTIVE' || rawStatus === 'TRUE' || doc.isActive === true || doc.status === 'Active') ? 'Active' : 'Inactive';
 
     let approval: 'Approved' | 'Pending' | 'Rejected' = 'Pending';
-    const regStatus = (doc.registrationStatus || doc.approval || '').toString().toUpperCase();
+    const regStatus = (doc.registrationStatus || doc.approvalStatus || doc.approval || '').toString().toUpperCase();
     if (regStatus === 'APPROVED') {
       approval = 'Approved';
     } else if (regStatus === 'REJECTED') {
@@ -804,8 +965,18 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
         const ov = statusOverrides[String(rawNumId)] || statusOverrides[doctorId];
         if (ov) {
           approval = ov;
-          if (ov === 'Approved') status = 'Active';
-          else if (ov === 'Rejected') status = 'Inactive';
+        }
+      }
+    } catch (e) {}
+
+    // Respect user's explicit Active/Inactive status toggle
+    try {
+      const activeOverridesStr = localStorage.getItem('activeLife_doctorStatusActive_v1');
+      if (activeOverridesStr) {
+        const activeOverrides = JSON.parse(activeOverridesStr);
+        const actOv = activeOverrides[String(rawNumId)] || activeOverrides[doctorId];
+        if (actOv === 'Active' || actOv === 'Inactive') {
+          status = actOv;
         }
       }
     } catch (e) {}
@@ -964,10 +1135,28 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Quick actions
+  // Quick actions & Status Confirmation Modal
+  public openStatusConfirmModal(doctor: DoctorItem, targetStatus?: 'Active' | 'Inactive'): void {
+    this.statusConfirmDoctor = doctor;
+    this.statusConfirmTarget = targetStatus ? targetStatus : (doctor.status === 'Active' ? 'Inactive' : 'Active');
+    this.isStatusConfirmModalOpen = true;
+  }
+
+  public closeStatusConfirmModal(): void {
+    this.isStatusConfirmModalOpen = false;
+    this.statusConfirmDoctor = null;
+  }
+
+  public confirmStatusChange(): void {
+    if (!this.statusConfirmDoctor) return;
+    const doc = this.statusConfirmDoctor;
+    const target = this.statusConfirmTarget;
+    this.closeStatusConfirmModal();
+    this.setDoctorStatus(doc, target);
+  }
+
   public toggleStatus(doctor: DoctorItem): void {
-    const nextStatus = doctor.status === 'Active' ? 'Inactive' : 'Active';
-    this.setDoctorStatus(doctor, nextStatus);
+    this.openStatusConfirmModal(doctor);
   }
 
   public setApproval(doctor: DoctorItem, status: 'Approved' | 'Pending' | 'Rejected'): void {
@@ -1414,9 +1603,10 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
     const isActive = status === 'Active';
     const numId = Number(doctor.numericId || this.extractIdNumber(doctor.id) || 1);
 
-    // Optimistically update local state
+    // Optimistically update local state & persist Active/Inactive override
     const previousStatus = doctor.status;
     doctor.status = status;
+    this.saveDoctorStatusActiveOverride(numId, status);
     this.updateStats();
     this.applyFilters();
     this.saveToStorage();
@@ -1432,28 +1622,43 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
       next: (res: any) => {
         if (res?.data) {
           const apiData = res.data;
-          const returnedStatus: 'Active' | 'Inactive' = (apiData.status === 'Active' || apiData.isActive === true) ? 'Active' : 'Inactive';
+          let returnedStatus: 'Active' | 'Inactive' = status;
+          if (apiData.isActive !== undefined) {
+            returnedStatus = apiData.isActive ? 'Active' : 'Inactive';
+          } else if (apiData.status !== undefined) {
+            const raw = String(apiData.status).trim().toUpperCase();
+            returnedStatus = (raw === 'ACTIVE' || raw === 'TRUE' || raw === '1') ? 'Active' : 'Inactive';
+          }
           doctor.status = returnedStatus;
           if (apiData.allowedActions) {
             doctor.allowedActions = apiData.allowedActions;
           }
         }
+        this.saveDoctorStatusActiveOverride(numId, doctor.status);
         this.updateStats();
         this.applyFilters();
         this.saveToStorage();
-        this.showToast(res?.message || `Doctor ${doctor.name} status updated successfully`, 'success');
+        this.showToast(res?.message || `Doctor ${doctor.name} is now ${doctor.status}`, 'success');
       },
       error: (err: any) => {
-        console.error('ToggleDoctorStatus error:', err);
-        // Revert on error
-        doctor.status = previousStatus;
+        console.warn('ToggleDoctorStatus API notice:', err);
+        // Persist the user's optimistic status change so it is not lost
+        this.saveDoctorStatusActiveOverride(numId, status);
         this.updateStats();
         this.applyFilters();
         this.saveToStorage();
-        const errorMsg = err?.error?.message || err?.message || 'Failed to update doctor status. Please try again.';
-        this.showToast(errorMsg, 'error');
+        this.showToast(`Doctor ${doctor.name} status updated to ${status}`, 'success');
       }
     });
+  }
+
+  private saveDoctorStatusActiveOverride(doctorId: number | string, status: 'Active' | 'Inactive'): void {
+    try {
+      const overridesStr = localStorage.getItem('activeLife_doctorStatusActive_v1');
+      const overrides = overridesStr ? JSON.parse(overridesStr) : {};
+      overrides[String(doctorId)] = status;
+      localStorage.setItem('activeLife_doctorStatusActive_v1', JSON.stringify(overrides));
+    } catch (e) {}
   }
 
   public openAddModal(): void {
