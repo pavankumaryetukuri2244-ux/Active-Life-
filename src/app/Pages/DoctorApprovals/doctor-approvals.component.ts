@@ -810,16 +810,17 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
         } else {
           item.verifiedDocsCount = item.totalDocsCount;
         }
-      } else if (item.status === 'Pending') {
+      } else {
         if (item.documents) {
           for (const doc of item.documents) {
-            const isViewed = this.isDocViewed(String(item.id), doc.name);
+            const isViewed = this.isDocViewed(String(item.id), doc.name, doc.id);
             doc.status = isViewed ? 'Verified' : 'Pending';
             if (!isViewed) {
               doc.verifiedDate = '';
             }
           }
-          item.verifiedDocsCount = item.documents.filter((d: VerificationDocument) => d.status === 'Verified').length;
+          const savedCount = this.getDoctorVerifiedCount(String(item.id));
+          item.verifiedDocsCount = savedCount !== null ? savedCount : item.documents.filter((d: VerificationDocument) => d.status === 'Verified').length;
           item.totalDocsCount = item.documents.length;
         }
       }
@@ -985,16 +986,17 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
               } else {
                 item.verifiedDocsCount = item.totalDocsCount;
               }
-            } else if (item.status === 'Pending') {
+            } else {
               if (item.documents) {
                 for (const doc of item.documents) {
-                  const isViewed = this.isDocViewed(String(item.id), doc.name);
+                  const isViewed = this.isDocViewed(String(item.id), doc.name, doc.id);
                   doc.status = isViewed ? 'Verified' : 'Pending';
                   if (!isViewed) {
                     doc.verifiedDate = '';
                   }
                 }
-                item.verifiedDocsCount = item.documents.filter((d: VerificationDocument) => d.status === 'Verified').length;
+                const savedCount = this.getDoctorVerifiedCount(String(item.id));
+                item.verifiedDocsCount = savedCount !== null ? savedCount : item.documents.filter((d: VerificationDocument) => d.status === 'Verified').length;
                 item.totalDocsCount = item.documents.length;
               }
             }
@@ -1053,14 +1055,14 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
     const backendIsAllVerified = doc.isAllDocumentsVerified ?? doc.isVerified;
 
     const mappedDocuments: VerificationDocument[] = docs.map((d: any, dIdx: number) => {
-      const docName = d.documentType === 'OTHER' ? `Registration Council Proof (${doc.registrationCouncil || 'Medical Council'})` : (d.documentType || (dIdx === 0 ? 'Medical Council Registration' : 'Government Medical ID / Certificate'));
-      const isBackendVerified = d.verificationStatus === 'VERIFIED' || d.isVerified === true || d.status === 'Verified';
-      const isLocallyViewed = this.isDocViewed(String(docId), docName);
-      const isVerified = isBackendVerified || isLocallyViewed;
+      const docName = d.name || d.documentName || d.title || (d.documentType === 'OTHER' ? `Registration Council Proof (${doc.registrationCouncil || 'Medical Council'})` : (d.documentType || (dIdx === 0 ? 'Medical Council Registration' : 'Government Medical ID / Certificate')));
+      const targetDocId = d.id !== undefined ? Number(d.id) : (d.documentId !== undefined ? Number(d.documentId) : (index * 10 + dIdx + 1));
+      const isLocallyViewed = this.isDocViewed(String(docId), docName, targetDocId);
+      const isExplicitBackendVerified = d.verificationStatus === 'VERIFIED' || d.isVerified === true;
+      const isVerified = status === 'Approved' ? true : (isLocallyViewed || isExplicitBackendVerified);
 
       const rawUrl = d.documentUrl || d.url || '';
       const fullUrl = (rawUrl && rawUrl.startsWith('/')) ? (`${environment.serviceUrl}${rawUrl}`) : rawUrl;
-      const targetDocId = d.id !== undefined ? Number(d.id) : (d.documentId !== undefined ? Number(d.documentId) : (index * 10 + dIdx + 1));
 
       return {
         id: targetDocId,
@@ -1102,12 +1104,8 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
     ];
 
     const finalDocs = mappedDocuments.length > 0 ? mappedDocuments : fallbackDocs;
-    let finalVerifiedCount = backendVerifiedDocs !== undefined 
-      ? Number(backendVerifiedDocs) 
-      : finalDocs.filter((d: VerificationDocument) => d.status === 'Verified').length;
-    let finalTotalCount = backendTotalDocs !== undefined 
-      ? Number(backendTotalDocs) 
-      : Math.max(finalDocs.length, 1);
+    let finalTotalCount = Math.max(finalDocs.length, 1);
+    let finalVerifiedCount = 0;
 
     if (status === 'Approved') {
       finalDocs.forEach(d => {
@@ -1118,6 +1116,10 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
       });
       finalVerifiedCount = finalDocs.length;
       finalTotalCount = finalDocs.length;
+    } else {
+      const savedCount = this.getDoctorVerifiedCount(String(docId));
+      const computedCount = finalDocs.filter((d: VerificationDocument) => d.status === 'Verified').length;
+      finalVerifiedCount = savedCount !== null ? savedCount : computedCount;
     }
     // Note: Pending doctors must remain Pending until explicitly accepted/approved by admin!
 
@@ -1481,16 +1483,57 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
     }
   }
 
-  private recordViewedDoc(doctorId: string, docName: string): void {
+  private recordViewedDoc(doctorId: string, docName: string, docId?: number | string): void {
     try {
       const set = this.getViewedDocsSet();
-      set.add(`${doctorId}_${docName}`);
+      const cleanDocName = (docName || '').trim();
+      set.add(`${doctorId}_${cleanDocName}`);
+      const numId = this.extractNumber(doctorId);
+      if (numId) {
+        set.add(`${numId}_${cleanDocName}`);
+      }
+      if (docId !== undefined && docId !== null) {
+        set.add(`${doctorId}_doc_${docId}`);
+        if (numId) set.add(`${numId}_doc_${docId}`);
+      }
       localStorage.setItem('activeLife_doctorViewedDocs_v1', JSON.stringify(Array.from(set)));
     } catch (e) {}
   }
 
-  public isDocViewed(doctorId: string, docName: string): boolean {
-    return this.getViewedDocsSet().has(`${doctorId}_${docName}`);
+  public isDocViewed(doctorId: string, docName: string, docId?: number | string): boolean {
+    const set = this.getViewedDocsSet();
+    const cleanDocName = (docName || '').trim();
+    if (set.has(`${doctorId}_${cleanDocName}`)) return true;
+    const numId = this.extractNumber(doctorId);
+    if (numId && set.has(`${numId}_${cleanDocName}`)) return true;
+    if (docId !== undefined && docId !== null) {
+      if (set.has(`${doctorId}_doc_${docId}`)) return true;
+      if (numId && set.has(`${numId}_doc_${docId}`)) return true;
+    }
+    return false;
+  }
+
+  private saveDoctorVerifiedCount(doctorId: string, count: number): void {
+    try {
+      const raw = localStorage.getItem('activeLife_doctorVerifiedCounts_v1');
+      const map = raw ? JSON.parse(raw) : {};
+      map[String(doctorId)] = count;
+      const numId = this.extractNumber(doctorId);
+      if (numId) map[String(numId)] = count;
+      localStorage.setItem('activeLife_doctorVerifiedCounts_v1', JSON.stringify(map));
+    } catch (e) {}
+  }
+
+  private getDoctorVerifiedCount(doctorId: string): number | null {
+    try {
+      const raw = localStorage.getItem('activeLife_doctorVerifiedCounts_v1');
+      if (!raw) return null;
+      const map = JSON.parse(raw);
+      if (map[String(doctorId)] !== undefined) return Number(map[String(doctorId)]);
+      const numId = this.extractNumber(doctorId);
+      if (numId && map[String(numId)] !== undefined) return Number(map[String(numId)]);
+    } catch (e) {}
+    return null;
   }
 
   public markDocAsVerified(doc: VerificationDocument, doctor: DoctorApprovalItem): void {
@@ -1500,7 +1543,7 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
     if (!doc.verifiedDate) {
       doc.verifiedDate = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     }
-    this.recordViewedDoc(String(doctor.id), doc.name);
+    this.recordViewedDoc(String(doctor.id), doc.name, doc.id);
 
     // Call backend API: POST /admin/api/doctor-approvals/verify-document
     // Request body: { "documentId": 2, "isVerified": true }
@@ -1536,6 +1579,10 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
     const verifiedCount = (doctor.documents || []).filter((d: VerificationDocument) => d.status === 'Verified').length;
     const totalCount = doctor.totalDocsCount || (doctor.documents?.length || 1);
     doctor.verifiedDocsCount = verifiedCount;
+    this.saveDoctorVerifiedCount(String(doctor.id), verifiedCount);
+    if (numId) {
+      this.saveDoctorVerifiedCount(String(numId), verifiedCount);
+    }
 
     if (this.selectedItem && String(this.selectedItem.id) === String(doctor.id)) {
       this.selectedItem.verifiedDocsCount = verifiedCount;
@@ -1566,13 +1613,6 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
     }
 
     this.saveToStorage();
-    if (status === 'Approved') {
-      if (this.serverPendingCount !== null && this.serverPendingCount > 0) this.serverPendingCount--;
-      if (this.serverApprovedCount !== null) this.serverApprovedCount++;
-    } else if (status === 'Rejected') {
-      if (this.serverPendingCount !== null && this.serverPendingCount > 0) this.serverPendingCount--;
-      if (this.serverRejectedCount !== null) this.serverRejectedCount++;
-    }
     this.updateStats();
     this.applyFilters();
     this.cdr.markForCheck();
@@ -1580,18 +1620,30 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
   }
 
   public review(item: DoctorApprovalItem): void {
-    if (item.documents) {
-      for (const doc of item.documents) {
-        const isViewed = this.isDocViewed(String(item.id), doc.name);
-        doc.status = isViewed ? 'Verified' : 'Pending';
-        if (!isViewed) {
-          doc.verifiedDate = '';
+    if (item.status === 'Approved') {
+      if (item.documents) {
+        for (const doc of item.documents) {
+          doc.status = 'Verified';
+          if (!doc.verifiedDate) doc.verifiedDate = 'Verified';
         }
+        item.verifiedDocsCount = item.documents.length;
       }
-      item.verifiedDocsCount = item.documents.filter((d: VerificationDocument) => d.status === 'Verified').length;
+    } else {
+      if (item.documents) {
+        for (const doc of item.documents) {
+          const isViewed = this.isDocViewed(String(item.id), doc.name, doc.id);
+          if (isViewed) {
+            doc.status = 'Verified';
+            if (!doc.verifiedDate) doc.verifiedDate = 'Verified';
+          }
+        }
+        const savedCount = this.getDoctorVerifiedCount(String(item.id));
+        item.verifiedDocsCount = savedCount !== null ? savedCount : item.documents.filter((d: VerificationDocument) => d.status === 'Verified').length;
+      }
     }
     this.selectedItem = item;
     this.isReviewModalOpen = true;
+    this.saveToStorage();
     this.cdr.markForCheck();
     this.cdr.detectChanges();
   }
