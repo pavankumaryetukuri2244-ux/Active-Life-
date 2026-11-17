@@ -484,16 +484,30 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
   private searchSubject: Subject<string> = new Subject<string>();
   private destroy$: Subject<void> = new Subject<void>();
 
-  // Stats - dynamic getters ensuring real-time accurate counts
+  // Stats - dynamic getters ensuring real-time accurate counts from API
+  public serverPendingCount: number | null = null;
+  public serverApprovedCount: number | null = null;
+  public serverRejectedCount: number | null = null;
+  public serverTotalCount: number | null = null;
+
   public get pendingCount(): number {
+    if (this.serverPendingCount !== null && this.serverPendingCount !== undefined) {
+      return this.serverPendingCount;
+    }
     return (this.requests || []).filter(r => (r.status || '').toLowerCase() === 'pending').length;
   }
 
   public get approvedCount(): number {
+    if (this.serverApprovedCount !== null && this.serverApprovedCount !== undefined) {
+      return this.serverApprovedCount;
+    }
     return (this.requests || []).filter(r => (r.status || '').toLowerCase() === 'approved').length;
   }
 
   public get rejectedCount(): number {
+    if (this.serverRejectedCount !== null && this.serverRejectedCount !== undefined) {
+      return this.serverRejectedCount;
+    }
     return (this.requests || []).filter(r => (r.status || '').toLowerCase() === 'rejected').length;
   }
 
@@ -532,6 +546,7 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
     this.updateStats();
   }
   ngOnInit(): void {
+    this.destroy$ = new Subject<void>();
     this.requests = this.getInitialData();
     this.filteredRequests = [...this.requests];
     this.updateStats();
@@ -832,42 +847,92 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
 
   public loadApprovals(): void {
     this.isLoading = true;
-    // Empty body matching Swagger: request body { }
     const payload: any = {};
 
-    this.webApiService.GetDoctorApprovals(payload).pipe(
-      takeUntil(this.destroy$)
-    ).subscribe({
+    this.webApiService.GetDoctorApprovals(payload).subscribe({
       next: (res: any) => {
         this.isLoading = false;
+        console.log('[DoctorApprovals] API Response:', res);
         let rawList: any[] = [];
 
-        if (res?.data?.data && Array.isArray(res.data.data)) {
-          rawList = res.data.data;
+        // 1. Extract Stats directly from the API response
+        const d = res?.data || res || {};
+        const stats = d.stats || d.statistics || res?.stats || res?.statistics;
+        if (stats) {
+          if (stats.pending !== undefined) this.serverPendingCount = Number(stats.pending);
+          if (stats.approved !== undefined) this.serverApprovedCount = Number(stats.approved);
+          if (stats.rejected !== undefined) this.serverRejectedCount = Number(stats.rejected);
+          if (stats.total !== undefined) this.serverTotalCount = Number(stats.total);
+          console.log('[DoctorApprovals] Extracted server stats:', {
+            pending: this.serverPendingCount,
+            approved: this.serverApprovedCount,
+            rejected: this.serverRejectedCount,
+            total: this.serverTotalCount
+          });
+        }
+
+        // 2. Extract doctor approvals array across all possible structures
+        if (Array.isArray(d.data)) {
+          rawList = d.data;
+        } else if (Array.isArray(d.content)) {
+          rawList = d.content;
+        } else if (Array.isArray(d.doctors)) {
+          rawList = d.doctors;
+        } else if (Array.isArray(d.doctorApprovals)) {
+          rawList = d.doctorApprovals;
+        } else if (Array.isArray(d.approvals)) {
+          rawList = d.approvals;
+        } else if (Array.isArray(d.list)) {
+          rawList = d.list;
+        } else if (Array.isArray(d.items)) {
+          rawList = d.items;
+        } else if (Array.isArray(d)) {
+          rawList = d;
+        } else if (Array.isArray(res?.content)) {
+          rawList = res.content;
         } else if (Array.isArray(res?.data)) {
           rawList = res.data;
         } else if (Array.isArray(res)) {
           rawList = res;
-        } else if (res?.data?.data && typeof res.data.data === 'object') {
-          rawList = [res.data.data];
-        } else if (Array.isArray(res?.data?.content)) {
-          rawList = res.data.content;
+        } else if (d.page && Array.isArray(d.page.content)) {
+          rawList = d.page.content;
+        } else if (d.pageData && Array.isArray(d.pageData.content)) {
+          rawList = d.pageData.content;
+        } else if (typeof d.data === 'object' && d.data !== null && !Array.isArray(d.data)) {
+          for (const k of Object.keys(d.data)) {
+            if (Array.isArray(d.data[k]) && d.data[k].length > 0) {
+              rawList = d.data[k];
+              break;
+            }
+          }
+        }
+
+        if (!rawList || rawList.length === 0) {
+          for (const k of Object.keys(d)) {
+            if (k === 'stats' || k === 'statistics') continue;
+            if (Array.isArray(d[k]) && d[k].length > 0 && typeof d[k][0] === 'object') {
+              rawList = d[k];
+              break;
+            }
+          }
         }
 
         if (rawList && rawList.length > 0) {
+          console.log('[DoctorApprovals] Extracted rawList count:', rawList.length);
           const mapped: DoctorApprovalItem[] = rawList.map((doc: any, index: number) => this.mapApiApprovalItem(doc, index));
           this.requests = this.sortApprovalsAscending(mapped);
           this.saveToStorage();
-
-          // Accurately compute stats directly from the mapped requests list
-          this.updateStats();
 
           // If there are no pending requests and activeTab is Pending, show All
           if (this.pendingCount === 0 && this.activeTab === 'Pending') {
             this.activeTab = 'All';
           }
 
+          this.updateStats();
           this.applyFilters();
+          this.cdr.detectChanges();
+          this.applyFilters();
+          this.cdr.detectChanges();
         } else {
           this.loadCachedOrInitialApprovals();
         }
@@ -881,6 +946,10 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
   }
 
   private loadCachedOrInitialApprovals(): void {
+    this.serverPendingCount = null;
+    this.serverApprovedCount = null;
+    this.serverRejectedCount = null;
+    this.serverTotalCount = null;
     const overrides = this.loadStatusOverrides();
     const cached = localStorage.getItem('activeLife_doctorApprovals_v1');
     if (cached) {
@@ -891,15 +960,17 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
             const numId = this.extractNumber(item.id);
             const ov = overrides[String(item.id)] ||
                        (numId ? overrides[String(numId)] : undefined);
-            if (ov) {
+            const regStatus = (item.registrationStatus || item.approvalStatus || item.approval || '').toString().trim().toUpperCase();
+            if (regStatus === 'APPROVED') {
+              item.status = 'Approved';
+            } else if (regStatus === 'REJECTED') {
+              item.status = 'Rejected';
+            } else if (regStatus === 'PENDING') {
+              item.status = 'Pending';
+            } else if (ov) {
               item.status = ov;
             } else {
-              const regStatus = (item.registrationStatus || item.approvalStatus || item.approval || '').toString().toUpperCase();
-              if (regStatus === 'APPROVED') {
-                item.status = 'Approved';
-              } else {
-                item.status = 'Pending';
-              }
+              item.status = 'Pending';
             }
             if (item.status === 'Approved') {
               if (item.documents) {
@@ -959,19 +1030,16 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
                           (numId ? overrides[String(numId)] : undefined);
 
     let status: 'Pending' | 'Approved' | 'Rejected' = 'Pending';
-    const regStatus = (doc.registrationStatus || doc.approvalStatus || doc.approval || '').toString().toUpperCase();
-    if (localOverride) {
-      status = localOverride;
-    } else if (regStatus === 'APPROVED') {
+    const rawReg = doc.registrationStatus || doc.approvalStatus || doc.approval || (doc.status !== 'ACTIVE' && doc.status !== 'INACTIVE' ? doc.status : '');
+    const regStatus = (rawReg || '').toString().trim().toUpperCase();
+    if (regStatus === 'APPROVED') {
       status = 'Approved';
     } else if (regStatus === 'REJECTED') {
       status = 'Rejected';
     } else if (regStatus === 'PENDING') {
       status = 'Pending';
-    } else if (doc.status && doc.status.toString().toUpperCase() === 'APPROVED') {
-      status = 'Approved';
-    } else if (doc.status && doc.status.toString().toUpperCase() === 'REJECTED') {
-      status = 'Rejected';
+    } else if (localOverride) {
+      status = localOverride;
     } else {
       status = 'Pending';
     }
@@ -1065,6 +1133,7 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
       location: doc.hospitalName || doc.address || (doc.pinCode ? `Pin: ${doc.pinCode}` : 'Hyderabad, Telangana'),
       appliedDate: doc.createdAt ? ('Applied ' + new Date(doc.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })) : 'Applied Recently',
       status: status,
+      registrationStatus: regStatus,
       verifiedDocsCount: finalVerifiedCount,
       totalDocsCount: finalTotalCount,
       phone: doc.mobileNumber || doc.phone || '',
@@ -1146,7 +1215,6 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
   }
 
   public updateStats(): void {
-    // Stats are dynamically computed via getters (pendingCount, approvedCount, rejectedCount)
     this.cdr.markForCheck();
   }
 
@@ -1391,6 +1459,13 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
     if (status === 'Approved' || status === 'Rejected') {
       this.syncWithDoctorManagement(item, status);
     }
+    if (status === 'Approved') {
+      if (this.serverPendingCount !== null && this.serverPendingCount > 0) this.serverPendingCount--;
+      if (this.serverApprovedCount !== null) this.serverApprovedCount++;
+    } else if (status === 'Rejected') {
+      if (this.serverPendingCount !== null && this.serverPendingCount > 0) this.serverPendingCount--;
+      if (this.serverRejectedCount !== null) this.serverRejectedCount++;
+    }
     this.updateStats();
     this.applyFilters();
     this.cdr.markForCheck();
@@ -1491,6 +1566,13 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
     }
 
     this.saveToStorage();
+    if (status === 'Approved') {
+      if (this.serverPendingCount !== null && this.serverPendingCount > 0) this.serverPendingCount--;
+      if (this.serverApprovedCount !== null) this.serverApprovedCount++;
+    } else if (status === 'Rejected') {
+      if (this.serverPendingCount !== null && this.serverPendingCount > 0) this.serverPendingCount--;
+      if (this.serverRejectedCount !== null) this.serverRejectedCount++;
+    }
     this.updateStats();
     this.applyFilters();
     this.cdr.markForCheck();
