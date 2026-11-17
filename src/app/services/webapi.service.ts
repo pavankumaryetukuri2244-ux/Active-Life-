@@ -714,8 +714,9 @@ export class WebapiService {
       headers = headers.set('Authorization', 'Bearer ' + cleanToken);
     }
     const url = `${this.WebApi}/admin/api/appointments/list`;
-    console.log('[WebapiService] POST GetAppointments:', url, filters);
-    return this.Http.post<any>(url, filters, { headers });
+    const payload = (filters && typeof filters === 'object') ? filters : {};
+    console.log('[WebapiService] POST GetAppointments:', url, payload);
+    return this.Http.post<any>(url, payload, { headers });
   }
 
   public MarkAppointmentComplete(body: { id: number | string }) {
@@ -727,8 +728,12 @@ export class WebapiService {
       const cleanToken = token.replace(/^"(.*)"$/, '$1').trim();
       headers = headers.set('Authorization', 'Bearer ' + cleanToken);
     }
+    const payload = {
+      id: Number(body.id)
+    };
     const url = `${this.WebApi}/admin/api/appointments/mark-complete`;
-    return this.Http.post<any>(url, body, { headers });
+    console.log('[WebapiService] POST MarkAppointmentComplete:', url, payload);
+    return this.Http.post<any>(url, payload, { headers });
   }
 
   public CancelAppointment(body: { id: number | string; reason?: string }) {

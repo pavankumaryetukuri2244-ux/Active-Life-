@@ -418,8 +418,8 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.destroy$ = new Subject<void>();
     this.initSearchDebounce();
-    this.loadCachedOrDefaultLive();
     this.loadAppointments();
   }
 
@@ -467,60 +467,75 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
   // Helper methods for sorting and displaying clean numeric appointment IDs (never showing reference strings)
   public getAppointmentDisplayId(item: any): number {
     if (!item) return 1;
-    const ref = String(item.bookingReference || item.id || '').toUpperCase();
+    if (typeof item.appointmentId === 'number' && !isNaN(item.appointmentId) && item.appointmentId > 0) {
+      return item.appointmentId;
+    }
+    if (typeof item.id === 'number' && !isNaN(item.id) && item.id > 0) {
+      return item.id;
+    }
+    if (typeof item.dbId === 'number' && !isNaN(item.dbId) && item.dbId > 0) {
+      return item.dbId;
+    }
+    const rawId = String(item.id || '').trim();
+    const num = Number(rawId);
+    if (!isNaN(num) && num > 0) {
+      return num;
+    }
+    const ref = String(item.bookingReference || '').toUpperCase();
     if (ref.includes('745935')) return 1;
     if (ref.includes('216440')) return 2;
     if (ref.includes('061102')) return 3;
     if (ref.includes('000004')) return 4;
-
-    if (typeof item.appointmentId === 'number' && !isNaN(item.appointmentId) && item.appointmentId > 0 && item.appointmentId < 1000) {
-      return item.appointmentId;
-    }
-    if (typeof item.dbId === 'number' && !isNaN(item.dbId) && item.dbId > 0 && item.dbId < 1000) {
-      return item.dbId;
-    }
-    const rawId = String(item.id || '').trim();
-    if (rawId.startsWith('APT-')) {
-      return (typeof item.dbId === 'number' && item.dbId > 0 && item.dbId < 1000) ? item.dbId : 1;
-    }
-    const num = Number(rawId);
-    if (!isNaN(num) && num > 0 && num < 1000) {
-      return num;
+    const match = ref.match(/\d+/);
+    if (match) {
+      return parseInt(match[0], 10);
     }
     return 1;
   }
 
-  // Helper methods for displaying clean patient details (ensuring Patient #664 is always resolved to Pavan Kumar)
+  // Helper methods for displaying clean patient details (ensuring API patient name is preferred)
   public getPatientDisplayName(item: any): string {
     if (!item) return 'Pavan Kumar';
-    const displayId = this.getAppointmentDisplayId(item);
-    const patId = String(item.patientId || '').toUpperCase();
-    const rawName = String(item.patientName || item.fullName || (item.patient && item.patient.name) || '').trim();
+    const rawName = String(
+      item.patientName ||
+      item.patientFullName ||
+      (item.patient && (item.patient.fullName || item.patient.name)) ||
+      ''
+    ).trim();
 
-    if (displayId === 1 || displayId === 2 || patId === 'U664' || patId.includes('664') || rawName.includes('664') || rawName.startsWith('Patient #')) {
-      return 'Pavan Kumar';
-    }
-    if (displayId === 3 || patId === 'U043' || patId.includes('043') || patId.includes('43') || rawName.toLowerCase().includes('shivaa')) {
-      return 'Shivaa';
-    }
-    if (displayId === 4 || patId === 'U078' || patId.includes('078') || patId.includes('78') || rawName.toLowerCase().includes('mari')) {
-      return 'Mari';
-    }
     if (rawName && !rawName.startsWith('Patient #') && rawName !== 'Patient') {
       return rawName;
+    }
+
+    const displayId = this.getAppointmentDisplayId(item);
+    const patId = String(item.patientId || '').toUpperCase();
+
+    if (displayId === 1 || displayId === 2 || patId === 'U664' || patId.includes('664')) {
+      return 'Pavan Kumar';
+    }
+    if (displayId === 3 || patId === 'U043' || patId.includes('043') || patId.includes('43')) {
+      return 'Shivaa';
+    }
+    if (displayId === 4 || patId === 'U078' || patId.includes('078') || patId.includes('78')) {
+      return 'Mari';
     }
     return 'Pavan Kumar';
   }
 
   public getPatientDisplayId(item: any): string {
     if (!item) return 'U664';
+    const rawPatId = item.patientId || (item.patient && item.patient.id);
+    if (rawPatId !== undefined && rawPatId !== null && String(rawPatId).trim()) {
+      const patStr = String(rawPatId).trim();
+      if (patStr.startsWith('U')) return patStr;
+      const num = parseInt(patStr, 10);
+      if (!isNaN(num)) return `U${String(num).padStart(3, '0')}`;
+      return patStr;
+    }
     const displayId = this.getAppointmentDisplayId(item);
     if (displayId === 1 || displayId === 2) return 'U664';
     if (displayId === 3) return 'U043';
     if (displayId === 4) return 'U078';
-    const patId = String(item.patientId || '').trim();
-    if (patId.startsWith('U')) return patId;
-    if (patId) return `U${patId.padStart(3, '0')}`;
     return 'U664';
   }
 
@@ -596,32 +611,18 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
   }
 
   // Load from API
-  public loadAppointments(): void {
+  public loadAppointments(filters: any = {}): void {
     this.isLoading = true;
-    const payload: any = {
-      page: 0,
-      size: 100,
-      sortBy: 'id',
-      sortOrder: 'ASC'
-    };
+    const payload: any = { ...filters };
 
     console.log('[Appointments] Calling GetAppointments with payload:', payload);
 
-    this.webApiService.GetAppointments(payload).pipe(
-      takeUntil(this.destroy$)
-    ).subscribe({
+    this.webApiService.GetAppointments(payload).subscribe({
       next: (res: any) => {
         this.isLoading = false;
         console.log('[Appointments] API Response:', res);
         const rawList = this.extractAppointments(res);
         const stats = this.extractStats(res);
-
-        if (stats) {
-          this.totalAppointmentsCount = stats.total;
-          this.todayAppointmentsCount = stats.today;
-          this.scheduledCount = stats.scheduled;
-          this.completedCount = stats.completed;
-        }
 
         if (rawList && rawList.length > 0) {
           console.log('[Appointments] Extracted rawList count:', rawList.length, rawList);
@@ -635,19 +636,23 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
           }).filter((item: any): item is AppointmentItem => item !== null);
 
           if (mapped.length > 0) {
-            const initialList = this.getInitialAppointments();
-            const combined = [...mapped, ...initialList];
-            this.appointments = this.normalizeAppointments(combined);
+            // Directly display pure API appointments (no mock concatenation)
+            this.appointments = this.sortAppointmentsAscending(mapped);
             this.saveToStorage();
           }
+        } else {
+          console.log('[Appointments] API returned empty appointment list, loading cached/fallback records');
+          this.loadCachedOrDefaultLive();
         }
 
+        this.updateStats(stats);
         this.applyFilters();
         this.cdr.detectChanges();
       },
       error: (err: any) => {
         this.isLoading = false;
         console.warn('GetAppointments API error, keeping active appointments and stats:', err);
+        this.loadCachedOrDefaultLive();
         this.applyFilters();
         this.cdr.detectChanges();
       }
@@ -794,43 +799,52 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
   }
 
   private loadCachedOrDefaultLive(): void {
-    const cached = localStorage.getItem('activeLife_appointments_v1');
-    if (cached) {
-      try {
+    try {
+      const cached = localStorage.getItem('activeLife_appointments_v1');
+      if (cached) {
         const parsed = JSON.parse(cached);
         if (Array.isArray(parsed) && parsed.length > 0) {
           const isMock = parsed.some((p: any) =>
             p.patientName === 'Sarah Johnson' && p.id === 'A001'
           );
-          const hasStalePatient = parsed.some((p: any) =>
-            String(p.patientName || '').includes('Patient #') ||
-            String(p.patientName || '').includes('664') ||
-            p.patientInitial === 'P#'
-          );
-          if (isMock || hasStalePatient) {
+          if (isMock) {
             localStorage.removeItem('activeLife_appointments_v1');
           } else {
-            const initialList = this.getInitialAppointments();
-            const combined = [...parsed, ...initialList];
-            this.appointments = this.normalizeAppointments(combined);
+            this.appointments = this.normalizeAppointments(parsed);
             this.updateStats();
             this.applyFilters();
             return;
           }
         }
-      } catch (e) {}
+      }
+      this.appointments = this.normalizeAppointments(this.getInitialAppointments());
+      this.updateStats();
+      this.applyFilters();
+    } catch (e) {
+      console.warn('[Appointments] Error loading cached appointments:', e);
+      this.appointments = this.normalizeAppointments(this.getInitialAppointments());
+      this.updateStats();
+      this.applyFilters();
     }
-    this.appointments = this.normalizeAppointments(this.getInitialAppointments());
-    this.saveToStorage();
-    this.updateStats();
-    this.applyFilters();
   }
 
   private saveToStorage(): void {
-    localStorage.setItem('activeLife_appointments_v1', JSON.stringify(this.appointments));
+    try {
+      localStorage.setItem('activeLife_appointments_v1', JSON.stringify(this.appointments));
+    } catch (e) {
+      console.warn('[Appointments] Storage quota exceeded or error saving:', e);
+    }
   }
 
-  public updateStats(): void {
+  public updateStats(serverStats?: { total: number; today: number; scheduled: number; completed: number }): void {
+    if (serverStats && (serverStats.total > 0 || serverStats.today > 0 || serverStats.scheduled > 0 || serverStats.completed > 0)) {
+      this.totalAppointmentsCount = serverStats.total;
+      this.todayAppointmentsCount = serverStats.today;
+      this.scheduledCount = serverStats.scheduled;
+      this.completedCount = serverStats.completed;
+      return;
+    }
+
     const now = new Date();
     const y = now.getFullYear();
     const m = String(now.getMonth() + 1).padStart(2, '0');
@@ -843,8 +857,8 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
       if (!a.appointmentDate) return false;
       return a.appointmentDate.includes(todayLocal) || a.appointmentDate.includes(todayIso) || a.appointmentDate.includes(`${day}-${m}-${y}`);
     }).length;
-    this.scheduledCount = this.appointments.filter(a => a.status === 'Scheduled').length;
-    this.completedCount = this.appointments.filter(a => a.status === 'Completed').length;
+    this.scheduledCount = this.appointments.filter(a => (a.status || '').toLowerCase() === 'scheduled').length;
+    this.completedCount = this.appointments.filter(a => (a.status || '').toLowerCase() === 'completed').length;
   }
 
   public applyFilters(): void {
@@ -1021,24 +1035,27 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
     const idStr = String(numericId);
     const bookingRef = item.bookingReference ? String(item.bookingReference).trim() : `APT-2026-${String(numericId).padStart(6, '0')}`;
 
-    // Clean Patient Details
-    const patIdStr = this.getPatientDisplayId({ ...item, appointmentId: numericId });
-    const patientName = this.getPatientDisplayName({ ...item, appointmentId: numericId, patientId: patIdStr });
-    const patientInitial = this.getPatientInitial({ ...item, patientName, patientId: patIdStr, appointmentId: numericId });
-    const patientAvatarBg = this.getPatientAvatarBg({ ...item, appointmentId: numericId, patientName, patientId: patIdStr });
+    // Clean Patient Details - prefer API patientName and patientId
+    const patIdStr = this.getPatientDisplayId(item);
+    const patientName = this.getPatientDisplayName(item);
+    const patientInitial = this.getPatientInitial(item);
+    const patientAvatarBg = this.getPatientAvatarBg(item);
 
-    // Doctor Name & ID
+    // Doctor Name & ID - prefer API doctorName and doctorId
     const rawDocName = (
       item.doctorName ||
       item.doctorFullName ||
       (item.doctor && (item.doctor.fullName || item.doctor.name || item.doctor.doctorName)) ||
       item.practitionerName ||
-      'Dr. varsha'
-    );
-    const cleanDoc = String(rawDocName).trim();
-    const doctorName = cleanDoc.startsWith('Dr.') ? cleanDoc : `Dr. ${cleanDoc}`;
-    const docId = item.doctorId || (item.doctor && item.doctor.id) || (idx + 1);
-    const docIdStr = String(docId).startsWith('D') ? String(docId) : `D${String(docId).padStart(3, '0')}`;
+      ''
+    ).trim();
+    let doctorName = rawDocName || 'Dr. Varsha';
+    if (!doctorName.toLowerCase().startsWith('dr.') && !doctorName.toLowerCase().startsWith('dr ')) {
+      doctorName = `Dr. ${doctorName}`;
+    }
+
+    const rawDocId = item.doctorId || (item.doctor && item.doctor.id) || (idx + 1);
+    const docIdStr = String(rawDocId).startsWith('D') ? String(rawDocId) : `D${String(rawDocId).padStart(3, '0')}`;
 
     // Specialization & Hospital
     const specialization = item.specialization || item.doctorSpecialization || (item.doctor && item.doctor.specialization) || item.department || item.departmentName || 'General Medicine';
@@ -1098,9 +1115,9 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
       patientId: patIdStr,
       patientName: patientName,
       patientInitial: patientInitial,
-      patientAvatarBg: (patIdStr === 'U664' || patientName === 'Pavan Kumar') ? '#818CF8' : ((patIdStr === 'U043' || patientName === 'Shivaa') ? '#10B981' : this.patientColors[idx % this.patientColors.length]),
-      patientPhone: item.patientPhone || item.patientMobileNumber || item.mobileNumber || item.phoneNumber || (item.patient && item.patient.mobileNumber) || (patIdStr === 'U664' ? '+91 98765 43210' : (patIdStr === 'U043' ? '+91 98765 43212' : '+91 98765 43200')),
-      patientEmail: item.patientEmail || item.email || (item.patient && item.patient.email) || (patIdStr === 'U664' ? 'pavan.kumar@example.com' : (patIdStr === 'U043' ? 'shivaa@example.com' : '')),
+      patientAvatarBg: patientAvatarBg,
+      patientPhone: item.patientPhone || item.patientMobileNumber || item.mobileNumber || item.phoneNumber || (item.patient && item.patient.mobileNumber) || '+91 98765 43210',
+      patientEmail: item.patientEmail || item.email || (item.patient && item.patient.email) || '',
       doctorId: docIdStr,
       doctorName: doctorName,
       doctorSpecialization: specialization,
@@ -1147,6 +1164,13 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
 
   private formatTime(timeStr: any): string {
     if (!timeStr) return '10:00 AM';
+    if (typeof timeStr === 'object' && timeStr !== null) {
+      const h = timeStr.hour !== undefined ? Number(timeStr.hour) : 10;
+      const m = timeStr.minute !== undefined ? String(timeStr.minute).padStart(2, '0') : '00';
+      const ampm = h >= 12 ? 'PM' : 'AM';
+      const hours = (h % 12) || 12;
+      return `${String(hours).padStart(2, '0')}:${m} ${ampm}`;
+    }
     const str = String(timeStr).trim();
     if (str.toUpperCase().includes('AM') || str.toUpperCase().includes('PM')) return str;
     const parts = str.split(':');
@@ -1250,9 +1274,7 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
 
     console.log('[Appointments] Calling MarkAppointmentComplete for ID:', targetId);
 
-    this.webApiService.MarkAppointmentComplete({ id: targetId }).pipe(
-      takeUntil(this.destroy$)
-    ).subscribe({
+    this.webApiService.MarkAppointmentComplete({ id: targetId }).subscribe({
       next: (res: any) => {
         console.log('[Appointments] MarkAppointmentComplete API Response:', res);
         if (res && (res.success || res.status === 'COMPLETED' || res.data)) {
@@ -1318,9 +1340,7 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
 
     console.log('[Appointments] Calling CancelAppointment with payload:', { id: targetId, reason: reasonText });
 
-    this.webApiService.CancelAppointment({ id: targetId, reason: reasonText }).pipe(
-      takeUntil(this.destroy$)
-    ).subscribe({
+    this.webApiService.CancelAppointment({ id: targetId, reason: reasonText }).subscribe({
       next: (res: any) => {
         this.isCancelling = false;
         console.log('[Appointments] CancelAppointment API Response:', res);
