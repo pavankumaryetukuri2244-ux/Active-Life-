@@ -241,8 +241,15 @@
     }
   </div>
 
-  <!-- Clean Professional Empty State (No stretching, no distorted shapes) -->
-  @if (filteredRequests.length === 0) {
+  <!-- Loading Spinner -->
+  @if (isLoading) {
+    <div class="text-center my-5 py-4">
+      <div class="spinner-border text-primary" role="status" style="width: 2.2rem; height: 2.2rem;">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <p class="text-muted small mt-2">Loading doctor approval requests...</p>
+    </div>
+  } @else if (filteredRequests.length === 0) {
     <div class="da-empty-container text-center my-4">
       <div class="da-empty-icon">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2">

@@ -541,15 +541,14 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
     private webApiService: WebapiService,
     private cdr: ChangeDetectorRef
   ) {
-    this.requests = this.getInitialData();
-    this.filteredRequests = [...this.requests];
-    this.updateStats();
+    this.requests = [];
+    this.filteredRequests = [];
   }
   ngOnInit(): void {
     this.destroy$ = new Subject<void>();
-    this.requests = this.getInitialData();
-    this.filteredRequests = [...this.requests];
-    this.updateStats();
+    this.requests = [];
+    this.filteredRequests = [];
+    this.isLoading = true;
     this.initSearchDebounce();
     this.loadApprovals();
   }
@@ -846,6 +845,73 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
     return match ? parseInt(match[0], 10) : 0;
   }
 
+  private safeFormatDate(val: any, fallback: string = ''): string {
+    if (!val) return fallback;
+    try {
+      if (Array.isArray(val) && val.length >= 3) {
+        const year = val[0];
+        const month = String(val[1]).padStart(2, '0');
+        const day = String(val[2]).padStart(2, '0');
+        const d = new Date(`${year}-${month}-${day}`);
+        if (!isNaN(d.getTime())) {
+          return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+      }
+      if (typeof val === 'string') {
+        const cleanStr = val.split('.')[0];
+        const d = new Date(cleanStr);
+        if (!isNaN(d.getTime())) {
+          return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+        const datePart = val.split('T')[0];
+        if (datePart && datePart.includes('-')) {
+          return datePart;
+        }
+      }
+      const d = new Date(val);
+      if (!isNaN(d.getTime())) {
+        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      }
+      return fallback;
+    } catch (e) {
+      return fallback;
+    }
+  }
+
+  private createFallbackDocItem(doc: any, index: number): DoctorApprovalItem {
+    const rawName = (doc.fullName || doc.name || `Doctor ${index + 1}`).trim();
+    const cleanName = rawName.startsWith('Dr.') ? rawName : ('Dr. ' + rawName);
+    const regStatus = (doc.registrationStatus || doc.approvalStatus || doc.approval || '').toString().trim().toUpperCase();
+    let status: 'Pending' | 'Approved' | 'Rejected' = 'Pending';
+    if (regStatus === 'APPROVED') status = 'Approved';
+    else if (regStatus === 'REJECTED') status = 'Rejected';
+    else if (regStatus === 'PENDING') status = 'Pending';
+    else status = 'Approved';
+
+    return {
+      id: doc.id ? String(doc.id) : `REQ-${101 + index}`,
+      numericId: Number(doc.id || (index + 1)),
+      name: cleanName,
+      initial: this.getDoctorInitial(cleanName),
+      avatarBg: ['#8B5CF6', '#EC4899', '#A855F7', '#06B6D4', '#F59E0B'][index % 5],
+      specialization: doc.specialization || 'Cardiology',
+      experience: doc.experienceYears ? `${doc.experienceYears} yrs exp` : (doc.experience || '16 yrs exp'),
+      email: doc.email || '',
+      location: doc.hospitalName || doc.address || 'Apollo Hospital',
+      appliedDate: 'Applied Recently',
+      status: status,
+      registrationStatus: regStatus,
+      verifiedDocsCount: status === 'Approved' ? 2 : 0,
+      totalDocsCount: 2,
+      phone: doc.mobileNumber || doc.phone || '',
+      hospitalName: doc.hospitalName || 'Apollo Hospital',
+      qualification: doc.qualification || 'MBBS',
+      licenseNumber: doc.registrationNumber || 'TGMC-123456',
+      documents: [],
+      notes: doc.rejectionReason || 'Practitioner'
+    };
+  }
+
   public loadApprovals(): void {
     this.isLoading = true;
     const payload: any = {};
@@ -920,9 +986,19 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
 
         if (rawList && rawList.length > 0) {
           console.log('[DoctorApprovals] Extracted rawList count:', rawList.length);
-          const mapped: DoctorApprovalItem[] = rawList.map((doc: any, index: number) => this.mapApiApprovalItem(doc, index));
-          this.requests = this.sortApprovalsAscending(mapped);
-          this.saveToStorage();
+          const mapped: DoctorApprovalItem[] = rawList.map((doc: any, index: number) => {
+            try {
+              return this.mapApiApprovalItem(doc, index);
+            } catch (err) {
+              console.warn('[DoctorApprovals] Failed mapping doctor item at index ' + index + ':', err, doc);
+              return this.createFallbackDocItem(doc, index);
+            }
+          }).filter((item): item is DoctorApprovalItem => item !== null);
+
+          if (mapped.length > 0) {
+            this.requests = this.sortApprovalsAscending(mapped);
+            this.saveToStorage();
+          }
 
           // If there are no pending requests and activeTab is Pending, show All
           if (this.pendingCount === 0 && this.activeTab === 'Pending') {
@@ -930,8 +1006,6 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
           }
 
           this.updateStats();
-          this.applyFilters();
-          this.cdr.detectChanges();
           this.applyFilters();
           this.cdr.detectChanges();
         } else {
@@ -942,80 +1016,25 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
         this.isLoading = false;
         console.warn('GetDoctorApprovals API returned error, using fallback doctor approval records:', err);
         this.loadCachedOrInitialApprovals();
+        this.applyFilters();
+        this.cdr.detectChanges();
       }
     });
   }
 
   private loadCachedOrInitialApprovals(): void {
-    this.serverPendingCount = null;
-    this.serverApprovedCount = null;
-    this.serverRejectedCount = null;
-    this.serverTotalCount = null;
-    const overrides = this.loadStatusOverrides();
     const cached = localStorage.getItem('activeLife_doctorApprovals_v1');
     if (cached) {
       try {
         const parsed = JSON.parse(cached);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          this.requests = this.sortApprovalsAscending(parsed.map((item: DoctorApprovalItem) => {
-            const numId = this.extractNumber(item.id);
-            const ov = overrides[String(item.id)] ||
-                       (numId ? overrides[String(numId)] : undefined);
-            const regStatus = (item.registrationStatus || item.approvalStatus || item.approval || '').toString().trim().toUpperCase();
-            if (regStatus === 'APPROVED') {
-              item.status = 'Approved';
-            } else if (regStatus === 'REJECTED') {
-              item.status = 'Rejected';
-            } else if (regStatus === 'PENDING') {
-              item.status = 'Pending';
-            } else if (ov) {
-              item.status = ov;
-            } else {
-              item.status = 'Pending';
-            }
-            if (item.status === 'Approved') {
-              if (item.documents) {
-                for (const doc of item.documents) {
-                  doc.status = 'Verified';
-                  if (!doc.verifiedDate) {
-                    doc.verifiedDate = 'Verified';
-                  }
-                }
-                item.verifiedDocsCount = item.documents.length;
-                item.totalDocsCount = item.documents.length;
-              } else {
-                item.verifiedDocsCount = item.totalDocsCount;
-              }
-            } else {
-              if (item.documents) {
-                for (const doc of item.documents) {
-                  const isViewed = this.isDocViewed(String(item.id), doc.name, doc.id);
-                  doc.status = isViewed ? 'Verified' : 'Pending';
-                  if (!isViewed) {
-                    doc.verifiedDate = '';
-                  }
-                }
-                const savedCount = this.getDoctorVerifiedCount(String(item.id));
-                item.verifiedDocsCount = savedCount !== null ? savedCount : item.documents.filter((d: VerificationDocument) => d.status === 'Verified').length;
-                item.totalDocsCount = item.documents.length;
-              }
-            }
-            return item;
-          }));
-          if (this.pendingCount === 0 && this.activeTab === 'Pending') {
-            this.activeTab = 'All';
-          }
+        if (Array.isArray(parsed) && parsed.length >= 10) {
+          this.requests = this.sortApprovalsAscending(parsed);
           this.applyFilters();
+          this.cdr.detectChanges();
           return;
         }
       } catch (e) {}
     }
-    this.requests = this.getInitialData();
-    this.saveToStorage();
-    if (this.pendingCount === 0 && this.activeTab === 'Pending') {
-      this.activeTab = 'All';
-    }
-    this.applyFilters();
   }
 
   private mapApiApprovalItem(doc: any, index: number): DoctorApprovalItem {
@@ -1069,11 +1088,11 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
         name: docName,
         type: (rawUrl && rawUrl.toLowerCase().endsWith('.pdf')) ? 'PDF' : ((rawUrl && rawUrl.toLowerCase().endsWith('.png')) ? 'PNG' : 'JPG'),
         status: isVerified ? 'Verified' : 'Pending',
-        verifiedDate: isVerified ? (d.verifiedAt || d.uploadedAt ? new Date(d.verifiedAt || d.uploadedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Verified') : '',
+        verifiedDate: isVerified ? (d.verifiedAt || d.uploadedAt ? this.safeFormatDate(d.verifiedAt || d.uploadedAt, 'Verified') : 'Verified') : '',
         url: fullUrl,
         certificateNumber: d.certificateNumber || doc.registrationNumber || `TGMC-${10000 + index}`,
         issuer: d.issuer || doc.registrationCouncil || 'Telangana State Medical Council (TSMC)',
-        issueDate: doc.createdAt ? new Date(doc.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Oct 28, 2026',
+        issueDate: this.safeFormatDate(doc.createdAt, 'Oct 28, 2026'),
         expiryDate: 'Oct 27, 2036'
       };
     });
@@ -1133,7 +1152,7 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
       experience: expYrs,
       email: doc.email || '',
       location: doc.hospitalName || doc.address || (doc.pinCode ? `Pin: ${doc.pinCode}` : 'Hyderabad, Telangana'),
-      appliedDate: doc.createdAt ? ('Applied ' + new Date(doc.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })) : 'Applied Recently',
+      appliedDate: doc.createdAt ? ('Applied ' + this.safeFormatDate(doc.createdAt, 'Recently')) : 'Applied Recently',
       status: status,
       registrationStatus: regStatus,
       verifiedDocsCount: finalVerifiedCount,
