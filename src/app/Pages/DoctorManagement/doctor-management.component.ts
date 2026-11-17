@@ -405,11 +405,6 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
 
   public isLoading: boolean = false;
 
-  // Status Confirmation Modal State
-  public isStatusConfirmModalOpen: boolean = false;
-  public statusConfirmDoctor: DoctorItem | null = null;
-  public statusConfirmTarget: 'Active' | 'Inactive' = 'Inactive';
-
   constructor(
     private webApiService: WebapiService
   ) {
@@ -1135,28 +1130,9 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Quick actions & Status Confirmation Modal
-  public openStatusConfirmModal(doctor: DoctorItem, targetStatus?: 'Active' | 'Inactive'): void {
-    this.statusConfirmDoctor = doctor;
-    this.statusConfirmTarget = targetStatus ? targetStatus : (doctor.status === 'Active' ? 'Inactive' : 'Active');
-    this.isStatusConfirmModalOpen = true;
-  }
-
-  public closeStatusConfirmModal(): void {
-    this.isStatusConfirmModalOpen = false;
-    this.statusConfirmDoctor = null;
-  }
-
-  public confirmStatusChange(): void {
-    if (!this.statusConfirmDoctor) return;
-    const doc = this.statusConfirmDoctor;
-    const target = this.statusConfirmTarget;
-    this.closeStatusConfirmModal();
-    this.setDoctorStatus(doc, target);
-  }
-
+  // Status changes are performed strictly via the Actions (⋮) dropdown menu
   public toggleStatus(doctor: DoctorItem): void {
-    this.openStatusConfirmModal(doctor);
+    // Read-only status chip in table; status change is available only through Actions (⋮)
   }
 
   public setApproval(doctor: DoctorItem, status: 'Approved' | 'Pending' | 'Rejected'): void {
