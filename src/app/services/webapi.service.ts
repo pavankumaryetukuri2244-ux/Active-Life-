@@ -1,4 +1,4 @@
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { timeout } from 'rxjs';
 import { environment } from '../../environments/environment';
@@ -719,7 +719,7 @@ export class WebapiService {
     return this.Http.post<any>(url, payload, { headers });
   }
 
-  public MarkAppointmentComplete(body: { id: number | string }) {
+  public MarkAppointmentComplete(body: { id: number | string; appointmentId?: number | string; bookingReference?: string; [key: string]: any }) {
     const token = localStorage.getItem('accessToken');
     let headers = new HttpHeaders({
       'Content-Type': 'application/json'
@@ -728,15 +728,25 @@ export class WebapiService {
       const cleanToken = token.replace(/^"(.*)"$/, '$1').trim();
       headers = headers.set('Authorization', 'Bearer ' + cleanToken);
     }
-    const payload = {
-      id: Number(body.id)
+    const numId = Number(body.id || body.appointmentId) || 1;
+    const payload: any = {
+      id: numId,
+      appointmentId: numId,
+      status: 'COMPLETED'
     };
+    if (body.bookingReference) {
+      payload.bookingReference = body.bookingReference;
+    }
+    const params = new HttpParams()
+      .set('id', String(numId))
+      .set('appointmentId', String(numId));
+
     const url = `${this.WebApi}/admin/api/appointments/mark-complete`;
-    console.log('[WebapiService] POST MarkAppointmentComplete:', url, payload);
-    return this.Http.post<any>(url, payload, { headers });
+    console.log('[WebapiService] POST MarkAppointmentComplete:', url, payload, params.toString());
+    return this.Http.post<any>(url, payload, { headers, params });
   }
 
-  public CancelAppointment(body: { id: number | string; reason?: string }) {
+  public CancelAppointment(body: { id: number | string; appointmentId?: number | string; reason?: string }) {
     const token = localStorage.getItem('accessToken');
     let headers = new HttpHeaders({
       'Content-Type': 'application/json'
@@ -745,13 +755,23 @@ export class WebapiService {
       const cleanToken = token.replace(/^"(.*)"$/, '$1').trim();
       headers = headers.set('Authorization', 'Bearer ' + cleanToken);
     }
-    const payload = {
-      id: Number(body.id),
-      reason: (body.reason && body.reason.trim()) ? body.reason.trim() : 'Cancelled by administrator'
+    const numId = Number(body.id || body.appointmentId) || 1;
+    const reasonText = (body.reason && body.reason.trim()) ? body.reason.trim() : 'Cancelled by administrator';
+    const payload: any = {
+      id: numId,
+      appointmentId: numId,
+      reason: reasonText,
+      cancellationReason: reasonText,
+      status: 'CANCELLED'
     };
+    const params = new HttpParams()
+      .set('id', String(numId))
+      .set('appointmentId', String(numId))
+      .set('reason', reasonText);
+
     const url = `${this.WebApi}/admin/api/appointments/cancel`;
-    console.log('[WebapiService] POST CancelAppointment:', url, payload);
-    return this.Http.post<any>(url, payload, { headers });
+    console.log('[WebapiService] POST CancelAppointment:', url, payload, params.toString());
+    return this.Http.post<any>(url, payload, { headers, params });
   }
 
   // ==========================================

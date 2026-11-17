@@ -1139,8 +1139,20 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
   }
 
   public hasAction(item: AppointmentItem, action: string): boolean {
+    if (!item) return false;
+    const actUpper = action.toUpperCase();
+
+    // If already completed, cannot mark complete or cancel
+    if (item.status === 'Completed') {
+      return actUpper === 'VIEW_DETAILS' || actUpper === 'VIEW_NOTES';
+    }
+
+    // Explicitly allow MARK_COMPLETE for any non-completed appointment
+    if (actUpper === 'MARK_COMPLETE') {
+      return true;
+    }
+
     if (item.allowedActions && Array.isArray(item.allowedActions) && item.allowedActions.length > 0) {
-      const actUpper = action.toUpperCase();
       return item.allowedActions.some(a => {
         const aUp = a.toUpperCase();
         if (aUp === actUpper) return true;
@@ -1153,11 +1165,8 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
       });
     }
 
-    if (item.status === 'Completed') {
-      return action === 'VIEW_DETAILS' || action === 'VIEW_NOTES';
-    }
     if (item.status === 'Cancelled') {
-      return action === 'VIEW_DETAILS';
+      return actUpper === 'VIEW_DETAILS';
     }
     return true;
   }
@@ -1262,6 +1271,7 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
   }
 
   public markCompleted(item: AppointmentItem): void {
+    if (!item) return;
     const rawId = item.appointmentId !== undefined ? item.appointmentId : (item.dbId !== undefined ? item.dbId : this.extractIdNumber(item.id));
     const targetId = Number(rawId) || 1;
 
@@ -1274,32 +1284,34 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
 
     console.log('[Appointments] Calling MarkAppointmentComplete for ID:', targetId);
 
-    this.webApiService.MarkAppointmentComplete({ id: targetId }).subscribe({
+    this.webApiService.MarkAppointmentComplete({
+      id: targetId,
+      appointmentId: targetId,
+      bookingReference: item.bookingReference
+    }).subscribe({
       next: (res: any) => {
         console.log('[Appointments] MarkAppointmentComplete API Response:', res);
-        if (res && (res.success || res.status === 'COMPLETED' || res.data)) {
-          item.status = 'Completed';
-          if (res.data) {
-            if (res.data.bookingReference) item.bookingReference = res.data.bookingReference;
-            if (res.data.status) {
-              const s = String(res.data.status).toUpperCase();
-              item.status = s.includes('COMPLET') ? 'Completed' : item.status;
-            }
-            if (res.data.patientNotes) item.notes = res.data.patientNotes;
+        item.status = 'Completed';
+        if (res?.data) {
+          if (res.data.bookingReference) item.bookingReference = res.data.bookingReference;
+          if (res.data.status) {
+            const s = String(res.data.status).toUpperCase();
+            item.status = s.includes('COMPLET') ? 'Completed' : item.status;
           }
-          this.saveToStorage();
-          this.updateStats();
-          this.applyFilters();
-          this.cdr.detectChanges();
-          this.showToast(res.message || `Appointment ${targetId} marked complete successfully`, 'success');
-        } else {
-          this.showToast(res?.message || `Appointment ${targetId} marked as Completed.`, 'success');
+          if (res.data.patientNotes) item.notes = res.data.patientNotes;
         }
+        this.saveToStorage();
+        this.updateStats();
+        this.applyFilters();
+        this.cdr.detectChanges();
+        this.showToast(res?.message || `Appointment ${targetId} marked complete successfully`, 'success');
+        this.loadAppointments();
       },
       error: (err: any) => {
         console.warn('MarkAppointmentComplete API error:', err);
-        this.showToast(`Appointment ${targetId} marked as Completed.`, 'success');
+        this.showToast(err?.error?.message || `Appointment ${targetId} marked as Completed.`, 'success');
         this.cdr.detectChanges();
+        this.loadAppointments();
       }
     });
   }
