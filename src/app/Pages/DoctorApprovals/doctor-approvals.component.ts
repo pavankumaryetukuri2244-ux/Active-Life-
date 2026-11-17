@@ -189,9 +189,10 @@ export interface DoctorApprovalItem {
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03) !important;
       display: flex !important;
       flex-direction: column !important;
-      height: auto !important;
-      min-height: unset !important;
-      max-height: fit-content !important;
+      justify-content: space-between !important;
+      height: 100% !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
       transition: transform 0.15s ease, box-shadow 0.15s ease !important;
     }
     .da-card:hover {
@@ -1187,10 +1188,14 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
   }
 
   private mapApiApprovalItem(doc: any, index: number): DoctorApprovalItem {
-    const rawName = (doc.fullName || doc.name || '').trim();
-    const cleanName = rawName.startsWith('Dr.') ? rawName : ('Dr. ' + rawName);
+    let rawName = (doc.fullName || doc.name || '').trim();
+    rawName = rawName.replace(/^Dr\.?([^\s])/i, 'Dr. $1');
+    if (!rawName.toLowerCase().startsWith('dr.') && !rawName.toLowerCase().startsWith('dr ')) {
+      rawName = 'Dr. ' + rawName;
+    }
+    const cleanName = rawName;
     const initial = this.getDoctorInitial(cleanName);
-    const avatarBg = ['#8B5CF6', '#EC4899', '#A855F7', '#06B6D4', '#F59E0B'][index % 5];
+    const avatarBg = this.getDoctorAvatarBg(cleanName, index);
 
     const docId = doc.id ? String(doc.id) : `REQ-${101 + index}`;
     const numId = this.extractNumber(docId);
@@ -1292,7 +1297,20 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
       const computedCount = finalDocs.filter((d: VerificationDocument) => d.status === 'Verified').length;
       finalVerifiedCount = savedCount !== null ? savedCount : computedCount;
     }
-    // Note: Pending doctors must remain Pending until explicitly accepted/approved by admin!
+
+    // Clean location: extract primary hospital name without long multi-hospital concatenated addresses
+    let loc = (doc.hospitalName || doc.address || 'Apollo Hospital').trim();
+    if (loc.includes(',')) {
+      loc = loc.split(',')[0].trim();
+    }
+    if (!loc) loc = 'Apollo Hospital';
+
+    let appliedDate = 'Applied Recently';
+    if (doc.createdAt) {
+      appliedDate = 'Applied ' + this.safeFormatDate(doc.createdAt, 'Recently');
+    } else if (doc.appliedDate) {
+      appliedDate = doc.appliedDate.startsWith('Applied') ? doc.appliedDate : ('Applied ' + doc.appliedDate);
+    }
 
     return {
       id: doc.id ? String(doc.id) : `REQ-${101 + index}`,
@@ -1303,14 +1321,14 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
       specialization: doc.specialization || (doc.specializationId === 1 ? 'Cardiology' : 'General Medicine'),
       experience: expYrs,
       email: doc.email || '',
-      location: doc.hospitalName || doc.address || (doc.pinCode ? `Pin: ${doc.pinCode}` : 'Hyderabad, Telangana'),
-      appliedDate: doc.createdAt ? ('Applied ' + this.safeFormatDate(doc.createdAt, 'Recently')) : 'Applied Recently',
+      location: loc,
+      appliedDate: appliedDate,
       status: status,
       registrationStatus: regStatus,
       verifiedDocsCount: finalVerifiedCount,
       totalDocsCount: finalTotalCount,
       phone: doc.mobileNumber || doc.phone || '',
-      hospitalName: doc.hospitalName || 'Apollo Hospital',
+      hospitalName: loc,
       qualification: doc.qualification || 'MBBS',
       licenseNumber: doc.registrationNumber || 'TGMC-123456',
       documents: finalDocs,
@@ -1319,11 +1337,25 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
   }
 
   private getDoctorInitial(name: string): string {
-    const parts = name.replace(/^Dr\.\s*/i, '').trim().split(/\s+/);
-    if (parts.length > 1) {
-      return parts[parts.length - 1][0]?.toUpperCase() || 'D';
-    }
-    return parts[0][0]?.toUpperCase() || 'D';
+    const clean = (name || '').replace(/^Dr\.?\s*/i, '').trim();
+    return clean ? clean[0]?.toUpperCase() : 'D';
+  }
+
+  private getDoctorAvatarBg(name: string, index: number): string {
+    const lower = (name || '').toLowerCase();
+    if (lower.includes('ramesh')) return '#E879F9';
+    if (lower.includes('rajesh')) return '#A855F7';
+    if (lower.includes('shiva')) return '#818CF8';
+    if (lower.includes('umesh')) return '#F59E0B';
+    if (lower.includes('seshu')) return '#10B981';
+    if (lower.includes('ram')) return '#3B82F6';
+    if (lower.includes('varsha')) return '#EC4899';
+    if (lower.includes('vamsi')) return '#06B6D4';
+    if (lower.includes('doctor')) return '#06B6D4';
+    if (lower.includes('emily')) return '#8B5CF6';
+    if (lower.includes('suresh')) return '#3B82F6';
+    if (lower.includes('priya')) return '#14B8A6';
+    return ['#8B5CF6', '#EC4899', '#A855F7', '#06B6D4', '#F59E0B'][index % 5];
   }
 
   private loadStatusOverrides(): { [id: string]: 'Pending' | 'Approved' | 'Rejected' } {

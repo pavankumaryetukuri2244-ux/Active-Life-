@@ -111,28 +111,28 @@
   </div>
 
   <!-- Doctor Approval Cards 2-Column Grid matching Figma -->
-  <div class="row g-3 align-items-start">
+  <div class="row g-3 align-items-stretch">
     @for (item of filteredRequests; track item.id) {
-      <div class="col-12 col-lg-6">
-        <div class="da-card">
+      <div class="col-12 col-lg-6 d-flex">
+        <div class="da-card w-100 d-flex flex-column justify-content-between">
           <!-- Card Header: Avatar, Name, Specialization & Status Badge -->
             <div class="d-flex align-items-start justify-content-between mb-3">
-              <div class="d-flex align-items-center" style="gap: 12px;">
-                <div class="da-avatar" [style.background]="item.avatarBg">
+              <div class="d-flex align-items-center" style="gap: 12px; min-width: 0;">
+                <div class="da-avatar flex-shrink-0" [style.background]="item.avatarBg">
                   {{ item.initial }}
                 </div>
-                <div>
-                  <h4 style="font-size: 16px; font-weight: 700; color: #0F172A; margin: 0; line-height: 1.3;">
+                <div style="min-width: 0;">
+                  <h4 class="text-truncate" style="font-size: 16px; font-weight: 700; color: #0F172A; margin: 0; line-height: 1.3;" [title]="item.name">
                     {{ item.name }}
                   </h4>
-                  <span style="font-size: 13px; color: #64748B;">
+                  <span class="text-truncate d-block" style="font-size: 13px; color: #64748B;">
                     {{ item.specialization }} · {{ item.experience }}
                   </span>
                 </div>
               </div>
 
               <!-- Status Badge -->
-              <span class="badge"
+              <span class="badge flex-shrink-0 ms-2"
                 [style.background]="item.status === 'Pending' ? '#FFFBEB' : (item.status === 'Approved' ? '#ECFDF5' : '#FEF2F2')"
                 [style.color]="item.status === 'Pending' ? '#D97706' : (item.status === 'Approved' ? '#059669' : '#DC2626')"
                 style="border-radius: 12px; padding: 5px 12px; font-size: 12px; font-weight: 500; font-family: 'Inter', sans-serif;">
@@ -141,39 +141,39 @@
             </div>
 
             <!-- Doctor Metadata: Email, Location, Applied Date -->
-            <div class="d-flex flex-wrap align-items-center mb-3" style="gap: 16px; font-size: 12.5px; color: #64748B;">
+            <div class="d-flex align-items-center flex-wrap mb-3 da-meta-row" style="gap: 14px; font-size: 12.5px; color: #64748B;">
               <!-- Email -->
-              <div class="d-flex align-items-center" style="gap: 6px;">
-                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+              <div class="d-flex align-items-center" style="gap: 6px; min-width: 0;">
+                <svg class="flex-shrink-0" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
                   <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
                   <polyline points="22,6 12,13 2,6"></polyline>
                 </svg>
-                <span>{{ item.email }}</span>
+                <span class="text-truncate" style="max-width: 175px;" [title]="item.email">{{ item.email }}</span>
               </div>
 
               <!-- Location -->
-              <div class="d-flex align-items-center" style="gap: 6px;">
-                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+              <div class="d-flex align-items-center" style="gap: 6px; min-width: 0;">
+                <svg class="flex-shrink-0" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
                   <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
                   <circle cx="12" cy="10" r="3"></circle>
                 </svg>
-                <span>{{ item.location }}</span>
+                <span class="text-truncate" style="max-width: 140px;" [title]="item.location">{{ item.location }}</span>
               </div>
 
               <!-- Applied Date -->
-              <div class="d-flex align-items-center" style="gap: 6px;">
-                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+              <div class="d-flex align-items-center" style="gap: 6px; min-width: 0;">
+                <svg class="flex-shrink-0" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
                   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                   <line x1="16" y1="2" x2="16" y2="6"></line>
                   <line x1="8" y1="2" x2="8" y2="6"></line>
                   <line x1="3" y1="10" x2="21" y2="10"></line>
                 </svg>
-                <span>{{ item.appliedDate }}</span>
+                <span class="text-truncate" style="max-width: 140px;">{{ item.appliedDate }}</span>
               </div>
             </div>
 
-            <!-- Documents Verified Progress Bar -->
-            <div class="mb-0">
+            <!-- Documents Verified Progress Bar (pinned above footer) -->
+            <div class="mb-0 mt-auto">
               <div class="d-flex align-items-center justify-content-between" style="font-size: 12px; color: #64748B;">
                 <span>Documents verified</span>
                 <span style="font-weight: 600; color: #0F172A;">
