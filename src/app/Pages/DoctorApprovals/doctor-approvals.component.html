@@ -190,17 +190,17 @@
 
             <!-- Card Footer Action Buttons matching Figma -->
             <div class="d-flex align-items-center justify-content-between pt-3 border-top flex-wrap" style="gap: 8px; margin-top: 14px;">
-              <!-- Review Button -->
+              <!-- Review / View Button -->
               <button type="button" class="da-btn-action da-btn-review flex-grow-1" (click)="review(item)">
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                   <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                   <circle cx="12" cy="12" r="3"></circle>
                 </svg>
-                <span>Review</span>
+                <span>{{ item.status === 'Pending' ? 'Review' : 'View' }}</span>
               </button>
 
-              <!-- Reject & Approve Buttons (shown in All and Pending chips, hidden in Approved and Rejected chips) -->
-              @if (activeTab === 'All' || activeTab === 'Pending' || item.status === 'Pending') {
+              <!-- Reject & Approve Buttons (ONLY shown for Pending requests) -->
+              @if (item.status === 'Pending') {
                 <button
                   type="button"
                   class="da-btn-action da-btn-reject flex-grow-1"
@@ -217,10 +217,10 @@
                 <button
                   type="button"
                   class="da-btn-action da-btn-approve flex-grow-1"
-                  [class.da-btn-approve-locked]="item.status === 'Pending' && item.verifiedDocsCount < item.totalDocsCount"
-                  [title]="item.status === 'Pending' && item.verifiedDocsCount < item.totalDocsCount ? 'View all certificates first before approving' : 'Approve Doctor'"
+                  [class.da-btn-approve-locked]="item.verifiedDocsCount < item.totalDocsCount"
+                  [title]="item.verifiedDocsCount < item.totalDocsCount ? 'View all certificates first before approving' : 'Approve Doctor'"
                   (click)="approve(item)">
-                  @if (item.status === 'Pending' && item.verifiedDocsCount < item.totalDocsCount) {
+                  @if (item.verifiedDocsCount < item.totalDocsCount) {
                     <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
                       <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                       <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
@@ -391,7 +391,7 @@
           <button type="button" class="btn btn-light" (click)="closeReviewModal()">
             Close
           </button>
-          @if (activeTab === 'All' || activeTab === 'Pending' || selectedItem.status === 'Pending') {
+          @if (selectedItem.status === 'Pending') {
             <button
               type="button"
               class="btn btn-outline-danger d-inline-flex align-items-center gap-2"
@@ -401,10 +401,10 @@
             <button
               type="button"
               class="btn btn-success d-inline-flex align-items-center gap-2"
-              [disabled]="selectedItem.status === 'Pending' && selectedItem.verifiedDocsCount < selectedItem.totalDocsCount"
+              [disabled]="selectedItem.verifiedDocsCount < selectedItem.totalDocsCount"
               [title]="selectedItem.verifiedDocsCount < selectedItem.totalDocsCount ? 'Please view all certificates first' : 'Approve Doctor'"
               (click)="approve(selectedItem)">
-              @if (selectedItem.status === 'Pending' && selectedItem.verifiedDocsCount < selectedItem.totalDocsCount) {
+              @if (selectedItem.verifiedDocsCount < selectedItem.totalDocsCount) {
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
                   <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                   <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
