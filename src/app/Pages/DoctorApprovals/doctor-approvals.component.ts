@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy, HostListener, ChangeDetectorRef } from '@angular/core';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { Subject } from 'rxjs';
 import { takeUntil, finalize, timeout } from 'rxjs/operators';
 import { WebapiService } from '../../services/webapi.service';
@@ -384,95 +385,18 @@ export interface DoctorApprovalItem {
       flex-direction: column;
     }
 
-    /* Certificate Parchment Styling */
-    .da-cert-frame {
-      background: #FFFEFA;
-      border: 3px double #1E3A8A;
-      box-shadow: inset 0 0 0 4px #FDF6E2, inset 0 0 0 6px #D97706, 0 8px 24px rgba(0,0,0,0.06);
+    /* Document / Certificate Viewer Modal */
+    .da-doc-viewer-box {
+      background: #F8FAFC;
+      border: 1px solid #E2E8F0;
       border-radius: 12px;
-      padding: 30px 34px;
-      position: relative;
-      font-family: 'Georgia', 'Times New Roman', serif;
-      color: #1E293B;
       overflow: hidden;
     }
 
-    .da-cert-watermark {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 260px;
-      height: 260px;
-      opacity: 0.04;
-      pointer-events: none;
-      z-index: 1;
-    }
-
-    .da-cert-content {
-      position: relative;
-      z-index: 2;
-    }
-
-    .da-cert-title {
-      font-family: 'Cinzel', 'Georgia', serif;
-      font-size: 20px;
-      font-weight: 700;
-      color: #1E3A8A;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      margin: 0;
-      text-align: center;
-    }
-
-    .da-cert-subtitle {
-      font-size: 11px;
-      letter-spacing: 0.08em;
-      color: #64748B;
-      text-align: center;
-      text-transform: uppercase;
-      margin: 4px 0 14px 0;
-      font-family: 'Inter', sans-serif;
-    }
-
-    .da-cert-name {
-      font-family: 'Playfair Display', 'Georgia', serif;
-      font-size: 26px;
-      font-weight: 700;
-      color: #0F172A;
-      margin: 6px 0;
-      text-align: center;
-      border-bottom: 2px solid #E2E8F0;
-      display: inline-block;
-      padding-bottom: 4px;
-    }
-
-    .da-cert-seal-badge {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 68px;
-      height: 68px;
-      border-radius: 50%;
-      background: radial-gradient(circle, #FEF3C7 0%, #FDE68A 100%);
-      border: 3px double #D97706;
-      box-shadow: 0 4px 10px rgba(217, 119, 6, 0.2);
-      color: #92400E;
-    }
-
-    .da-cert-stamp {
-      border: 2px solid #16A34A;
-      color: #16A34A;
-      font-family: 'Inter', sans-serif;
-      font-weight: 800;
-      font-size: 11px;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      padding: 5px 12px;
-      border-radius: 6px;
-      transform: rotate(-5deg);
-      display: inline-block;
-      background: rgba(22, 163, 74, 0.05);
+    .da-doc-empty-box {
+      background: #F8FAFC;
+      border: 1px dashed #CBD5E1;
+      border-radius: 12px;
     }
   `]
 })
@@ -529,6 +453,8 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
   public activeCertificateDoc: VerificationDocument | null = null;
   public activeCertificateDoctor: DoctorApprovalItem | null = null;
   public activeDocIndex: number = 0;
+  public safeDocUrl: SafeResourceUrl | null = null;
+  public docImageLoadFailed: boolean = false;
 
   // Toast
   public toastMessage: string = '';
@@ -540,7 +466,8 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
 
   constructor(
     private webApiService: WebapiService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private sanitizer: DomSanitizer
   ) {
     this.requests = this.getInitialData();
     this.filteredRequests = [...this.requests];
@@ -1257,13 +1184,13 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
     const fallbackDocs: VerificationDocument[] = [
       {
         id: Number(doc.id ? Number(doc.id) * 10 + 1 : 1),
-        name: 'Medical Council Registration (' + (doc.registrationCouncil || 'TELANGANA_MEDICAL_COUNCIL') + ')',
-        type: 'PNG',
-        status: this.isDocViewed(String(docId), 'Medical Council Registration (' + (doc.registrationCouncil || 'TELANGANA_MEDICAL_COUNCIL') + ')') ? 'Verified' : 'Pending',
+        name: 'Medical Council Registration' + (doc.registrationCouncil ? ` (${doc.registrationCouncil})` : ''),
+        type: 'PDF',
+        status: this.isDocViewed(String(docId), 'Medical Council Registration' + (doc.registrationCouncil ? ` (${doc.registrationCouncil})` : '')) ? 'Verified' : 'Pending',
         verifiedDate: '',
         certificateNumber: doc.registrationNumber || 'TGMC-123456',
-        issuer: doc.registrationCouncil || 'Telangana State Medical Council (TSMC)',
-        issueDate: 'Oct 28, 2026',
+        issuer: doc.registrationCouncil || 'Medical Council of India (MCI)',
+        issueDate: this.safeFormatDate(doc.createdAt, 'Oct 28, 2026'),
         expiryDate: 'Oct 27, 2036'
       },
       {
@@ -1332,7 +1259,7 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
       qualification: doc.qualification || 'MBBS',
       licenseNumber: doc.registrationNumber || 'TGMC-123456',
       documents: finalDocs,
-      notes: doc.rejectionReason || (doc.registrationCouncil ? `${doc.registrationCouncil} • Verified Practitioner` : 'TELANGANA_MEDICAL_COUNCIL • Verified Practitioner')
+      notes: doc.rejectionReason || (doc.registrationCouncil ? `${doc.registrationCouncil} • Verified Practitioner` : 'Medical Council of India (MCI) • Verified Practitioner')
     };
   }
 
@@ -1878,6 +1805,7 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
     const idx = docs.findIndex(d => d.name === doc.name);
     this.activeDocIndex = idx >= 0 ? idx : 0;
     this.isCertificateViewerOpen = true;
+    this.updateSafeDocUrl();
 
     // Admin views document: now mark as Verified!
     this.markDocAsVerified(doc, doctor);
@@ -1891,6 +1819,8 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
     this.activeCertificateDoc = null;
     this.activeCertificateDoctor = null;
     this.activeDocIndex = 0;
+    this.safeDocUrl = null;
+    this.docImageLoadFailed = false;
     this.cdr.markForCheck();
     this.cdr.detectChanges();
   }
@@ -1901,9 +1831,12 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
     if (index >= 0 && index < docs.length) {
       this.activeDocIndex = index;
       this.activeCertificateDoc = docs[index];
+      this.updateSafeDocUrl();
 
       // Admin views document: mark selected certificate as Verified!
       this.markDocAsVerified(docs[index], this.activeCertificateDoctor);
+      this.cdr.markForCheck();
+      this.cdr.detectChanges();
     }
   }
 
@@ -1920,13 +1853,81 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
     this.selectCertificateIndex(prevIdx);
   }
 
+  private updateSafeDocUrl(): void {
+    this.docImageLoadFailed = false;
+    if (this.activeCertificateDoc?.url) {
+      this.safeDocUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.activeCertificateDoc.url);
+    } else {
+      this.safeDocUrl = null;
+    }
+  }
+
+  public onDocLoadError(): void {
+    this.docImageLoadFailed = true;
+    this.cdr.markForCheck();
+  }
+
+  public isPdf(url?: string): boolean {
+    if (!url) {
+      return (this.activeCertificateDoc?.type || '').toUpperCase() === 'PDF';
+    }
+    const clean = url.split('?')[0].toLowerCase();
+    return clean.endsWith('.pdf') || (this.activeCertificateDoc?.type || '').toUpperCase() === 'PDF';
+  }
+
+  public isImage(url?: string): boolean {
+    if (!url) {
+      const type = (this.activeCertificateDoc?.type || '').toUpperCase();
+      return ['PNG', 'JPG', 'JPEG', 'WEBP', 'GIF'].includes(type);
+    }
+    const clean = url.split('?')[0].toLowerCase();
+    return (
+      clean.endsWith('.png') ||
+      clean.endsWith('.jpg') ||
+      clean.endsWith('.jpeg') ||
+      clean.endsWith('.webp') ||
+      clean.endsWith('.gif') ||
+      clean.startsWith('data:image/') ||
+      ['PNG', 'JPG', 'JPEG', 'WEBP', 'GIF'].includes((this.activeCertificateDoc?.type || '').toUpperCase())
+    );
+  }
+
+  public getSafeDocUrl(url?: string): SafeResourceUrl | null {
+    if (!url) return null;
+    return this.sanitizer.bypassSecurityTrustResourceUrl(url);
+  }
+
   public printCertificate(): void {
+    if (this.activeCertificateDoc?.url && !this.isPdf(this.activeCertificateDoc.url)) {
+      const win = window.open('', '_blank');
+      if (win) {
+        win.document.write(`
+          <html>
+            <head><title>${this.activeCertificateDoc.name}</title></head>
+            <body style="margin:0;display:flex;align-items:center;justify-content:center;">
+              <img src="${this.activeCertificateDoc.url}" style="max-width:100%;height:auto;" onload="window.print();window.close();"/>
+            </body>
+          </html>
+        `);
+        win.document.close();
+        return;
+      }
+    }
     window.print();
   }
 
   public downloadCertificate(): void {
     const docName = this.activeCertificateDoc?.name || 'Certificate';
     const drName = this.activeCertificateDoctor?.name || 'Doctor';
+    if (this.activeCertificateDoc?.url) {
+      const link = document.createElement('a');
+      link.href = this.activeCertificateDoc.url;
+      link.target = '_blank';
+      link.download = `${drName.replace(/\s+/g, '_')}_${docName.replace(/\s+/g, '_')}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
     this.showToast(`Downloading ${docName} for ${drName}...`, 'success');
   }
 
