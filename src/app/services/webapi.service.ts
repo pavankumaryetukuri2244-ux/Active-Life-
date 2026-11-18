@@ -1,6 +1,6 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { timeout } from 'rxjs';
+import { timeout, catchError, throwError } from 'rxjs';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -92,9 +92,13 @@ export class WebapiService {
 
   public GetPreventiveCare() {
     const token = localStorage.getItem('accessToken');
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
+    let headers = new HttpHeaders({
+      'Content-Type': 'application/json'
     });
+    if (token && token !== 'null' && token !== 'undefined') {
+      const cleanToken = token.replace(/^"(.*)"$/, '$1').trim();
+      headers = headers.set('Authorization', 'Bearer ' + cleanToken);
+    }
     const url = `${this.WebApi}/api/v1/admin/preventive-care`;
     return this.Http.post<any>(url, {}, { headers });
   }
@@ -223,9 +227,13 @@ export class WebapiService {
 
   public GetAllContent(filters: any = {}) {
     const token = localStorage.getItem('accessToken');
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
+    let headers = new HttpHeaders({
+      'Content-Type': 'application/json'
     });
+    if (token && token !== 'null' && token !== 'undefined') {
+      const cleanToken = token.replace(/^"(.*)"$/, '$1').trim();
+      headers = headers.set('Authorization', 'Bearer ' + cleanToken);
+    }
     const url = `${this.WebApi}/api/v1/content/all`;
     return this.Http.post<any>(url, filters, { headers });
   }
@@ -719,7 +727,7 @@ export class WebapiService {
     return this.Http.post<any>(url, payload, { headers });
   }
 
-  public MarkAppointmentComplete(body: { id: number | string; appointmentId?: number | string; bookingReference?: string; [key: string]: any }) {
+  public MarkAppointmentComplete(body: { id: number | string; appointmentId?: number | string; bookingReference?: string;[key: string]: any }) {
     const token = localStorage.getItem('accessToken');
     let headers = new HttpHeaders({
       'Content-Type': 'application/json'
@@ -801,7 +809,7 @@ export class WebapiService {
     return this.Http.post<any>(url, body, { headers });
   }
 
-  public GetTargetAudiences() {
+  public GetTargetAudiences(body: any = {}) {
     const token = localStorage.getItem('accessToken');
     let headers = new HttpHeaders({
       'Content-Type': 'application/json'
@@ -811,7 +819,14 @@ export class WebapiService {
       headers = headers.set('Authorization', 'Bearer ' + cleanToken);
     }
     const url = `${this.WebApi}/admin/api/masterdata/target-audiences`;
-    return this.Http.get<any>(url, { headers });
+    return this.Http.post<any>(url, body, { headers }).pipe(
+      catchError((err: any) => {
+        if (err?.status === 405) {
+          return this.Http.get<any>(url, { headers });
+        }
+        return throwError(() => err);
+      })
+    );
   }
 
   // ==========================================

@@ -786,12 +786,17 @@ export class NotificationsComponent implements OnInit, OnDestroy {
   // Load Master Data Target Audiences
   loadTargetAudiences(): void {
     this.isLoadingAudiences = true;
-    this.webApiService.GetTargetAudiences().subscribe({
+    this.webApiService.GetTargetAudiences({}).subscribe({
       next: (res: any) => {
         this.isLoadingAudiences = false;
         console.log('[Notifications] GetTargetAudiences response:', res);
-        if (res && res.data && Array.isArray(res.data) && res.data.length > 0) {
-          this.targetAudiences = res.data.map((item: any) => ({
+        let list: any[] = [];
+        if (Array.isArray(res?.data)) list = res.data;
+        else if (Array.isArray(res?.content)) list = res.content;
+        else if (Array.isArray(res)) list = res;
+
+        if (list.length > 0) {
+          this.targetAudiences = list.map((item: any) => ({
             code: item.code || item.label || 'ALL_USERS',
             label: item.label || item.code || 'All Users'
           }));
