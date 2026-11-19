@@ -37,6 +37,7 @@ export interface DoctorApprovalItem {
   hospitalName?: string;
   qualification?: string;
   licenseNumber?: string;
+  registrationCouncil?: string;
   documents?: VerificationDocument[];
   notes?: string;
   registrationStatus?: string;
@@ -1258,6 +1259,7 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
       hospitalName: loc,
       qualification: doc.qualification || 'MBBS',
       licenseNumber: doc.registrationNumber || 'TGMC-123456',
+      registrationCouncil: doc.registrationCouncil || 'Medical Council of India (MCI)',
       documents: finalDocs,
       notes: doc.rejectionReason || (doc.registrationCouncil ? `${doc.registrationCouncil} • Verified Practitioner` : 'Medical Council of India (MCI) • Verified Practitioner')
     };

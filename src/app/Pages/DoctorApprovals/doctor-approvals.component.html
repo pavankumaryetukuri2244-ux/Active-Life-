@@ -602,7 +602,7 @@
 
                 <div class="mb-2">
                   <span class="text-muted d-block" style="font-size: 11.5px;">Registration Council / Authority</span>
-                  <strong class="text-dark" style="font-size: 13px;">{{ activeCertificateDoc.issuer || activeCertificateDoctor.registrationCouncil || 'Medical Council of India (MCI)' }}</strong>
+                  <strong class="text-dark" style="font-size: 13px;">{{ activeCertificateDoc.issuer || activeCertificateDoctor['registrationCouncil'] || 'Medical Council of India (MCI)' }}</strong>
                 </div>
 
                 <div class="row g-2">
