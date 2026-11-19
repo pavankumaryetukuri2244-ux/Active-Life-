@@ -399,6 +399,93 @@ export interface DoctorApprovalItem {
       border: 1px dashed #CBD5E1;
       border-radius: 12px;
     }
+
+    /* Certificate Frame Styling */
+    .da-cert-frame {
+      background: #FFFFFF;
+      border: 2px solid #E2E8F0;
+      border-radius: 14px;
+      padding: 28px 32px;
+      position: relative;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: #1E293B;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04);
+      overflow: hidden;
+    }
+
+    .da-cert-watermark {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 240px;
+      height: 240px;
+      opacity: 0.035;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .da-cert-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .da-cert-title {
+      font-size: 19px;
+      font-weight: 700;
+      color: #0F172A;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      margin: 0;
+      text-align: center;
+    }
+
+    .da-cert-subtitle {
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      color: #64748B;
+      text-align: center;
+      text-transform: uppercase;
+      margin: 4px 0 12px 0;
+    }
+
+    .da-cert-name {
+      font-size: 24px;
+      font-weight: 700;
+      color: #0F172A;
+      margin: 6px 0;
+      text-align: center;
+      border-bottom: 2px solid #E2E8F0;
+      display: inline-block;
+      padding-bottom: 4px;
+    }
+
+    .da-cert-seal-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #FEF3C7 0%, #FDE68A 100%);
+      border: 2px solid #D97706;
+      box-shadow: 0 4px 10px rgba(217, 119, 6, 0.15);
+      color: #92400E;
+    }
+
+    .da-cert-stamp {
+      border: 2px solid #16A34A;
+      color: #16A34A;
+      font-weight: 800;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 6px;
+      transform: rotate(-3deg);
+      display: inline-block;
+      background: rgba(22, 163, 74, 0.06);
+    }
   `]
 })
 export class DoctorApprovalsComponent implements OnInit, OnDestroy {
@@ -456,6 +543,7 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
   public activeDocIndex: number = 0;
   public safeDocUrl: SafeResourceUrl | null = null;
   public docImageLoadFailed: boolean = false;
+  public certViewMode: 'certificate' | 'file' = 'certificate';
 
   // Toast
   public toastMessage: string = '';
@@ -1117,11 +1205,9 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
 
   private mapApiApprovalItem(doc: any, index: number): DoctorApprovalItem {
     let rawName = (doc.fullName || doc.name || '').trim();
-    rawName = rawName.replace(/^Dr\.?([^\s])/i, 'Dr. $1');
-    if (!rawName.toLowerCase().startsWith('dr.') && !rawName.toLowerCase().startsWith('dr ')) {
-      rawName = 'Dr. ' + rawName;
-    }
-    const cleanName = rawName;
+    rawName = rawName.replace(/^[\.\s]+/, '');
+    rawName = rawName.replace(/^Dr\.?\s*[\.\s]*/i, '');
+    const cleanName = 'Dr. ' + rawName.trim();
     const initial = this.getDoctorInitial(cleanName);
     const avatarBg = this.getDoctorAvatarBg(cleanName, index);
 
@@ -1803,6 +1889,7 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
   public openCertificateViewer(doc: VerificationDocument, doctor: DoctorApprovalItem): void {
     this.activeCertificateDoctor = doctor;
     this.activeCertificateDoc = doc;
+    this.certViewMode = 'certificate';
     const docs = doctor.documents || [];
     const idx = docs.findIndex(d => d.name === doc.name);
     this.activeDocIndex = idx >= 0 ? idx : 0;
@@ -1821,6 +1908,7 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
     this.activeCertificateDoc = null;
     this.activeCertificateDoctor = null;
     this.activeDocIndex = 0;
+    this.certViewMode = 'certificate';
     this.safeDocUrl = null;
     this.docImageLoadFailed = false;
     this.cdr.markForCheck();
@@ -1833,6 +1921,7 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
     if (index >= 0 && index < docs.length) {
       this.activeDocIndex = index;
       this.activeCertificateDoc = docs[index];
+      this.certViewMode = 'certificate';
       this.updateSafeDocUrl();
 
       // Admin views document: mark selected certificate as Verified!
@@ -1840,6 +1929,50 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
       this.cdr.markForCheck();
       this.cdr.detectChanges();
     }
+  }
+
+  public setCertViewMode(mode: 'certificate' | 'file'): void {
+    this.certViewMode = mode;
+    this.cdr.markForCheck();
+    this.cdr.detectChanges();
+  }
+
+  public getCouncilDisplayName(council?: string): string {
+    const raw = (council || this.activeCertificateDoc?.issuer || this.activeCertificateDoctor?.['registrationCouncil'] || 'Telangana State Medical Council').trim();
+    if (raw.toUpperCase() === 'TELANGANA_MEDICAL_COUNCIL' || /telangana/i.test(raw)) {
+      return 'Telangana State Medical Council (TSMC)';
+    }
+    if (raw.toUpperCase() === 'ANDHRA_PRADESH_MEDICAL_COUNCIL' || /andhra/i.test(raw)) {
+      return 'Andhra Pradesh Medical Council (APMC)';
+    }
+    if (/india|national|mci|nmc/i.test(raw)) {
+      return 'Medical Council of India / NMC';
+    }
+    return raw;
+  }
+
+  public getCouncilAcronym(council?: string): string {
+    const raw = (council || this.activeCertificateDoc?.issuer || this.activeCertificateDoctor?.['registrationCouncil'] || 'TSMC').trim();
+    if (/telangana/i.test(raw)) return 'TSMC';
+    if (/andhra/i.test(raw)) return 'APMC';
+    if (/delhi/i.test(raw)) return 'DMC';
+    if (/karnataka/i.test(raw)) return 'KMC';
+    if (/maharashtra/i.test(raw)) return 'MMC';
+    if (/india|mci/i.test(raw)) return 'MCI';
+    if (/nmc|national/i.test(raw)) return 'NMC';
+    const words = raw.replace(/[^a-zA-Z\s]/g, '').split(/\s+/).filter(w => w.length > 2);
+    if (words.length >= 2) {
+      return words.map(w => w[0].toUpperCase()).slice(0, 4).join('');
+    }
+    return 'TSMC';
+  }
+
+  public cleanDoctorName(name?: string): string {
+    if (!name) return 'Doctor';
+    let clean = name.trim();
+    clean = clean.replace(/^[\.\s]+/, '');
+    clean = clean.replace(/^Dr\.?\s*[\.\s]*/i, '');
+    return 'Dr. ' + clean.trim();
   }
 
   public nextCertificate(): void {
