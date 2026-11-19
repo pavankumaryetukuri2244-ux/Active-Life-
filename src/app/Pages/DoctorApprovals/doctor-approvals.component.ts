@@ -600,15 +600,30 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
     this.applyFilters();
   }
 
-  // Initial Seed Data matching the user screenshot
-  // Initial Seed Data matching the live backend API
+  public normalizeDocumentUrl(url?: string): string {
+    if (!url) return '';
+    let clean = url.trim();
+    // Direct AWS S3 access is blocked by bucket policy (HTTP 403 Forbidden).
+    // CloudFront CDN serves all authentic uploaded documents reliably with HTTP 200 OK.
+    clean = clean.replace(/https?:\/\/healthappams\.s3[.-][a-z0-9-]*\.amazonaws\.com/gi, 'https://d2kmj2okvs22p9.cloudfront.net');
+    clean = clean.replace(/https?:\/\/healthappams\.s3\.amazonaws\.com/gi, 'https://d2kmj2okvs22p9.cloudfront.net');
+    if (clean.startsWith('http://') || clean.startsWith('https://')) {
+      return clean;
+    }
+    if (clean.startsWith('/')) {
+      return `${environment.serviceUrl}${clean}`;
+    }
+    return `${environment.serviceUrl}/${clean}`;
+  }
+
+  // Initial Seed Data matching the live backend API provided by user
   private getInitialData(): DoctorApprovalItem[] {
     const overrides = this.loadStatusOverrides();
     const list: DoctorApprovalItem[] = [
       {
         id: '1',
         numericId: 1,
-        name: 'Dr. Ramesh',
+        name: 'Dr. Ramesh Kumar',
         initial: 'R',
         avatarBg: '#E879F9',
         specialization: 'Cardiology',
@@ -619,32 +634,36 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
         status: 'Approved',
         verifiedDocsCount: 2,
         totalDocsCount: 2,
-        phone: '+919876543210',
-        hospitalName: 'Apollo Hospital',
+        phone: '+919876543219',
+        hospitalName: 'Apollo Hospital, Jubilee Hills, Yashoda Hospital, Somajiguda, Rainbow Children Hospital, Banjara Hills',
         qualification: 'MBBS',
         licenseNumber: 'TGMC-123456',
+        registrationCouncil: 'TELANGANA_MEDICAL_COUNCIL',
+        profilePhotoUrl: 'http://20.193.140.173:8085/uploads/doctors/1/profile_6ae10068-ee98-455e-a883-c5681e29f952.png',
         documents: [
           {
-            id: 1,
-            name: 'Medical Council Registration (TELANGANA_MEDICAL_COUNCIL)',
+            id: 3,
+            name: 'Medical Degree / Practice Certificate',
             type: 'PNG',
             status: 'Verified',
-            verifiedDate: 'Verified',
+            verifiedDate: 'Nov 19, 2026',
             certificateNumber: 'TGMC-123456',
             issuer: 'Telangana State Medical Council (TSMC)',
-            issueDate: '28 Oct 2026',
-            expiryDate: '27 Oct 2036'
+            issueDate: 'Oct 28, 2026',
+            expiryDate: 'Oct 27, 2036',
+            url: 'http://20.193.140.173:8085/uploads/doctors/1/doc_1_bcbd7726-65df-4bbb-9fae-d6a3414020f7.png'
           },
           {
-            id: 2,
-            name: 'Government Medical ID / Certificate',
-            type: 'JPG',
+            id: 1,
+            name: 'Registration Council Proof (TELANGANA_MEDICAL_COUNCIL)',
+            type: 'PNG',
             status: 'Verified',
-            verifiedDate: 'Verified',
-            certificateNumber: 'NMC-ID-884910',
-            issuer: 'National Medical Commission (NMC), Govt. of India',
-            issueDate: '20 Jan 2021',
-            expiryDate: '19 Jan 2031'
+            verifiedDate: 'Oct 28, 2026',
+            certificateNumber: 'TGMC-123456',
+            issuer: 'Telangana State Medical Council (TSMC)',
+            issueDate: 'Oct 28, 2026',
+            expiryDate: 'Oct 27, 2036',
+            url: 'http://20.193.140.173:8085/uploads/doctors/1/doc_0_6ae10068-ee98-455e-a883-c5681e29f952.png'
           }
         ],
         notes: 'TELANGANA_MEDICAL_COUNCIL • Verified Practitioner'
@@ -667,9 +686,33 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
         hospitalName: 'Apollo Hospital',
         qualification: 'MBBS',
         licenseNumber: 'TGMC-1234',
+        registrationCouncil: 'TELANGANA_MEDICAL_COUNCIL',
+        profilePhotoUrl: 'http://20.193.140.173:8085/uploads/doctors/2/profile_f4e82334-d085-46a3-9fd2-381bfe0421c8.png',
         documents: [
-          { id: 3, name: 'Medical Board License (TELANGANA_MEDICAL_COUNCIL)', type: 'PNG', status: 'Verified', verifiedDate: 'Verified' },
-          { id: 4, name: 'Degree Certificate', type: 'PNG', status: 'Verified', verifiedDate: 'Verified' }
+          {
+            id: 4,
+            name: 'Medical Degree / Practice Certificate',
+            type: 'PNG',
+            status: 'Verified',
+            verifiedDate: 'Nov 18, 2026',
+            certificateNumber: 'TGMC-1234',
+            issuer: 'Telangana State Medical Council (TSMC)',
+            issueDate: 'Oct 29, 2026',
+            expiryDate: 'Oct 28, 2036',
+            url: 'http://20.193.140.173:8085/uploads/doctors/2/doc_1_2905e88d-03a4-4d3a-8537-6957a80b44b2.png'
+          },
+          {
+            id: 2,
+            name: 'Registration Council Proof (TELANGANA_MEDICAL_COUNCIL)',
+            type: 'PNG',
+            status: 'Verified',
+            verifiedDate: 'Nov 19, 2026',
+            certificateNumber: 'TGMC-1234',
+            issuer: 'Telangana State Medical Council (TSMC)',
+            issueDate: 'Oct 29, 2026',
+            expiryDate: 'Oct 28, 2036',
+            url: 'http://20.193.140.173:8085/uploads/doctors/2/doc_0_54015a24-b3e5-48a0-aa40-09b418762497.png'
+          }
         ],
         notes: 'TELANGANA_MEDICAL_COUNCIL • Verified Practitioner'
       },
@@ -691,18 +734,31 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
         hospitalName: 'Apollo Hospital',
         qualification: 'MBBS',
         licenseNumber: 'TGMC-121',
+        registrationCouncil: 'TELANGANA_MEDICAL_COUNCIL',
+        profilePhotoUrl: 'http://20.193.140.173:8085/uploads/doctors/3/profile_6d9ce806-92a5-47e4-a895-7c6cc3292cdd.png',
         documents: [
-          { id: 5, name: 'Registration Proof (TELANGANA_MEDICAL_COUNCIL)', type: 'PNG', status: 'Verified', verifiedDate: 'Verified' }
+          {
+            id: 5,
+            name: 'Registration Council Proof (TELANGANA_MEDICAL_COUNCIL)',
+            type: 'PNG',
+            status: 'Verified',
+            verifiedDate: 'Nov 18, 2026',
+            certificateNumber: 'TGMC-121',
+            issuer: 'Telangana State Medical Council (TSMC)',
+            issueDate: 'Oct 30, 2026',
+            expiryDate: 'Oct 29, 2036',
+            url: 'http://20.193.140.173:8085/uploads/doctors/3/doc_0_3b55a295-6886-430e-b45c-5615cdc0065b.png'
+          }
         ],
-        notes: 'TELANGANA_MEDICAL_COUNCIL'
+        notes: 'TELANGANA_MEDICAL_COUNCIL • Verified Practitioner'
       },
       {
         id: '4',
         numericId: 4,
-        name: 'Dr. umesh',
+        name: 'Dr. umesh vk',
         initial: 'U',
         avatarBg: '#F59E0B',
-        specialization: 'Cardiology',
+        specialization: 'Neurology',
         experience: '16 yrs exp',
         email: 'umesh@gmail.com',
         location: 'Apollo Hospital',
@@ -714,17 +770,30 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
         hospitalName: 'Apollo Hospital',
         qualification: 'MBBS',
         licenseNumber: 'TGMC-100',
+        registrationCouncil: 'TELANGANA_MEDICAL_COUNCIL',
+        profilePhotoUrl: 'http://20.193.140.173:8085/uploads/doctors/4/profile_a14915c7-50f5-4fb2-83c4-fc7aa7baac7a.png',
         documents: [
-          { id: 6, name: 'State Medical Council Certificate', type: 'PNG', status: 'Verified', verifiedDate: 'Verified' }
+          {
+            id: 6,
+            name: 'Registration Council Proof (TELANGANA_MEDICAL_COUNCIL)',
+            type: 'PNG',
+            status: 'Verified',
+            verifiedDate: 'Nov 18, 2026',
+            certificateNumber: 'TGMC-100',
+            issuer: 'Telangana State Medical Council (TSMC)',
+            issueDate: 'Oct 30, 2026',
+            expiryDate: 'Oct 29, 2036',
+            url: 'http://20.193.140.173:8085/uploads/doctors/4/doc_0_1893249b-3655-4b2b-a6fe-61b155e31a51.png'
+          }
         ],
-        notes: 'TELANGANA_MEDICAL_COUNCIL'
+        notes: 'TELANGANA_MEDICAL_COUNCIL • Verified Practitioner'
       },
       {
         id: '5',
         numericId: 5,
         name: 'Dr. seshu',
         initial: 'S',
-        avatarBg: '#10B981',
+        avatarBg: '#3B82F6',
         specialization: 'Cardiology',
         experience: '16 yrs exp',
         email: 'seshu@gmail.com',
@@ -737,57 +806,71 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
         hospitalName: 'Apollo Hospital',
         qualification: 'MBBS',
         licenseNumber: 'TGMC-12309',
+        registrationCouncil: 'TELANGANA_MEDICAL_COUNCIL',
+        profilePhotoUrl: 'http://20.193.140.173:8085/uploads/doctors/5/profile_d4e0aaf5-cc19-4d22-97f1-b10066d16f15.png',
         documents: [
-          { id: 7, name: 'Medical Council License', type: 'PNG', status: 'Verified', verifiedDate: 'Verified' }
+          {
+            id: 7,
+            name: 'Registration Council Proof (TELANGANA_MEDICAL_COUNCIL)',
+            type: 'PNG',
+            status: 'Verified',
+            verifiedDate: 'Nov 18, 2026',
+            certificateNumber: 'TGMC-12309',
+            issuer: 'Telangana State Medical Council (TSMC)',
+            issueDate: 'Oct 30, 2026',
+            expiryDate: 'Oct 29, 2036',
+            url: 'http://20.193.140.173:8085/uploads/doctors/5/doc_0_46b557cb-a428-4927-9aea-416fd6900297.png'
+          }
         ],
-        notes: 'TELANGANA_MEDICAL_COUNCIL'
-      },
-      {
-        id: '6',
-        numericId: 6,
-        name: 'Dr. ram',
-        initial: 'R',
-        avatarBg: '#3B82F6',
-        specialization: 'Cardiology',
-        experience: '16 yrs exp',
-        email: 'ram@gmail.com',
-        location: 'Apollo Hospital',
-        appliedDate: 'Applied Nov 1, 2026',
-        status: 'Approved',
-        verifiedDocsCount: 1,
-        totalDocsCount: 1,
-        phone: '+919848011223',
-        hospitalName: 'Apollo Hospital',
-        qualification: 'MBBS',
-        licenseNumber: 'TGMC-7890',
-        documents: [
-          { id: 12, name: 'State Medical Council Registration', type: 'PNG', status: 'Verified', verifiedDate: 'Verified' }
-        ],
-        notes: 'TELANGANA_MEDICAL_COUNCIL'
+        notes: 'TELANGANA_MEDICAL_COUNCIL • Verified Practitioner'
       },
       {
         id: '7',
         numericId: 7,
         name: 'Dr. varsha',
         initial: 'V',
-        avatarBg: '#EC4899',
+        avatarBg: '#A855F7',
         specialization: 'Cardiology',
         experience: '16 yrs exp',
         email: 'varsha@example.com',
         location: 'Apollo Hospital',
-        appliedDate: 'Applied Nov 3, 2026',
+        appliedDate: 'Applied Nov 03, 2026',
         status: 'Approved',
         verifiedDocsCount: 2,
         totalDocsCount: 2,
         phone: '+917673996919',
-        hospitalName: 'Apollo Hospital',
+        hospitalName: 'Apollo Hospital, Jubilee Hills, Yashoda Hospital, Somajiguda, Rainbow Children Hospital, Banjara Hills',
         qualification: 'MBBS',
         licenseNumber: 'TGMC-8907',
+        registrationCouncil: 'TELANGANA_MEDICAL_COUNCIL',
+        profilePhotoUrl: 'http://20.193.140.173:8085/uploads/doctors/7/profile_96b25946-0dd3-4d31-919f-90af8202196c.jpg',
         documents: [
-          { id: 8, name: 'State Medical Board License', type: 'JPG', status: 'Verified', verifiedDate: 'Verified' },
-          { id: 9, name: 'Specialty Certification', type: 'JPG', status: 'Verified', verifiedDate: 'Verified' }
+          {
+            id: 11,
+            name: 'Medical Degree / Practice Certificate',
+            type: 'JPG',
+            status: 'Verified',
+            verifiedDate: 'Nov 13, 2026',
+            certificateNumber: 'TGMC-8907',
+            issuer: 'Telangana State Medical Council (TSMC)',
+            issueDate: 'Nov 03, 2026',
+            expiryDate: 'Nov 02, 2036',
+            url: 'http://20.193.140.173:8085/uploads/doctors/7/doc_1_04b4f73d-2bfa-43f7-847a-9874acb48f18.jpg'
+          },
+          {
+            id: 10,
+            name: 'Registration Council Proof (TELANGANA_MEDICAL_COUNCIL)',
+            type: 'JPG',
+            status: 'Verified',
+            verifiedDate: 'Nov 03, 2026',
+            certificateNumber: 'TGMC-8907',
+            issuer: 'Telangana State Medical Council (TSMC)',
+            issueDate: 'Nov 03, 2026',
+            expiryDate: 'Nov 02, 2036',
+            url: 'http://20.193.140.173:8085/uploads/doctors/7/doc_0_9e7d6e4b-3d93-477d-bdac-554464408a01.jpg'
+          }
         ],
-        notes: 'TELANGANA_MEDICAL_COUNCIL'
+        notes: 'TELANGANA_MEDICAL_COUNCIL • Verified Practitioner'
       },
       {
         id: '8',
@@ -799,7 +882,7 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
         experience: '16 yrs exp',
         email: 'vamsi@gmail.com',
         location: 'Apollo Hospital',
-        appliedDate: 'Applied Nov 3, 2026',
+        appliedDate: 'Applied Nov 03, 2026',
         status: 'Approved',
         verifiedDocsCount: 1,
         totalDocsCount: 1,
@@ -807,110 +890,387 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
         hospitalName: 'Apollo Hospital',
         qualification: 'MBBS',
         licenseNumber: 'TGMC-12342',
+        registrationCouncil: 'TELANGANA_MEDICAL_COUNCIL',
+        profilePhotoUrl: 'http://20.193.140.173:8085/uploads/doctors/8/profile_db71bb2c-cf27-4edb-9b19-42450565fd2a.png',
         documents: [
-          { id: 10, name: 'Medical Council Registration', type: 'PNG', status: 'Verified', verifiedDate: 'Verified' }
+          {
+            id: 12,
+            name: 'Registration Council Proof (TELANGANA_MEDICAL_COUNCIL)',
+            type: 'PNG',
+            status: 'Verified',
+            verifiedDate: 'Nov 18, 2026',
+            certificateNumber: 'TGMC-12342',
+            issuer: 'Telangana State Medical Council (TSMC)',
+            issueDate: 'Nov 03, 2026',
+            expiryDate: 'Nov 02, 2036',
+            url: 'http://20.193.140.173:8085/uploads/doctors/8/doc_0_7d62ea53-4852-4120-aeb7-14e121069b5b.png'
+          }
         ],
-        notes: 'TELANGANA_MEDICAL_COUNCIL'
+        notes: 'TELANGANA_MEDICAL_COUNCIL • Verified Practitioner'
       },
       {
         id: '9',
         numericId: 9,
         name: 'Dr. Emily Roberts',
         initial: 'E',
-        avatarBg: '#8B5CF6',
+        avatarBg: '#F43F5E',
         specialization: 'Cardiology',
         experience: '5 yrs exp',
         email: 'emily.roberts@hospital.com',
-        location: 'City Hospital',
-        appliedDate: 'Applied Nov 4, 2026',
+        location: 'Apollo Hospital',
+        appliedDate: 'Applied Nov 04, 2026',
         status: 'Approved',
-        verifiedDocsCount: 2,
-        totalDocsCount: 2,
+        verifiedDocsCount: 1,
+        totalDocsCount: 1,
         phone: '+919876543710',
-        hospitalName: 'City Hospital',
+        hospitalName: 'Apollo Hospital, Jubilee Hills',
         qualification: 'MD',
-        licenseNumber: 'TGMC-123459',
+        licenseNumber: 'test',
+        registrationCouncil: 'Medical Council of India (MCI)',
+        profilePhotoUrl: 'https://d2kmj2okvs22p9.cloudfront.net/doctors/9/profile_9982ba62-739f-4f25-8326-18ff8357a8fd.png',
         documents: [
-          { id: 13, name: 'Medical Registration Certificate', type: 'PNG', status: 'Verified', verifiedDate: 'Verified' },
-          { id: 14, name: 'Board Certification in Cardiology', type: 'JPG', status: 'Verified', verifiedDate: 'Verified' }
+          {
+            id: 13,
+            name: 'Registration Council Proof (Medical Council of India (MCI))',
+            type: 'PNG',
+            status: 'Verified',
+            verifiedDate: 'Nov 16, 2026',
+            certificateNumber: 'test',
+            issuer: 'Medical Council of India (MCI)',
+            issueDate: 'Nov 04, 2026',
+            expiryDate: 'Nov 03, 2036',
+            url: 'http://20.193.140.173:8085/uploads/doctors/9/doc_0_365b8b55-f03a-4f1a-ad10-3f750e76c595.png'
+          }
         ],
-        notes: 'Medical Council of India (MCI)'
+        notes: 'Medical Council of India (MCI) • Verified Practitioner'
       },
       {
         id: '10',
         numericId: 10,
         name: 'Dr. Doctor',
         initial: 'D',
-        avatarBg: '#06B6D4',
+        avatarBg: '#84CC16',
         specialization: 'Cardiology',
         experience: '13 yrs exp',
         email: 't@gmail.com',
-        location: 'Apollo Hospital, Jubilee Hills',
+        location: 'Apollo Hospital',
         appliedDate: 'Applied Nov 10, 2026',
-        status: 'Rejected',
-        verifiedDocsCount: 3,
-        totalDocsCount: 3,
-        phone: '+919876543999',
+        status: 'Approved',
+        verifiedDocsCount: 4,
+        totalDocsCount: 4,
+        phone: '+917878787878',
         hospitalName: 'Apollo Hospital, Jubilee Hills',
-        qualification: 'MBBS, MD',
-        licenseNumber: 'TGMC-998811',
+        qualification: 'MBBS',
+        licenseNumber: 'Ted67',
+        registrationCouncil: 'Medical Council of India (MCI)',
+        profilePhotoUrl: 'https://d2kmj2okvs22p9.cloudfront.net/doctors/10/profile_920c53d3-01b6-408a-8006-8e25dc0da771.png',
         documents: [
-          { id: 15, name: 'Medical Council Certificate', type: 'PNG', status: 'Verified', verifiedDate: 'Verified' },
-          { id: 16, name: 'Clinical Experience Proof', type: 'JPG', status: 'Verified', verifiedDate: 'Verified' },
-          { id: 17, name: 'National ID Proof', type: 'PNG', status: 'Verified', verifiedDate: 'Verified' }
+          {
+            id: 20,
+            name: 'Medical Board Certificate',
+            type: 'PDF',
+            status: 'Verified',
+            verifiedDate: 'Nov 18, 2026',
+            certificateNumber: 'Ted67',
+            issuer: 'Medical Council of India (MCI)',
+            issueDate: 'Nov 10, 2026',
+            expiryDate: 'Nov 09, 2036',
+            url: 'https://d2kmj2okvs22p9.cloudfront.net/doctors/10/doc_3_ec22ff8b-54b5-4dbd-9c1a-a5348fe22a8f.pdf'
+          },
+          {
+            id: 16,
+            name: 'Government Medical ID / Certificate',
+            type: 'PNG',
+            status: 'Verified',
+            verifiedDate: 'Nov 17, 2026',
+            certificateNumber: 'Ted67',
+            issuer: 'National Medical Commission',
+            issueDate: 'Nov 10, 2026',
+            expiryDate: 'Nov 09, 2036',
+            url: 'https://d2kmj2okvs22p9.cloudfront.net/doctors/10/doc_2_b2eb1ae2-63db-4b1f-b479-97d6501c2822.png'
+          },
+          {
+            id: 15,
+            name: 'MBBS Degree Certificate',
+            type: 'PNG',
+            status: 'Verified',
+            verifiedDate: 'Nov 14, 2026',
+            certificateNumber: 'Ted67',
+            issuer: 'Medical Council of India (MCI)',
+            issueDate: 'Nov 10, 2026',
+            expiryDate: 'Nov 09, 2036',
+            url: 'https://d2kmj2okvs22p9.cloudfront.net/doctors/10/doc_1_fb539400-0153-4328-971b-f0f43a301b8c.png'
+          },
+          {
+            id: 14,
+            name: 'Registration Council Proof (Medical Council of India (MCI))',
+            type: 'PNG',
+            status: 'Verified',
+            verifiedDate: 'Nov 14, 2026',
+            certificateNumber: 'Ted67',
+            issuer: 'Medical Council of India (MCI)',
+            issueDate: 'Nov 10, 2026',
+            expiryDate: 'Nov 09, 2036',
+            url: 'https://d2kmj2okvs22p9.cloudfront.net/doctors/10/doc_0_b40d5781-bfb4-4d7a-a536-ee7753bcf5a2.png'
+          }
         ],
-        notes: 'Application rejected by administrator'
+        notes: 'Medical Council of India (MCI) • Verified Practitioner'
       },
       {
         id: '11',
         numericId: 11,
-        name: 'Dr. Suresh Reddy',
-        initial: 'S',
-        avatarBg: '#3B82F6',
-        specialization: 'Neurology',
-        experience: '14 yrs exp',
-        email: 'suresh.reddy@apollo.com',
+        name: 'Dr. Pavan Kumar gupta',
+        initial: 'P',
+        avatarBg: '#14B8A6',
+        specialization: 'Cardiology',
+        experience: '5 yrs exp',
+        email: 'pkgupta1023@gmail.com',
         location: 'Apollo Hospital',
-        appliedDate: 'Applied Nov 11, 2026',
+        appliedDate: 'Applied Nov 15, 2026',
         status: 'Approved',
-        verifiedDocsCount: 2,
-        totalDocsCount: 2,
-        phone: '+919848022338',
-        hospitalName: 'Apollo Hospital',
-        qualification: 'MBBS, DM',
-        licenseNumber: 'TGMC-123461',
+        verifiedDocsCount: 1,
+        totalDocsCount: 1,
+        phone: '+917386174359',
+        hospitalName: 'Apollo Hospital, Jubilee Hills, Rainbow Children Hospital, Banjara Hills',
+        qualification: 'MBBS',
+        licenseNumber: 'TGM67788',
+        registrationCouncil: 'Telangana Medical Council',
+        profilePhotoUrl: 'https://d2kmj2okvs22p9.cloudfront.net/doctors/11/profile_d71f0eae-5ffb-4d6f-9376-9432ed89d307.jpg',
         documents: [
-          { id: 18, name: 'Neurology Specialty License', type: 'PNG', status: 'Verified', verifiedDate: 'Verified' },
-          { id: 19, name: 'Medical Council Registration', type: 'JPG', status: 'Verified', verifiedDate: 'Verified' }
+          {
+            id: 17,
+            name: 'Registration Council Proof (Telangana Medical Council)',
+            type: 'JPG',
+            status: 'Verified',
+            verifiedDate: 'Nov 15, 2026',
+            certificateNumber: 'TGM67788',
+            issuer: 'Telangana Medical Council',
+            issueDate: 'Nov 15, 2026',
+            expiryDate: 'Nov 14, 2036',
+            url: 'https://d2kmj2okvs22p9.cloudfront.net/doctors/11/doc_0_7f3a7ace-c372-4b9d-aa1b-673f2997a1eb.jpg'
+          }
         ],
-        notes: 'TELANGANA_MEDICAL_COUNCIL'
+        notes: 'Telangana Medical Council • Verified Practitioner'
       },
       {
         id: '12',
         numericId: 12,
-        name: 'Dr. Priya Sharma',
-        initial: 'P',
-        avatarBg: '#14B8A6',
-        specialization: 'Pediatrics',
-        experience: '10 yrs exp',
-        email: 'priya.sharma@apollo.com',
+        name: 'Dr. Seshu sai',
+        initial: 'S',
+        avatarBg: '#6366F1',
+        specialization: 'Cardiology',
+        experience: '5 yrs exp',
+        email: 'test1a@gmail.fom',
         location: 'Apollo Hospital',
-        appliedDate: 'Applied Nov 12, 2026',
+        appliedDate: 'Applied Nov 15, 2026',
         status: 'Approved',
-        verifiedDocsCount: 2,
-        totalDocsCount: 2,
-        phone: '+919876543888',
-        hospitalName: 'Apollo Hospital',
-        qualification: 'MBBS, MD',
-        licenseNumber: 'TGMC-123462',
+        verifiedDocsCount: 1,
+        totalDocsCount: 1,
+        phone: '+919553259941',
+        hospitalName: 'Apollo Hospital, Jubilee Hills, Rainbow Children Hospital, Banjara Hills, Care Hospital, HITECH City',
+        qualification: 'MBBS',
+        licenseNumber: 'Test1234',
+        registrationCouncil: 'Medical Council of India (MCI)',
+        profilePhotoUrl: 'https://d2kmj2okvs22p9.cloudfront.net/doctors/12/profile_e5a3e5ea-77c4-4106-a8a6-54f1f9a984db.jpg',
         documents: [
-          { id: 20, name: 'Pediatrics Board Certificate', type: 'PNG', status: 'Verified', verifiedDate: 'Verified' },
-          { id: 21, name: 'State Medical Board License', type: 'JPG', status: 'Verified', verifiedDate: 'Verified' }
+          {
+            id: 18,
+            name: 'Registration Council Proof (Medical Council of India (MCI))',
+            type: 'PNG',
+            status: 'Verified',
+            verifiedDate: 'Nov 15, 2026',
+            certificateNumber: 'Test1234',
+            issuer: 'Medical Council of India (MCI)',
+            issueDate: 'Nov 15, 2026',
+            expiryDate: 'Nov 14, 2036',
+            url: 'https://d2kmj2okvs22p9.cloudfront.net/doctors/12/doc_0_87d9a835-b85e-41fe-afeb-e1fe866a275c.png'
+          }
         ],
-        notes: 'TELANGANA_MEDICAL_COUNCIL'
+        notes: 'Medical Council of India (MCI) • Verified Practitioner'
+      },
+      {
+        id: '13',
+        numericId: 13,
+        name: 'Dr. Ramesh Kumar',
+        initial: 'R',
+        avatarBg: '#F59E0B',
+        specialization: 'Orthopedics',
+        experience: '2 yrs exp',
+        email: 'adhi@gamil.cok',
+        location: 'Apollo Hospital',
+        appliedDate: 'Applied Nov 16, 2026',
+        status: 'Approved',
+        verifiedDocsCount: 1,
+        totalDocsCount: 1,
+        phone: '+919492026555',
+        hospitalName: 'Apollo Hospital, Jubilee Hills, Yashoda Hospital, Somajiguda, Rainbow Children Hospital, Banjara Hills, Care Hospital, HITECH City, Continental Hospital, Gachibowli',
+        qualification: 'FRCS',
+        licenseNumber: 'Tg63833738',
+        registrationCouncil: 'Medical Council of India (MCI)',
+        profilePhotoUrl: 'https://d2kmj2okvs22p9.cloudfront.net/doctors/13/profile_7fdc49a2-e86d-4250-826b-84990b38bed2.jpg',
+        documents: [
+          {
+            id: 19,
+            name: 'Registration Council Proof (Medical Council of India (MCI))',
+            type: 'JPG',
+            status: 'Verified',
+            verifiedDate: 'Nov 16, 2026',
+            certificateNumber: 'Tg63833738',
+            issuer: 'Medical Council of India (MCI)',
+            issueDate: 'Nov 16, 2026',
+            expiryDate: 'Nov 15, 2036',
+            url: 'https://d2kmj2okvs22p9.cloudfront.net/doctors/13/doc_0_893cc6d2-27cb-4b91-9ee1-e0db6d3d24e4.jpg'
+          }
+        ],
+        notes: 'Medical Council of India (MCI) • Verified Practitioner'
+      },
+      {
+        id: '14',
+        numericId: 14,
+        name: 'Dr. jagadeesh',
+        initial: 'J',
+        avatarBg: '#10B981',
+        specialization: 'Pediatrics',
+        experience: '1 yrs exp',
+        email: 'jagadeesh@gmail.com',
+        location: 'Rainbow Children Hospital',
+        hospitalName: 'Rainbow Children Hospital, Banjara Hills, Care Hospital, HITECH City, Continental Hospital, Gachibowli',
+        appliedDate: 'Applied Nov 18, 2026',
+        status: 'Approved',
+        verifiedDocsCount: 1,
+        totalDocsCount: 1,
+        phone: '+918688594599',
+        qualification: 'FRCS',
+        licenseNumber: 'Tgma24172629',
+        registrationCouncil: 'Andhra Pradesh Medical Council',
+        profilePhotoUrl: 'https://d2kmj2okvs22p9.cloudfront.net/doctors/14/profile_dfd6fc45-7c90-4a77-b86d-968eaf17ae14.jpg',
+        documents: [
+          {
+            id: 21,
+            name: 'Registration Council Proof (Andhra Pradesh Medical Council)',
+            type: 'JPG',
+            status: 'Verified',
+            verifiedDate: 'Nov 18, 2026',
+            certificateNumber: 'Tgma24172629',
+            issuer: 'Andhra Pradesh Medical Council',
+            issueDate: 'Nov 18, 2026',
+            expiryDate: 'Nov 17, 2036',
+            url: 'https://d2kmj2okvs22p9.cloudfront.net/doctors/14/doc_0_fdb02296-4c52-4dfb-a843-25f637decce6.jpg'
+          }
+        ],
+        notes: 'Andhra Pradesh Medical Council • Verified Practitioner'
+      },
+      {
+        id: '15',
+        numericId: 15,
+        name: 'Dr. Dinesh rao',
+        initial: 'D',
+        avatarBg: '#3B82F6',
+        specialization: 'Cardiology',
+        experience: '5 yrs exp',
+        email: 'dineshcheru@gmail.com',
+        location: 'Apollo Hospital',
+        hospitalName: 'Apollo Hospital, Jubilee Hills, Yashoda Hospital, Somajiguda',
+        appliedDate: 'Applied Nov 18, 2026',
+        status: 'Approved',
+        verifiedDocsCount: 1,
+        totalDocsCount: 1,
+        phone: '+918688889561',
+        qualification: 'MDS',
+        licenseNumber: 'Apm255255',
+        registrationCouncil: 'Medical Council of India (MCI)',
+        profilePhotoUrl: 'https://d2kmj2okvs22p9.cloudfront.net/doctors/15/profile_4d846b18-10af-47b2-9913-3809509c5f0c.jpg',
+        documents: [
+          {
+            id: 22,
+            name: 'Registration Council Proof (Medical Council of India (MCI))',
+            type: 'JPG',
+            status: 'Verified',
+            verifiedDate: 'Nov 18, 2026',
+            certificateNumber: 'Apm255255',
+            issuer: 'Medical Council of India (MCI)',
+            issueDate: 'Nov 18, 2026',
+            expiryDate: 'Nov 17, 2036',
+            url: 'https://d2kmj2okvs22p9.cloudfront.net/doctors/15/doc_0_5a758295-2f25-49ca-aa59-dc26c3134c5d.jpg'
+          }
+        ],
+        notes: 'Medical Council of India (MCI) • Verified Practitioner'
+      },
+      {
+        id: '16',
+        numericId: 16,
+        name: 'Dr. Akhil',
+        initial: 'A',
+        avatarBg: '#8B5CF6',
+        specialization: 'General Surgery',
+        experience: '1 yrs exp',
+        email: 'akhila@gmail.com',
+        location: 'Apollo Hospital',
+        hospitalName: 'Apollo Hospital, Jubilee Hills, Yashoda Hospital, Somajiguda, Rainbow Children Hospital, Banjara Hills',
+        appliedDate: 'Applied Nov 19, 2026',
+        status: 'Approved',
+        verifiedDocsCount: 1,
+        totalDocsCount: 1,
+        phone: '+919502583690',
+        qualification: 'FRCS',
+        licenseNumber: 'TN-3818171',
+        registrationCouncil: 'Tamil Nadu Medical Council',
+        profilePhotoUrl: 'https://d2kmj2okvs22p9.cloudfront.net/doctors/16/profile_3387dd46-81f0-46ba-a976-565640675058.jpg',
+        documents: [
+          {
+            id: 23,
+            name: 'Registration Council Proof (Tamil Nadu Medical Council)',
+            type: 'PDF',
+            status: 'Verified',
+            verifiedDate: 'Nov 19, 2026',
+            certificateNumber: 'TN-3818171',
+            issuer: 'Tamil Nadu Medical Council',
+            issueDate: 'Nov 19, 2026',
+            expiryDate: 'Nov 18, 2036',
+            url: 'https://d2kmj2okvs22p9.cloudfront.net/doctors/16/doc_0_5f4f670b-3d16-4e5e-8d43-bd367aba124d.pdf'
+          }
+        ],
+        notes: 'Tamil Nadu Medical Council • Verified Practitioner'
+      },
+      {
+        id: '17',
+        numericId: 17,
+        name: 'Dr. Varsha',
+        initial: 'V',
+        avatarBg: '#EC4899',
+        specialization: 'Gynecology',
+        experience: '5 yrs exp',
+        email: 'varshagurram869@gmail.com',
+        location: 'Apollo Hospital',
+        hospitalName: 'Apollo Hospital, Jubilee Hills, Yashoda Hospital, Somajiguda, Rainbow Children Hospital, Banjara Hills',
+        appliedDate: 'Applied Nov 19, 2026',
+        status: 'Approved',
+        verifiedDocsCount: 1,
+        totalDocsCount: 1,
+        phone: '+919177245227',
+        qualification: 'MBBS',
+        licenseNumber: '122421134532111',
+        registrationCouncil: 'Maharashtra Medical Council',
+        profilePhotoUrl: 'https://d2kmj2okvs22p9.cloudfront.net/doctors/17/profile_fa718efa-0291-4739-8f1e-e487c59bfb95.jpg',
+        documents: [
+          {
+            id: 24,
+            name: 'Registration Council Proof (Maharashtra Medical Council)',
+            type: 'JPG',
+            status: 'Verified',
+            verifiedDate: 'Nov 19, 2026',
+            certificateNumber: '122421134532111',
+            issuer: 'Maharashtra Medical Council',
+            issueDate: 'Nov 19, 2026',
+            expiryDate: 'Nov 18, 2036',
+            url: 'https://d2kmj2okvs22p9.cloudfront.net/doctors/17/doc_0_6e70b142-6ddb-4d88-95b3-71d79176d76d.jpg'
+          }
+        ],
+        notes: 'Maharashtra Medical Council • Verified Practitioner'
       }
     ];
-    return list.map(item => {
+
+    return this.sortApprovalsAscending(list.map(item => {
       const numId = this.extractNumber(item.id);
       const ov = overrides[String(item.id)] ||
                  (numId ? overrides[String(numId)] : undefined);
@@ -945,7 +1305,23 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
         }
       }
       return item;
-    });
+    }));
+  }
+
+  public mapSpecialization(id?: number | string, name?: string): string {
+    if (name && name.trim()) return name.trim();
+    const map: { [key: number]: string } = {
+      1: 'Cardiology',
+      2: 'Neurology',
+      9: 'Orthopedics',
+      12: 'Gynecology',
+      14: 'Pediatrics',
+      18: 'General Surgery'
+    };
+    if (id !== undefined && map[Number(id)]) {
+      return map[Number(id)];
+    }
+    return 'General Medicine';
   }
 
   public sortApprovalsAscending(list: DoctorApprovalItem[]): DoctorApprovalItem[] {
@@ -1185,12 +1561,21 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
   }
 
   private loadCachedOrInitialApprovals(): void {
-    const cached = localStorage.getItem('activeLife_doctorApprovals_v1');
+    const cached = localStorage.getItem('activeLife_doctorApprovals_v2') || localStorage.getItem('activeLife_doctorApprovals_v1');
     if (cached) {
       try {
         const parsed = JSON.parse(cached);
         if (Array.isArray(parsed) && parsed.length >= 10) {
-          this.requests = this.sortApprovalsAscending(parsed);
+          this.requests = this.sortApprovalsAscending(parsed.map(item => {
+            if (item.profilePhotoUrl) item.profilePhotoUrl = this.normalizeDocumentUrl(item.profilePhotoUrl);
+            if (Array.isArray(item.documents)) {
+              item.documents.forEach((d: any) => {
+                if (d.url) d.url = this.normalizeDocumentUrl(d.url);
+              });
+            }
+            return item;
+          }));
+          this.saveToStorage();
           this.applyFilters();
           this.cdr.detectChanges();
           return;
@@ -1245,51 +1630,57 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
     const backendIsAllVerified = doc.isAllDocumentsVerified ?? doc.isVerified;
 
     const mappedDocuments: VerificationDocument[] = docs.map((d: any, dIdx: number) => {
-      const docName = d.name || d.documentName || d.title || (d.documentType === 'OTHER' ? `Registration Council Proof (${doc.registrationCouncil || 'Medical Council'})` : (d.documentType || (dIdx === 0 ? 'Medical Council Registration' : 'Government Medical ID / Certificate')));
+      let docName = (d.name || d.documentName || d.title || '').trim();
+      if (!docName) {
+        if (dIdx === 0) {
+          docName = `Registration Council Proof (${doc.registrationCouncil || 'Medical Council'})`;
+        } else if (dIdx === 1) {
+          docName = 'Medical Degree / Practice Certificate';
+        } else if (dIdx === 2) {
+          docName = 'Government Medical ID / Certificate';
+        } else if (dIdx === 3) {
+          docName = 'Medical Board Certificate';
+        } else {
+          docName = `Medical Document ${dIdx + 1}`;
+        }
+      }
       const targetDocId = d.id !== undefined ? Number(d.id) : (d.documentId !== undefined ? Number(d.documentId) : (index * 10 + dIdx + 1));
       const isLocallyViewed = this.isDocViewed(String(docId), docName, targetDocId);
       const isExplicitBackendVerified = d.verificationStatus === 'VERIFIED' || d.isVerified === true;
       const isVerified = status === 'Approved' ? true : (isLocallyViewed || isExplicitBackendVerified);
 
-      const rawUrl = d.documentUrl || d.url || '';
-      const fullUrl = (rawUrl && rawUrl.startsWith('/')) ? (`${environment.serviceUrl}${rawUrl}`) : rawUrl;
+      const rawUrl = (d.documentUrl || d.url || '').trim();
+      const fullUrl = this.normalizeDocumentUrl(rawUrl);
+
+      const cleanUrl = (fullUrl || rawUrl).toLowerCase().split('?')[0];
+      const docType = cleanUrl.endsWith('.pdf') ? 'PDF' : (cleanUrl.endsWith('.png') ? 'PNG' : 'JPG');
 
       return {
         id: targetDocId,
         name: docName,
-        type: (rawUrl && rawUrl.toLowerCase().endsWith('.pdf')) ? 'PDF' : ((rawUrl && rawUrl.toLowerCase().endsWith('.png')) ? 'PNG' : 'JPG'),
+        type: docType,
         status: isVerified ? 'Verified' : 'Pending',
         verifiedDate: isVerified ? (d.verifiedAt || d.uploadedAt ? this.safeFormatDate(d.verifiedAt || d.uploadedAt, 'Verified') : 'Verified') : '',
         url: fullUrl,
         certificateNumber: d.certificateNumber || doc.registrationNumber || `TGMC-${10000 + index}`,
         issuer: d.issuer || doc.registrationCouncil || 'Telangana State Medical Council (TSMC)',
-        issueDate: this.safeFormatDate(doc.createdAt, 'Oct 28, 2026'),
-        expiryDate: 'Oct 27, 2036'
+        issueDate: this.safeFormatDate(doc.createdAt, 'Nov 19, 2026'),
+        expiryDate: 'Nov 18, 2036'
       };
     });
 
     const fallbackDocs: VerificationDocument[] = [
       {
         id: Number(doc.id ? Number(doc.id) * 10 + 1 : 1),
-        name: 'Medical Council Registration' + (doc.registrationCouncil ? ` (${doc.registrationCouncil})` : ''),
-        type: 'PDF',
-        status: this.isDocViewed(String(docId), 'Medical Council Registration' + (doc.registrationCouncil ? ` (${doc.registrationCouncil})` : '')) ? 'Verified' : 'Pending',
+        name: `Registration Council Proof (${doc.registrationCouncil || 'Medical Council'})`,
+        type: 'JPG',
+        status: this.isDocViewed(String(docId), `Registration Council Proof (${doc.registrationCouncil || 'Medical Council'})`) ? 'Verified' : 'Pending',
         verifiedDate: '',
         certificateNumber: doc.registrationNumber || 'TGMC-123456',
         issuer: doc.registrationCouncil || 'Medical Council of India (MCI)',
-        issueDate: this.safeFormatDate(doc.createdAt, 'Oct 28, 2026'),
-        expiryDate: 'Oct 27, 2036'
-      },
-      {
-        id: Number(doc.id ? Number(doc.id) * 10 + 2 : 2),
-        name: 'Government Medical ID / Certificate',
-        type: 'JPG',
-        status: this.isDocViewed(String(docId), 'Government Medical ID / Certificate') ? 'Verified' : 'Pending',
-        verifiedDate: '',
-        certificateNumber: 'NMC-GOV-' + (doc.id || '9812'),
-        issuer: 'National Medical Commission (NMC), Govt. of India',
-        issueDate: 'Jan 20, 2021',
-        expiryDate: 'Jan 19, 2031'
+        issueDate: this.safeFormatDate(doc.createdAt, 'Nov 19, 2026'),
+        expiryDate: 'Nov 18, 2036',
+        url: doc.profilePhotoUrl ? (doc.profilePhotoUrl.startsWith('http') ? doc.profilePhotoUrl : `${environment.serviceUrl}${doc.profilePhotoUrl}`) : ''
       }
     ];
 
@@ -1326,13 +1717,16 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
       appliedDate = doc.appliedDate.startsWith('Applied') ? doc.appliedDate : ('Applied ' + doc.appliedDate);
     }
 
+    const rawPhoto = (doc.profilePhotoUrl || '').trim();
+    const profilePhoto = this.normalizeDocumentUrl(rawPhoto);
+
     return {
       id: doc.id ? String(doc.id) : `REQ-${101 + index}`,
       numericId: Number(doc.id || doc.doctorId || (index + 1)),
       name: cleanName,
       initial: initial,
       avatarBg: avatarBg,
-      specialization: doc.specialization || (doc.specializationId === 1 ? 'Cardiology' : 'General Medicine'),
+      specialization: this.mapSpecialization(doc.specializationId, doc.specialization),
       experience: expYrs,
       email: doc.email || '',
       location: loc,
@@ -1342,10 +1736,11 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
       verifiedDocsCount: finalVerifiedCount,
       totalDocsCount: finalTotalCount,
       phone: doc.mobileNumber || doc.phone || '',
-      hospitalName: loc,
+      hospitalName: doc.hospitalName || loc,
       qualification: doc.qualification || 'MBBS',
       licenseNumber: doc.registrationNumber || 'TGMC-123456',
       registrationCouncil: doc.registrationCouncil || 'Medical Council of India (MCI)',
+      profilePhotoUrl: profilePhoto,
       documents: finalDocs,
       notes: doc.rejectionReason || (doc.registrationCouncil ? `${doc.registrationCouncil} • Verified Practitioner` : 'Medical Council of India (MCI) • Verified Practitioner')
     };
@@ -1431,6 +1826,7 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
   }
 
   private saveToStorage(): void {
+    localStorage.setItem('activeLife_doctorApprovals_v2', JSON.stringify(this.requests));
     localStorage.setItem('activeLife_doctorApprovals_v1', JSON.stringify(this.requests));
   }
 
@@ -1888,6 +2284,9 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
 
   public openCertificateViewer(doc: VerificationDocument, doctor: DoctorApprovalItem): void {
     this.activeCertificateDoctor = doctor;
+    if (doc) {
+      doc.url = this.normalizeDocumentUrl(doc.url);
+    }
     this.activeCertificateDoc = doc;
     this.certViewMode = 'certificate';
     const docs = doctor.documents || [];
@@ -1920,6 +2319,9 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
     const docs = this.activeCertificateDoctor.documents;
     if (index >= 0 && index < docs.length) {
       this.activeDocIndex = index;
+      if (docs[index]) {
+        docs[index].url = this.normalizeDocumentUrl(docs[index].url);
+      }
       this.activeCertificateDoc = docs[index];
       this.certViewMode = 'certificate';
       this.updateSafeDocUrl();
@@ -1991,6 +2393,7 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
   private updateSafeDocUrl(): void {
     this.docImageLoadFailed = false;
     if (this.activeCertificateDoc?.url) {
+      this.activeCertificateDoc.url = this.normalizeDocumentUrl(this.activeCertificateDoc.url);
       this.safeDocUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.activeCertificateDoc.url);
     } else {
       this.safeDocUrl = null;
@@ -1998,6 +2401,14 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
   }
 
   public onDocLoadError(): void {
+    if (this.activeCertificateDoc?.url && this.activeCertificateDoc.url.includes('healthappams.s3')) {
+      const fixed = this.normalizeDocumentUrl(this.activeCertificateDoc.url);
+      if (fixed !== this.activeCertificateDoc.url) {
+        this.activeCertificateDoc.url = fixed;
+        this.updateSafeDocUrl();
+        return;
+      }
+    }
     this.docImageLoadFailed = true;
     this.cdr.markForCheck();
   }
