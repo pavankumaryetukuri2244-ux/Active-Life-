@@ -495,15 +495,15 @@
         <!-- Backend Certificate Document Viewer (Displays backend document directly in frontend) -->
         <div class="my-1">
           <div class="da-doc-viewer-box rounded-3 border p-2 mb-2 text-center shadow-sm d-flex align-items-center justify-content-center"
-               style="min-height: 220px; max-height: 320px; overflow: hidden; background: #F8FAFC; position: relative;">
-            @if (activeCertificateDoc.url && !docImageLoadFailed) {
+               style="min-height: 220px; max-height: 380px; overflow: hidden; background: #F8FAFC; position: relative;">
+            @if (activeCertificateDoc.url) {
               @if (isPdf(activeCertificateDoc.url)) {
-                <iframe [src]="safeDocUrl" class="w-100 h-100 border-0 rounded-2" style="min-height: 300px;" title="Doctor Certificate PDF"></iframe>
+                <iframe [src]="safeDocUrl" class="w-100 h-100 border-0 rounded-2" style="min-height: 340px;" title="Doctor Certificate PDF"></iframe>
               } @else {
                 <img [src]="activeCertificateDoc.url" [alt]="activeCertificateDoc.name"
-                  (error)="onDocLoadError()"
+                  (error)="onDocLoadError($event)"
                   class="img-fluid rounded border shadow-sm bg-white"
-                  style="max-height: 300px; max-width: 100%; object-fit: contain;" />
+                  style="max-height: 360px; max-width: 100%; object-fit: contain;" />
               }
             } @else {
               <div class="p-3 text-center text-dark">

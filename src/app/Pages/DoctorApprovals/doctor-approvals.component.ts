@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy, HostListener, ChangeDetectorRef } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { HttpHeaders } from '@angular/common/http';
 import { Subject } from 'rxjs';
 import { takeUntil, finalize, timeout } from 'rxjs/operators';
 import { WebapiService } from '../../services/webapi.service';
@@ -609,10 +610,12 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
     if (!url) return '';
     let clean = url.trim();
     // Direct AWS S3 access is blocked by bucket policy (HTTP 403 Forbidden).
-    // CloudFront CDN serves all authentic uploaded documents reliably with HTTP 200 OK.
+    // CloudFront CDN serves authentic uploaded documents reliably with HTTP 200 OK.
+    clean = clean.replace(/https?:\/\/[a-z0-9.-]+\.s3[.-][a-z0-9.-]*\.amazonaws\.com\/(?:healthappams\/)?/gi, 'https://d2kmj2okvs22p9.cloudfront.net/');
+    clean = clean.replace(/https?:\/\/s3[.-][a-z0-9.-]*\.amazonaws\.com\/[^\/]+\//gi, 'https://d2kmj2okvs22p9.cloudfront.net/');
     clean = clean.replace(/https?:\/\/healthappams\.s3[.-][a-z0-9-]*\.amazonaws\.com/gi, 'https://d2kmj2okvs22p9.cloudfront.net');
     clean = clean.replace(/https?:\/\/healthappams\.s3\.amazonaws\.com/gi, 'https://d2kmj2okvs22p9.cloudfront.net');
-    if (clean.startsWith('http://') || clean.startsWith('https://')) {
+    if (clean.startsWith('http://') || clean.startsWith('https://') || clean.startsWith('blob:') || clean.startsWith('data:')) {
       return clean;
     }
     if (clean.startsWith('/')) {
@@ -1627,7 +1630,30 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
     }
 
     const expYrs = doc.experienceYears ? `${doc.experienceYears} yrs exp` : (doc.experience || '16 yrs exp');
-    const docs = Array.isArray(doc.documents) ? doc.documents : [];
+    
+    // Extract raw documents array across all possible backend field names or JSON string
+    let rawDocs: any = doc.documents || doc.doctorDocuments || doc.verificationDocuments || doc.credentials || doc.certificates || doc.documentList || doc.files || doc.doctorCertificates;
+    if (typeof rawDocs === 'string') {
+      try {
+        rawDocs = JSON.parse(rawDocs);
+      } catch (e) {
+        rawDocs = [];
+      }
+    }
+    let docs: any[] = Array.isArray(rawDocs) ? rawDocs : [];
+
+    // If still empty, check for direct document fields on the doctor object itself (e.g. uploaded directly on doctor entity)
+    if (docs.length === 0) {
+      const directCandidates = [
+        { name: `Registration Council Proof (${doc.registrationCouncil || 'Medical Council'})`, url: doc.documentUrl || doc.certificateUrl || doc.registrationCertificateUrl || doc.fileUrl || doc.documentPath || doc.filePath },
+        { name: 'Medical Degree / Practice Certificate', url: doc.medicalCertificateUrl || doc.degreeCertificateUrl },
+        { name: 'Medical ID Proof', url: doc.idProofUrl || doc.registrationProofUrl }
+      ].filter(item => !!item.url);
+
+      if (directCandidates.length > 0) {
+        docs = directCandidates;
+      }
+    }
     
     // Backend document counts and status keys
     const backendTotalDocs = doc.totalDocumentsCount ?? doc.totalDocsCount;
@@ -1635,7 +1661,12 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
     const backendIsAllVerified = doc.isAllDocumentsVerified ?? doc.isVerified;
 
     const mappedDocuments: VerificationDocument[] = docs.map((d: any, dIdx: number) => {
-      let docName = (d.name || d.documentName || d.title || '').trim();
+      let docName = '';
+      if (typeof d === 'string') {
+        docName = `Document ${dIdx + 1}`;
+      } else if (d && typeof d === 'object') {
+        docName = (d.name || d.documentName || d.title || d.documentType || '').trim();
+      }
       if (!docName) {
         if (dIdx === 0) {
           docName = `Registration Council Proof (${doc.registrationCouncil || 'Medical Council'})`;
@@ -1649,12 +1680,17 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
           docName = `Medical Document ${dIdx + 1}`;
         }
       }
-      const targetDocId = d.id !== undefined ? Number(d.id) : (d.documentId !== undefined ? Number(d.documentId) : (index * 10 + dIdx + 1));
+      const targetDocId = (d && typeof d === 'object') ? (d.id !== undefined ? Number(d.id) : (d.documentId !== undefined ? Number(d.documentId) : (index * 10 + dIdx + 1))) : (index * 10 + dIdx + 1);
       const isLocallyViewed = this.isDocViewed(String(docId), docName, targetDocId);
-      const isExplicitBackendVerified = d.verificationStatus === 'VERIFIED' || d.isVerified === true;
+      const isExplicitBackendVerified = (d && typeof d === 'object') ? (d.verificationStatus === 'VERIFIED' || d.isVerified === true) : false;
       const isVerified = status === 'Approved' ? true : (isLocallyViewed || isExplicitBackendVerified);
 
-      const rawUrl = (d.documentUrl || d.url || '').trim();
+      let rawUrl = '';
+      if (typeof d === 'string') {
+        rawUrl = d.trim();
+      } else if (d && typeof d === 'object') {
+        rawUrl = (d.documentUrl || d.url || d.fileUrl || d.documentPath || d.filePath || d.path || d.downloadUrl || d.certificateUrl || d.document || d.docUrl || d.src || '').trim();
+      }
       const fullUrl = this.normalizeDocumentUrl(rawUrl);
 
       const cleanUrl = (fullUrl || rawUrl).toLowerCase().split('?')[0];
@@ -1667,8 +1703,8 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
         status: isVerified ? 'Verified' : 'Pending',
         verifiedDate: isVerified ? (d.verifiedAt || d.uploadedAt ? this.safeFormatDate(d.verifiedAt || d.uploadedAt, 'Verified') : 'Verified') : '',
         url: fullUrl,
-        certificateNumber: d.certificateNumber || doc.registrationNumber || `TGMC-${10000 + index}`,
-        issuer: d.issuer || doc.registrationCouncil || 'Telangana State Medical Council (TSMC)',
+        certificateNumber: (d && d.certificateNumber) || doc.registrationNumber || `TGMC-${10000 + index}`,
+        issuer: (d && d.issuer) || doc.registrationCouncil || 'Telangana State Medical Council (TSMC)',
         issueDate: this.safeFormatDate(doc.createdAt, 'Nov 19, 2026'),
         expiryDate: 'Nov 18, 2036'
       };
@@ -1685,7 +1721,7 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
         issuer: doc.registrationCouncil || 'Medical Council of India (MCI)',
         issueDate: this.safeFormatDate(doc.createdAt, 'Nov 19, 2026'),
         expiryDate: 'Nov 18, 2036',
-        url: doc.profilePhotoUrl ? (doc.profilePhotoUrl.startsWith('http') ? doc.profilePhotoUrl : `${environment.serviceUrl}${doc.profilePhotoUrl}`) : ''
+        url: doc.profilePhotoUrl ? this.normalizeDocumentUrl(doc.profilePhotoUrl) : ''
       }
     ];
 
@@ -2297,6 +2333,11 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
     this.isCertificateViewerOpen = true;
     this.updateSafeDocUrl();
 
+    // If doc url points to serviceUrl (port 8085 requires Bearer auth), fetch binary blob
+    if (doc?.url && doc.url.includes(environment.serviceUrl)) {
+      this.loadAuthenticatedDocBlob(doc.url);
+    }
+
     // Admin views document: now mark as Verified!
     this.markDocAsVerified(doc, doctor);
 
@@ -2327,6 +2368,11 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
       this.activeCertificateDoc = docs[index];
       this.certViewMode = 'certificate';
       this.updateSafeDocUrl();
+
+      // If doc url points to serviceUrl, fetch binary blob with Bearer token
+      if (docs[index]?.url && docs[index].url.includes(environment.serviceUrl)) {
+        this.loadAuthenticatedDocBlob(docs[index].url);
+      }
 
       // Admin views document: mark selected certificate as Verified!
       this.markDocAsVerified(docs[index], this.activeCertificateDoctor);
@@ -2402,15 +2448,64 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
     }
   }
 
-  public onDocLoadError(): void {
-    if (this.activeCertificateDoc?.url && this.activeCertificateDoc.url.includes('healthappams.s3')) {
-      const fixed = this.normalizeDocumentUrl(this.activeCertificateDoc.url);
-      if (fixed !== this.activeCertificateDoc.url) {
-        this.activeCertificateDoc.url = fixed;
+  private loadAuthenticatedDocBlob(url: string): void {
+    if (!url || url.startsWith('blob:') || url.startsWith('data:')) return;
+    const token = localStorage.getItem('accessToken');
+    let headers = new HttpHeaders();
+    if (token && token !== 'null' && token !== 'undefined') {
+      const cleanToken = token.replace(/^"(.*)"$/, '$1').trim();
+      headers = headers.set('Authorization', 'Bearer ' + cleanToken);
+    }
+    this.webApiService.Http.get(url, { headers, responseType: 'blob' }).subscribe({
+      next: (blob: Blob) => {
+        if (blob && blob.size > 0 && this.activeCertificateDoc) {
+          const blobUrl = URL.createObjectURL(blob);
+          this.activeCertificateDoc.url = blobUrl;
+          this.safeDocUrl = this.sanitizer.bypassSecurityTrustResourceUrl(blobUrl);
+          this.docImageLoadFailed = false;
+          this.cdr.markForCheck();
+          this.cdr.detectChanges();
+        }
+      },
+      error: (err: any) => {
+        console.warn('[DoctorApprovals] Could not fetch authenticated doc blob, keeping direct url:', err);
+      }
+    });
+  }
+
+  public onDocLoadError(event?: any): void {
+    if (!this.activeCertificateDoc) {
+      this.docImageLoadFailed = true;
+      this.cdr.markForCheck();
+      return;
+    }
+
+    const currentUrl = this.activeCertificateDoc.url || '';
+
+    // 1. If it was an S3 bucket URL, convert to CloudFront
+    if (currentUrl.includes('amazonaws.com')) {
+      const cdnUrl = this.normalizeDocumentUrl(currentUrl);
+      if (cdnUrl && cdnUrl !== currentUrl) {
+        this.activeCertificateDoc.url = cdnUrl;
         this.updateSafeDocUrl();
         return;
       }
     }
+
+    // 2. If it failed on serviceUrl (port 8085 without auth header), fetch as blob with Bearer token
+    if (currentUrl.includes(environment.serviceUrl) && !currentUrl.startsWith('blob:')) {
+      this.loadAuthenticatedDocBlob(currentUrl);
+      return;
+    }
+
+    // 3. If it failed on CloudFront, try serviceUrl with Bearer authentication
+    if (currentUrl.includes('cloudfront.net')) {
+      const pathOnly = currentUrl.replace(/https?:\/\/[^\/]+/i, '');
+      const srvUrl = `${environment.serviceUrl}${pathOnly}`;
+      this.loadAuthenticatedDocBlob(srvUrl);
+      return;
+    }
+
     this.docImageLoadFailed = true;
     this.cdr.markForCheck();
   }
