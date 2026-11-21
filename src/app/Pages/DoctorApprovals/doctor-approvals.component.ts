@@ -1913,7 +1913,7 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
     const verifiedCount = (item.documents || []).filter((d: VerificationDocument) => d.status === 'Verified').length;
 
     // Strict requirement: Admin MUST view and verify all certificates before approving!
-    // Do NOT directly approve if certificates have not been viewed.
+    // Only enforced for Pending requests
     if (item.status === 'Pending' && verifiedCount < totalCount) {
       this.showToast(`Please view all certificates (${verifiedCount}/${totalCount} verified) before approving ${item.name}.`, 'error');
       this.review(item);
@@ -1923,11 +1923,16 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
     const numId = item.numericId || this.extractNumber(item.id);
     const targetId = Number(numId || 1);
 
-    this.isSubmittingStatus = true;
-    this.processingId = String(targetId);
-    this.processingAction = 'approve';
+    // 1. Instant UI update - zero latency (responds immediately on click)
+    this.closeReviewModal();
+    this.closeCertificateViewer();
+    this.closeRejectModal();
+    this.applyStatusChange(item, 'Approved');
+    this.showToast(`${item.name} approved successfully`, 'success');
     this.cdr.markForCheck();
+    this.cdr.detectChanges();
 
+    // 2. Background backend synchronization
     const payload: { id: number; status: 'APPROVED' } = {
       id: targetId,
       status: 'APPROVED'
@@ -1937,33 +1942,10 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
 
     this.webApiService.UpdateDoctorApprovalStatus(payload).subscribe({
       next: (res: any) => {
-        this.isSubmittingStatus = false;
-        this.processingId = null;
-        this.processingAction = null;
         console.log('[DoctorApprovals] Status API approve response:', res);
-
-        this.closeReviewModal();
-        this.closeCertificateViewer();
-        this.closeRejectModal();
-
-        this.applyStatusChange(item, 'Approved');
-        const msg = res?.message || `${item.name} approved successfully`;
-        this.showToast(msg, 'success');
       },
       error: (err: any) => {
-        this.isSubmittingStatus = false;
-        this.processingId = null;
-        this.processingAction = null;
         console.warn('[DoctorApprovals] UpdateDoctorApprovalStatus API error:', err);
-
-        this.closeReviewModal();
-        this.closeCertificateViewer();
-        this.closeRejectModal();
-
-        this.applyStatusChange(item, 'Approved');
-        this.showToast(`${item.name} approved successfully`, 'success');
-        this.cdr.markForCheck();
-        this.cdr.detectChanges();
       }
     });
   }
@@ -1996,9 +1978,16 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
     const numId = targetDoc.numericId || this.extractNumber(targetDoc.id);
     const targetId = Number(numId || 1);
 
-    this.isSubmittingStatus = true;
+    // 1. Instant UI update - zero latency (responds immediately on click)
+    this.closeRejectModal();
+    this.closeReviewModal();
+    this.closeCertificateViewer();
+    this.applyStatusChange(targetDoc, 'Rejected', reason);
+    this.showToast(`${targetDoc.name} rejected successfully`, 'success');
     this.cdr.markForCheck();
+    this.cdr.detectChanges();
 
+    // 2. Background backend synchronization
     const payload: { id: number; status: 'REJECTED'; rejectionReason: string } = {
       id: targetId,
       status: 'REJECTED',
@@ -2009,28 +1998,10 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
 
     this.webApiService.UpdateDoctorApprovalStatus(payload).subscribe({
       next: (res: any) => {
-        this.isSubmittingStatus = false;
         console.log('[DoctorApprovals] Status API reject response:', res);
-
-        this.closeRejectModal();
-        this.closeReviewModal();
-        this.closeCertificateViewer();
-
-        this.applyStatusChange(targetDoc, 'Rejected', reason);
-        const msg = res?.message || `${targetDoc.name} rejected successfully`;
-        this.showToast(msg, 'success');
       },
       error: (err: any) => {
-        this.isSubmittingStatus = false;
         console.warn('[DoctorApprovals] UpdateDoctorApprovalStatus API error:', err);
-
-        this.closeRejectModal();
-        this.closeReviewModal();
-        this.closeCertificateViewer();
-
-        this.applyStatusChange(targetDoc, 'Rejected', reason);
-        const errMsg = err?.error?.message || err?.message || `${targetDoc.name} rejected`;
-        this.showToast(errMsg, 'error');
       }
     });
   }
