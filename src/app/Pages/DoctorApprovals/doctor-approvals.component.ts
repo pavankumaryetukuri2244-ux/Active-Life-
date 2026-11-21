@@ -510,24 +510,33 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
   public serverTotalCount: number | null = null;
 
   public get pendingCount(): number {
+    if (this.requests && this.requests.length > 0) {
+      return this.requests.filter(r => (r.status || '').toLowerCase() === 'pending').length;
+    }
     if (this.serverPendingCount !== null && this.serverPendingCount !== undefined) {
       return this.serverPendingCount;
     }
-    return (this.requests || []).filter(r => (r.status || '').toLowerCase() === 'pending').length;
+    return 0;
   }
 
   public get approvedCount(): number {
+    if (this.requests && this.requests.length > 0) {
+      return this.requests.filter(r => (r.status || '').toLowerCase() === 'approved').length;
+    }
     if (this.serverApprovedCount !== null && this.serverApprovedCount !== undefined) {
       return this.serverApprovedCount;
     }
-    return (this.requests || []).filter(r => (r.status || '').toLowerCase() === 'approved').length;
+    return 0;
   }
 
   public get rejectedCount(): number {
+    if (this.requests && this.requests.length > 0) {
+      return this.requests.filter(r => (r.status || '').toLowerCase() === 'rejected').length;
+    }
     if (this.serverRejectedCount !== null && this.serverRejectedCount !== undefined) {
       return this.serverRejectedCount;
     }
-    return (this.requests || []).filter(r => (r.status || '').toLowerCase() === 'rejected').length;
+    return 0;
   }
 
   // Selected item for Review Modal
@@ -1872,6 +1881,12 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
   }
 
   public updateStats(): void {
+    if (this.requests && this.requests.length > 0) {
+      this.serverPendingCount = this.requests.filter(r => (r.status || '').toLowerCase() === 'pending').length;
+      this.serverApprovedCount = this.requests.filter(r => (r.status || '').toLowerCase() === 'approved').length;
+      this.serverRejectedCount = this.requests.filter(r => (r.status || '').toLowerCase() === 'rejected').length;
+      this.serverTotalCount = this.requests.length;
+    }
     this.cdr.markForCheck();
   }
 
