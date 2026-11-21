@@ -1915,13 +1915,10 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
         this.processingAction = null;
         console.warn('[DoctorApprovals] UpdateDoctorApprovalStatus API error:', err);
 
-        this.closeReviewModal();
-        this.closeCertificateViewer();
-        this.closeRejectModal();
-
-        this.applyStatusChange(item, 'Approved');
-        const errMsg = err?.error?.message || err?.message || `${item.name} approved`;
-        this.showToast(errMsg, 'success');
+        const errMsg = err?.error?.message || err?.message || 'Failed to update doctor approval status';
+        this.showToast(errMsg, 'error');
+        this.cdr.markForCheck();
+        this.cdr.detectChanges();
       }
     });
   }

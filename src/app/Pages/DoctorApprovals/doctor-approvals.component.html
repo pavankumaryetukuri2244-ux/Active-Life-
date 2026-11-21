@@ -517,59 +517,10 @@
             }
           </div>
 
-          <!-- Backend Document & Doctor Details Cards -->
+          <!-- Backend Doctor Details Card -->
           <div class="row g-2 mb-2">
-            <!-- Document Metadata Card -->
-            <div class="col-md-6">
-              <div class="card border-0 rounded-3 shadow-none p-2 px-3" style="background: #F8FAFC; border: 1px solid #E2E8F0 !important;">
-                <div class="d-flex align-items-center justify-content-between mb-1">
-                  <span class="text-uppercase fw-bold text-muted" style="font-size: 10.5px; letter-spacing: 0.05em;">Document Details</span>
-                  <span class="badge"
-                    [style.background]="activeCertificateDoc.status === 'Verified' ? '#DCFCE7' : '#FEF3C7'"
-                    [style.color]="activeCertificateDoc.status === 'Verified' ? '#16A34A' : '#D97706'"
-                    style="font-size: 10.5px; border-radius: 6px;">
-                    {{ activeCertificateDoc.status }}
-                  </span>
-                </div>
-
-                <div class="mb-1">
-                  <span class="text-muted d-block" style="font-size: 11px;">Document Name</span>
-                  <strong class="text-dark" style="font-size: 12.5px;">{{ activeCertificateDoc.name }}</strong>
-                </div>
-
-                <div class="row g-1 mb-1">
-                  <div class="col-6">
-                    <span class="text-muted d-block" style="font-size: 11px;">Registration / Certificate #</span>
-                    <strong class="text-dark" style="font-size: 12px;">{{ activeCertificateDoc.certificateNumber || activeCertificateDoctor.licenseNumber || '—' }}</strong>
-                  </div>
-                  <div class="col-6">
-                    <span class="text-muted d-block" style="font-size: 11px;">File Type</span>
-                    <strong class="text-dark" style="font-size: 12px;">{{ activeCertificateDoc.type || 'Document' }}</strong>
-                  </div>
-                </div>
-
-                <div class="mb-1">
-                  <span class="text-muted d-block" style="font-size: 11px;">Registration Council / Authority</span>
-                  <strong class="text-dark text-truncate d-block" style="font-size: 12px;" [title]="activeCertificateDoc.issuer || activeCertificateDoctor['registrationCouncil']">
-                    {{ activeCertificateDoc.issuer || activeCertificateDoctor['registrationCouncil'] || 'Medical Council of India (MCI)' }}
-                  </strong>
-                </div>
-
-                <div class="row g-1">
-                  <div class="col-6">
-                    <span class="text-muted d-block" style="font-size: 11px;">Verification Date</span>
-                    <span class="text-dark" style="font-size: 11.5px;">{{ activeCertificateDoc.verifiedDate || 'Verified' }}</span>
-                  </div>
-                  <div class="col-6">
-                    <span class="text-muted d-block" style="font-size: 11px;">Issue / Applied Date</span>
-                    <span class="text-dark" style="font-size: 11.5px;">{{ activeCertificateDoc.issueDate || activeCertificateDoctor.appliedDate }}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Doctor Information Card -->
-            <div class="col-md-6">
+            <!-- Doctor Information Card (Direct from backend) -->
+            <div class="col-12">
               <div class="card border-0 rounded-3 shadow-none p-2 px-3" style="background: #F8FAFC; border: 1px solid #E2E8F0 !important;">
                 <div class="d-flex align-items-center justify-content-between mb-1">
                   <span class="text-uppercase fw-bold text-muted" style="font-size: 10.5px; letter-spacing: 0.05em;">Doctor Information</span>
@@ -581,41 +532,50 @@
                   </span>
                 </div>
 
-                <div class="mb-1">
-                  <span class="text-muted d-block" style="font-size: 11px;">Full Name</span>
-                  <strong class="text-dark" style="font-size: 12.5px;">{{ activeCertificateDoctor.name }}</strong>
+                <div class="row g-2 mb-1">
+                  <div class="col-md-4">
+                    <span class="text-muted d-block" style="font-size: 11px;">Full Name</span>
+                    <strong class="text-dark" style="font-size: 12.5px;">{{ activeCertificateDoctor.name }}</strong>
+                  </div>
+                  <div class="col-md-4">
+                    <span class="text-muted d-block" style="font-size: 11px;">Registration Number</span>
+                    <strong class="text-dark" style="font-size: 12px;">{{ activeCertificateDoctor.licenseNumber || '—' }}</strong>
+                  </div>
+                  <div class="col-md-4">
+                    <span class="text-muted d-block" style="font-size: 11px;">Medical Council</span>
+                    <strong class="text-dark text-truncate d-block" style="font-size: 12px;" [title]="activeCertificateDoctor['registrationCouncil']">
+                      {{ activeCertificateDoctor['registrationCouncil'] || 'Medical Council of India (MCI)' }}
+                    </strong>
+                  </div>
                 </div>
 
-                <div class="row g-1 mb-1">
-                  <div class="col-6">
+                <div class="row g-2 mb-1">
+                  <div class="col-md-4">
                     <span class="text-muted d-block" style="font-size: 11px;">Specialization</span>
                     <strong class="text-dark" style="font-size: 12px;">{{ activeCertificateDoctor.specialization }}</strong>
                   </div>
-                  <div class="col-6">
+                  <div class="col-md-4">
                     <span class="text-muted d-block" style="font-size: 11px;">Qualifications</span>
                     <strong class="text-dark" style="font-size: 12px;">{{ activeCertificateDoctor.qualification || 'MBBS' }}</strong>
                   </div>
-                </div>
-
-                <div class="row g-1 mb-1">
-                  <div class="col-6">
+                  <div class="col-md-4">
                     <span class="text-muted d-block" style="font-size: 11px;">Experience</span>
                     <strong class="text-dark" style="font-size: 12px;">{{ activeCertificateDoctor.experience }}</strong>
                   </div>
-                  <div class="col-6">
+                </div>
+
+                <div class="row g-2">
+                  <div class="col-md-4">
                     <span class="text-muted d-block" style="font-size: 11px;">Hospital / Clinic</span>
                     <strong class="text-dark text-truncate d-block" style="font-size: 12px;" [title]="activeCertificateDoctor.hospitalName || activeCertificateDoctor.location">
                       {{ activeCertificateDoctor.hospitalName || activeCertificateDoctor.location }}
                     </strong>
                   </div>
-                </div>
-
-                <div class="row g-1">
-                  <div class="col-6">
+                  <div class="col-md-4">
                     <span class="text-muted d-block" style="font-size: 11px;">Email Address</span>
                     <span class="text-dark text-truncate d-block" style="font-size: 11.5px;" [title]="activeCertificateDoctor.email">{{ activeCertificateDoctor.email || '—' }}</span>
                   </div>
-                  <div class="col-6">
+                  <div class="col-md-4">
                     <span class="text-muted d-block" style="font-size: 11px;">Contact Phone</span>
                     <span class="text-dark" style="font-size: 11.5px;">{{ activeCertificateDoctor.phone || '—' }}</span>
                   </div>
