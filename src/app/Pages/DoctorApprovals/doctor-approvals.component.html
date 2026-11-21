@@ -199,7 +199,7 @@
                 <span>{{ item.status === 'Pending' ? 'Review' : 'View' }}</span>
               </button>
 
-              <!-- Reject & Approve Buttons (ONLY shown for Pending requests) -->
+              <!-- Reject & Approve Buttons -->
               @if (item.status === 'Pending') {
                 <button
                   type="button"
@@ -233,6 +233,19 @@
                     </svg>
                     <span>Approve</span>
                   }
+                </button>
+              } @else if (item.status === 'Rejected') {
+                <button
+                  type="button"
+                  class="da-btn-action da-btn-approve flex-grow-1"
+                  style="background: #16A34A !important; color: #FFFFFF !important; border-color: #16A34A !important;"
+                  title="Approve Doctor"
+                  (click)="approve(item)">
+                  <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="9 12 11 14 15 10"></polyline>
+                  </svg>
+                  <span>Approve</span>
                 </button>
               }
             </div>
@@ -418,6 +431,18 @@
                 </svg>
                 <span>Approve Doctor</span>
               }
+            </button>
+          } @else if (selectedItem.status === 'Rejected') {
+            <button
+              type="button"
+              class="btn btn-success d-inline-flex align-items-center gap-2"
+              title="Approve Doctor"
+              (click)="approve(selectedItem)">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="9 12 11 14 15 10"></polyline>
+              </svg>
+              <span>Approve Doctor</span>
             </button>
           }
         </div>
