@@ -631,8 +631,8 @@
 
   <!-- Rejection Reason Modal -->
   @if (isRejectModalOpen && doctorToReject) {
-    <div class="da-modal-backdrop" (click)="closeRejectModal()">
-      <div class="da-modal-content p-4" style="max-width: 480px;" (click)="$event.stopPropagation()">
+    <div class="da-modal-backdrop da-reject-modal-backdrop" style="z-index: 1100 !important;" (click)="closeRejectModal()">
+      <div class="da-modal-content p-4" style="max-width: 480px; z-index: 1101 !important;" (click)="$event.stopPropagation()">
         <!-- Header -->
         <div class="d-flex align-items-center justify-content-between pb-3 border-bottom mb-3">
           <div class="d-flex align-items-center" style="gap: 12px;">

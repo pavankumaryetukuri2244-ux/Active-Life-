@@ -336,6 +336,11 @@ export interface DoctorApprovalItem {
       padding: 20px;
     }
 
+    .da-reject-modal-backdrop {
+      z-index: 1100 !important;
+      background: rgba(15, 23, 42, 0.72) !important;
+    }
+
     .da-modal-content {
       background: #FFFFFF;
       border-radius: 16px;
