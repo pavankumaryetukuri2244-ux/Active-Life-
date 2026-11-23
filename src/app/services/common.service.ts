@@ -51,38 +51,242 @@ export class CommonService {
   }
 
   // ==========================================
-  // Central API Endpoints (Live Testing APIs)
+  // Central API Endpoints (All Admin Portal APIs)
   // ==========================================
+
+  // 1. Authentication
+  public LoginAdmin(body: { email: string; password: string }) {
+    return this.api.LoginAdmin(body);
+  }
+  public Logout(token: string) {
+    return this.api.Logout(token);
+  }
+  public SendOtp(email: string, resendOtp: boolean = false) {
+    return this.api.SendOtp(email, resendOtp);
+  }
+  public VerifyOtp(email: string, otp: string) {
+    return this.api.VerifyOtp(email, otp);
+  }
+  public ResetPassword(body: { email: string; newPassword: string; confirmPassword: string }) {
+    return this.api.ResetPassword(body);
+  }
+
+  // 2. Dashboard Statistics & Analytics
+  public GetDashboardStatistics() {
+    return this.api.GetDashboardStatistics();
+  }
+  public GetAnalytics(body: any = {}) {
+    return this.api.GetAnalytics(body);
+  }
+
+  // 3. Audit Logs
+  public GetAuditLogs() {
+    return this.api.GetAuditLogs();
+  }
+  public GetAuditLogsFiltered(filters: any) {
+    return this.api.GetAuditLogsFiltered(filters);
+  }
+
+  // 4. User Management
+  public GetUsers() {
+    return this.api.GetUsers();
+  }
+  public GetUsersFiltered(filters: any) {
+    return this.api.GetUsersFiltered(filters);
+  }
+  public UpdateUserStatus(userId: number, action: string) {
+    return this.api.UpdateUserStatus(userId, action);
+  }
+
+  // 5. Preventive Care & Vaccines
+  public GetPreventiveCare() {
+    return this.api.GetPreventiveCare();
+  }
+  public AddPregnancyStage(body: any) {
+    return this.api.AddPregnancyStage(body);
+  }
+  public UpdatePregnancyStage(body: any) {
+    return this.api.UpdatePregnancyStage(body);
+  }
+  public TogglePregnancyStageStatus(stageId: number) {
+    return this.api.TogglePregnancyStageStatus(stageId);
+  }
+  public AddChildVaccine(body: any) {
+    return this.api.AddChildVaccine(body);
+  }
+  public UpdateChildVaccine(body: any) {
+    return this.api.UpdateChildVaccine(body);
+  }
+  public AddPregnancyVaccine(body: any) {
+    return this.api.AddPregnancyVaccine(body);
+  }
+  public UpdatePregnancyVaccine(body: any) {
+    return this.api.UpdatePregnancyVaccine(body);
+  }
+
+  // 6. Content Management
+  public GetAllContent(filters: any = {}) {
+    return this.api.GetAllContent(filters);
+  }
+  public UploadContent(body: any) {
+    return this.api.UploadContent(body);
+  }
+  public UpdateContent(body: any) {
+    return this.api.UpdateContent(body);
+  }
+  public IncrementContentView(id: number) {
+    return this.api.IncrementContentView(id);
+  }
+  public ContentStatus(id: number, isActive?: boolean) {
+    return this.api.ContentStatus(id, isActive);
+  }
+  public ToggleContentStatus(id: number, isActive?: boolean) {
+    return this.api.ToggleContentStatus(id, isActive);
+  }
+
+  // 7. Health Awareness
+  public GetHealthAwareness(filters: any = {}) {
+    return this.api.GetHealthAwareness(filters);
+  }
+  public CreateHealthAwareness(body: any) {
+    return this.api.CreateHealthAwareness(body);
+  }
+  public SaveHealthAwareness(body: any) {
+    return this.api.SaveHealthAwareness(body);
+  }
+  public ToggleHealthAwarenessStatus(id: number | string, isActive: boolean) {
+    return this.api.ToggleHealthAwarenessStatus(id, isActive);
+  }
+  public DeleteHealthAwareness(id: number | string) {
+    return this.api.DeleteHealthAwareness(id);
+  }
+  public GetHealthCategories(body: any = {}) {
+    return this.api.GetHealthCategories(body);
+  }
+  public GetMedicalCategories(body: any = {}) {
+    return this.api.GetMedicalCategories(body);
+  }
+  public GetCategories(body: any = {}) {
+    return this.api.GetCategories(body);
+  }
+
+  // 8. Healthcare Champions
+  public GetHealthcareChampions(filters: any = {}) {
+    return this.api.GetHealthcareChampions(filters);
+  }
+  public CreateHealthcareChampion(body: any) {
+    return this.api.CreateHealthcareChampion(body);
+  }
+  public SaveHealthcareChampion(body: any) {
+    return this.api.SaveHealthcareChampion(body);
+  }
+  public ToggleHealthcareChampionStatus(id: number | string, isActive: boolean) {
+    return this.api.ToggleHealthcareChampionStatus(id, isActive);
+  }
+  public DeleteHealthcareChampion(id: number | string) {
+    return this.api.DeleteHealthcareChampion(id);
+  }
+
+  // 9. Home Remedies
+  public GetHomeRemedies(filters: any = {}) {
+    return this.api.GetHomeRemedies(filters);
+  }
+  public CreateHomeRemedy(body: any) {
+    return this.api.CreateHomeRemedy(body);
+  }
+  public UpdateHomeRemedy(body: any) {
+    return this.api.UpdateHomeRemedy(body);
+  }
+  public SaveHomeRemedy(body: any) {
+    return this.api.SaveHomeRemedy(body);
+  }
+  public ToggleHomeRemedyStatus(id: number | string, isActive: boolean) {
+    return this.api.ToggleHomeRemedyStatus(id, isActive);
+  }
+  public DeleteHomeRemedy(id: number | string) {
+    return this.api.DeleteHomeRemedy(id);
+  }
+  public GetHomeRemedyCategories(body: any = {}) {
+    return this.api.GetHomeRemedyCategories(body);
+  }
+
+  // 10. Support Groups
+  public GetSupportGroups(filters: any = {}) {
+    return this.api.GetSupportGroups(filters);
+  }
+  public CreateSupportGroup(body: any) {
+    return this.api.CreateSupportGroup(body);
+  }
+  public UpdateSupportGroup(body: any) {
+    return this.api.UpdateSupportGroup(body);
+  }
+  public SaveSupportGroup(body: any) {
+    return this.api.SaveSupportGroup(body);
+  }
+  public ToggleSupportGroupStatus(id: number | string, isActive: boolean) {
+    return this.api.ToggleSupportGroupStatus(id, isActive);
+  }
+  public DeleteSupportGroup(id: number | string) {
+    return this.api.DeleteSupportGroup(id);
+  }
+  public JoinSupportGroupMember(groupId: string, memberData: any) {
+    return this.api.JoinSupportGroupMember(groupId, memberData);
+  }
+
+  // 11. Doctor Management
+  public GetDoctors(filters: any = {}) {
+    return this.api.GetDoctors(filters);
+  }
+  public EditDoctor(body: any) {
+    return this.api.EditDoctor(body);
+  }
+  public ToggleDoctorStatus(body: { id: number; isActive: boolean }) {
+    return this.api.ToggleDoctorStatus(body);
+  }
+  public GetDoctorAvailability(body: { id: number | string }) {
+    return this.api.GetDoctorAvailability(body);
+  }
+  public UpdateDoctorAvailability(body: any) {
+    return this.api.UpdateDoctorAvailability(body);
+  }
+  public SaveDoctorAvailability(body: any) {
+    return this.api.SaveDoctorAvailability(body);
+  }
+
+  // 12. Doctor Approvals
   public GetDoctorApprovals(filters?: any) {
     return this.api.GetDoctorApprovals(filters);
   }
-
   public UpdateDoctorApprovalStatus(body: { id: number; status: 'APPROVED' | 'REJECTED'; rejectionReason?: string }) {
     return this.api.UpdateDoctorApprovalStatus(body);
   }
-
   public VerifyDoctorDocument(body: { documentId: number | string; isVerified?: boolean; [key: string]: any }) {
     return this.api.VerifyDoctorDocument(body);
   }
-
-  public GetDoctors(filters?: any) {
-    return this.api.GetDoctors(filters);
-  }
-
   public GetDocumentBlob(url: string) {
     return this.api.GetDocumentBlob(url);
   }
 
+  // 13. Appointments
   public GetAppointments(filters?: any) {
     return this.api.GetAppointments(filters);
   }
-
   public MarkAppointmentComplete(body: any) {
     return this.api.MarkAppointmentComplete(body);
   }
-
   public CancelAppointment(body: any) {
     return this.api.CancelAppointment(body);
+  }
+
+  // 14. Notifications
+  public GetNotifications(filters: any = {}) {
+    return this.api.GetNotifications(filters);
+  }
+  public CreateNotification(body: any) {
+    return this.api.CreateNotification(body);
+  }
+  public GetTargetAudiences(body: any = {}) {
+    return this.api.GetTargetAudiences(body);
   }
   public GetDate(date: any) {    
     // return moment(new Date(date), "YYYYMMDD").fromNow();
