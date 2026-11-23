@@ -709,6 +709,16 @@ export class WebapiService {
     return this.Http.post<any>(url, payload, { headers });
   }
 
+  public GetDocumentBlob(url: string) {
+    const token = localStorage.getItem('accessToken');
+    let headers = new HttpHeaders();
+    if (token && token !== 'null' && token !== 'undefined') {
+      const cleanToken = token.replace(/^"(.*)"$/, '$1').trim();
+      headers = headers.set('Authorization', 'Bearer ' + cleanToken);
+    }
+    return this.Http.get(url, { headers, responseType: 'blob' });
+  }
+
   // ==========================================
   // Appointment Management API Methods
   // ==========================================

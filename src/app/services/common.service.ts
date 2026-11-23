@@ -13,6 +13,7 @@ import { ToastrService } from "ngx-toastr";
 import { map } from 'rxjs/internal/operators/map';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import moment from "moment";
+import { WebapiService } from './webapi.service';
 @Injectable({
   providedIn: 'root'
 })
@@ -39,13 +40,49 @@ export class CommonService {
     config: NgbModalConfig,
     private storageService: StorageService,
     public router: Router,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    public api: WebapiService
   ) {
     this.renderer = rendererFactory.createRenderer(null, null);
     this.isBrowser = isPlatformBrowser(platformId);
     config.backdrop = "static";
     config.keyboard = false;
     this.isLoggedIn$ = this.GetLS$(this.Token, "localStorage").pipe(map(o => (o && o !== 'null') ? true : false))    
+  }
+
+  // ==========================================
+  // Central API Endpoints (Live Testing APIs)
+  // ==========================================
+  public GetDoctorApprovals(filters?: any) {
+    return this.api.GetDoctorApprovals(filters);
+  }
+
+  public UpdateDoctorApprovalStatus(body: { id: number; status: 'APPROVED' | 'REJECTED'; rejectionReason?: string }) {
+    return this.api.UpdateDoctorApprovalStatus(body);
+  }
+
+  public VerifyDoctorDocument(body: { documentId: number | string; isVerified?: boolean; [key: string]: any }) {
+    return this.api.VerifyDoctorDocument(body);
+  }
+
+  public GetDoctors(filters?: any) {
+    return this.api.GetDoctors(filters);
+  }
+
+  public GetDocumentBlob(url: string) {
+    return this.api.GetDocumentBlob(url);
+  }
+
+  public GetAppointments(filters?: any) {
+    return this.api.GetAppointments(filters);
+  }
+
+  public MarkAppointmentComplete(body: any) {
+    return this.api.MarkAppointmentComplete(body);
+  }
+
+  public CancelAppointment(body: any) {
+    return this.api.CancelAppointment(body);
   }
   public GetDate(date: any) {    
     // return moment(new Date(date), "YYYYMMDD").fromNow();

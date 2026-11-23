@@ -249,7 +249,7 @@
       </div>
       <p class="text-muted small mt-2">Loading doctor approval requests...</p>
     </div>
-  } @else if (filteredRequests.length === 0 && (activeTab !== 'All' || searchQuery)) {
+  } @else if (!isLoading && filteredRequests.length === 0) {
     <div class="da-empty-container text-center my-4">
       <div class="da-empty-icon">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2">
