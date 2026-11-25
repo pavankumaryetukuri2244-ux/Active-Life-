@@ -404,12 +404,12 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
     private webApiService: WebapiService,
     private cdr: ChangeDetectorRef
   ) {
-    this.appointments = this.normalizeAppointments(this.getInitialAppointments());
-    this.filteredAppointments = [...this.appointments];
-    this.totalAppointmentsCount = 4;
+    this.appointments = [];
+    this.filteredAppointments = [];
+    this.totalAppointmentsCount = 0;
     this.todayAppointmentsCount = 0;
     this.scheduledCount = 0;
-    this.completedCount = 1;
+    this.completedCount = 0;
   }
 
   @HostListener('document:click')
@@ -418,6 +418,9 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    try {
+      localStorage.removeItem('activeLife_appointments_v1');
+    } catch (e) {}
     this.destroy$ = new Subject<void>();
     this.initSearchDebounce();
     this.loadAppointments();
@@ -481,11 +484,7 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
     if (!isNaN(num) && num > 0) {
       return num;
     }
-    const ref = String(item.bookingReference || '').toUpperCase();
-    if (ref.includes('745935')) return 1;
-    if (ref.includes('216440')) return 2;
-    if (ref.includes('061102')) return 3;
-    if (ref.includes('000004')) return 4;
+    const ref = String(item.bookingReference || '');
     const match = ref.match(/\d+/);
     if (match) {
       return parseInt(match[0], 10);
@@ -495,35 +494,23 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
 
   // Helper methods for displaying clean patient details (ensuring API patient name is preferred)
   public getPatientDisplayName(item: any): string {
-    if (!item) return 'Pavan Kumar';
+    if (!item) return 'Patient';
     const rawName = String(
       item.patientName ||
       item.patientFullName ||
       (item.patient && (item.patient.fullName || item.patient.name)) ||
+      item.userName ||
       ''
     ).trim();
 
-    if (rawName && !rawName.startsWith('Patient #') && rawName !== 'Patient') {
+    if (rawName && !rawName.startsWith('Patient #')) {
       return rawName;
     }
-
-    const displayId = this.getAppointmentDisplayId(item);
-    const patId = String(item.patientId || '').toUpperCase();
-
-    if (displayId === 1 || displayId === 2 || patId === 'U664' || patId.includes('664')) {
-      return 'Pavan Kumar';
-    }
-    if (displayId === 3 || patId === 'U043' || patId.includes('043') || patId.includes('43')) {
-      return 'Shivaa';
-    }
-    if (displayId === 4 || patId === 'U078' || patId.includes('078') || patId.includes('78')) {
-      return 'Mari';
-    }
-    return 'Pavan Kumar';
+    return rawName || 'Patient';
   }
 
   public getPatientDisplayId(item: any): string {
-    if (!item) return 'U664';
+    if (!item) return '';
     const rawPatId = item.patientId || (item.patient && item.patient.id);
     if (rawPatId !== undefined && rawPatId !== null && String(rawPatId).trim()) {
       const patStr = String(rawPatId).trim();
@@ -532,11 +519,7 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
       if (!isNaN(num)) return `U${String(num).padStart(3, '0')}`;
       return patStr;
     }
-    const displayId = this.getAppointmentDisplayId(item);
-    if (displayId === 1 || displayId === 2) return 'U664';
-    if (displayId === 3) return 'U043';
-    if (displayId === 4) return 'U078';
-    return 'U664';
+    return '';
   }
 
   public getPatientInitial(item: any): string {
@@ -545,16 +528,14 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
   }
 
   public getPatientAvatarBg(item: any): string {
-    const displayId = this.getAppointmentDisplayId(item);
-    if (displayId === 1) return '#818CF8';
-    if (displayId === 2) return '#A855F7';
-    if (displayId === 3) return '#10B981';
-    if (displayId === 4) return '#818CF8';
+    if (item?.patientAvatarBg) return item.patientAvatarBg;
     const name = this.getPatientDisplayName(item);
-    if (name === 'Pavan Kumar') return '#818CF8';
-    if (name === 'Shivaa') return '#10B981';
-    if (name === 'Mari') return '#818CF8';
-    return item?.patientAvatarBg || '#818CF8';
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const index = Math.abs(hash) % this.patientColors.length;
+    return this.patientColors[index] || '#818CF8';
   }
 
   public getAppointmentNumericId(item: AppointmentItem): number {
@@ -635,14 +616,11 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
             }
           }).filter((item: any): item is AppointmentItem => item !== null);
 
-          if (mapped.length > 0) {
-            // Directly display pure API appointments (no mock concatenation)
-            this.appointments = this.sortAppointmentsAscending(mapped);
-            this.saveToStorage();
-          }
+          this.appointments = this.sortAppointmentsAscending(mapped);
+          this.saveToStorage();
         } else {
-          console.log('[Appointments] API returned empty appointment list, loading cached/fallback records');
-          this.loadCachedOrDefaultLive();
+          console.log('[Appointments] API returned empty appointment list');
+          this.appointments = [];
         }
 
         this.updateStats(stats);
@@ -651,8 +629,9 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
       },
       error: (err: any) => {
         this.isLoading = false;
-        console.warn('GetAppointments API error, keeping active appointments and stats:', err);
-        this.loadCachedOrDefaultLive();
+        console.warn('GetAppointments API error:', err);
+        this.appointments = [];
+        this.updateStats({ total: 0, today: 0, scheduled: 0, completed: 0 });
         this.applyFilters();
         this.cdr.detectChanges();
       }
@@ -799,33 +778,9 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
   }
 
   private loadCachedOrDefaultLive(): void {
-    try {
-      const cached = localStorage.getItem('activeLife_appointments_v1');
-      if (cached) {
-        const parsed = JSON.parse(cached);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          const isMock = parsed.some((p: any) =>
-            p.patientName === 'Sarah Johnson' && p.id === 'A001'
-          );
-          if (isMock) {
-            localStorage.removeItem('activeLife_appointments_v1');
-          } else {
-            this.appointments = this.normalizeAppointments(parsed);
-            this.updateStats();
-            this.applyFilters();
-            return;
-          }
-        }
-      }
-      this.appointments = this.normalizeAppointments(this.getInitialAppointments());
-      this.updateStats();
-      this.applyFilters();
-    } catch (e) {
-      console.warn('[Appointments] Error loading cached appointments:', e);
-      this.appointments = this.normalizeAppointments(this.getInitialAppointments());
-      this.updateStats();
-      this.applyFilters();
-    }
+    this.appointments = [];
+    this.updateStats({ total: 0, today: 0, scheduled: 0, completed: 0 });
+    this.applyFilters();
   }
 
   private saveToStorage(): void {
@@ -837,11 +792,11 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
   }
 
   public updateStats(serverStats?: { total: number; today: number; scheduled: number; completed: number }): void {
-    if (serverStats && (serverStats.total > 0 || serverStats.today > 0 || serverStats.scheduled > 0 || serverStats.completed > 0)) {
-      this.totalAppointmentsCount = serverStats.total;
-      this.todayAppointmentsCount = serverStats.today;
-      this.scheduledCount = serverStats.scheduled;
-      this.completedCount = serverStats.completed;
+    if (serverStats !== undefined && serverStats !== null) {
+      this.totalAppointmentsCount = Number(serverStats.total || 0);
+      this.todayAppointmentsCount = Number(serverStats.today || 0);
+      this.scheduledCount = Number(serverStats.scheduled || 0);
+      this.completedCount = Number(serverStats.completed || 0);
       return;
     }
 
@@ -919,115 +874,7 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
   }
 
   private getInitialAppointments(): AppointmentItem[] {
-    return [
-      {
-        id: '1',
-        appointmentId: 1,
-        dbId: 1,
-        bookingReference: 'APT-2026-745935',
-        patientId: 'U664',
-        patientName: 'Pavan Kumar',
-        patientInitial: 'PK',
-        patientAvatarBg: '#818CF8',
-        patientPhone: '+91 98765 43210',
-        patientEmail: 'pavan.kumar@example.com',
-        doctorId: 'D007',
-        doctorName: 'Dr. varsha',
-        doctorSpecialization: 'Cardiology',
-        hospitalName: 'Apollo Hospital',
-        appointmentDate: '2026-11-09',
-        appointmentTime: '03:30 AM',
-        type: 'Audio Consultation',
-        status: 'Completed',
-        notes: 'Chest pain for 2 days',
-        allowedActions: ['VIEW_DETAILS', 'VIEW_NOTES'],
-        amount: 500,
-        mode: 'AUDIO',
-        createdAt: '2026-11-03T06:55:45.935516',
-        updatedAt: '2026-11-09T08:15:12.574457'
-      },
-      {
-        id: '2',
-        appointmentId: 2,
-        dbId: 2,
-        bookingReference: 'APT-2026-216440',
-        patientId: 'U664',
-        patientName: 'Pavan Kumar',
-        patientInitial: 'PK',
-        patientAvatarBg: '#A855F7',
-        patientPhone: '+91 98765 43210',
-        patientEmail: 'pavan.kumar@example.com',
-        doctorId: 'D007',
-        doctorName: 'Dr. varsha',
-        doctorSpecialization: 'Cardiology',
-        hospitalName: 'Apollo Hospital',
-        appointmentDate: '2026-11-07',
-        appointmentTime: '10:10 AM',
-        type: 'Consultation',
-        status: 'Cancelled',
-        allowedActions: ['VIEW_DETAILS'],
-        notes: 'Chest pain for 2 days',
-        amount: 500,
-        mode: 'AUDIO',
-        createdAt: '2026-11-07T04:23:36.440539',
-        updatedAt: '2026-11-07T04:23:36.44055'
-      },
-      {
-        id: '3',
-        appointmentId: 3,
-        dbId: 3,
-        bookingReference: 'APT-2026-061102',
-        patientId: 'U043',
-        patientName: 'Shivaa',
-        patientInitial: 'S',
-        patientAvatarBg: '#10B981',
-        patientPhone: '+91 98765 43212',
-        patientEmail: 'shivaa@example.com',
-        doctorId: 'D007',
-        doctorName: 'Dr. varsha',
-        doctorSpecialization: 'Cardiology',
-        hospitalName: 'Apollo Hospital',
-        appointmentDate: '2026-11-07',
-        appointmentTime: '11:30 AM',
-        type: 'Consultation',
-        status: 'Cancelled',
-        allowedActions: ['VIEW_DETAILS'],
-        notes: 'Chest pain for 2 days',
-        cancellationReason: 'hi',
-        cancelledAt: '2026-11-09T09:38:35.952682',
-        cancelledBy: 'ADMIN',
-        amount: 500,
-        mode: 'OFFLINE',
-        createdAt: '2026-11-07T04:54:21.102586',
-        updatedAt: '2026-11-09T09:38:35.963562'
-      },
-      {
-        id: '4',
-        appointmentId: 4,
-        dbId: 4,
-        bookingReference: 'APT-2026-000004',
-        patientId: 'U078',
-        patientName: 'Mari',
-        patientInitial: 'MA',
-        patientAvatarBg: '#818CF8',
-        patientPhone: '+91 98765 43214',
-        patientEmail: 'mari@example.com',
-        doctorId: 'D010',
-        doctorName: 'Dr. Doctor',
-        doctorSpecialization: 'Cardiology',
-        hospitalName: 'Apollo Hospital',
-        appointmentDate: '2026-11-11',
-        appointmentTime: '01:15 PM',
-        type: 'Consultation',
-        status: 'Cancelled',
-        allowedActions: ['VIEW_DETAILS'],
-        notes: '',
-        amount: 500,
-        mode: 'OFFLINE',
-        createdAt: '2026-11-11T07:45:00.000000',
-        updatedAt: '2026-11-11T07:45:00.000000'
-      }
-    ];
+    return [];
   }
 
   private mapApiAppointment(item: any, idx: number): AppointmentItem {
@@ -1049,8 +896,8 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
       item.practitionerName ||
       ''
     ).trim();
-    let doctorName = rawDocName || 'Dr. Varsha';
-    if (!doctorName.toLowerCase().startsWith('dr.') && !doctorName.toLowerCase().startsWith('dr ')) {
+    let doctorName = rawDocName || 'Doctor';
+    if (doctorName && !doctorName.toLowerCase().startsWith('dr.') && !doctorName.toLowerCase().startsWith('dr ')) {
       doctorName = `Dr. ${doctorName}`;
     }
 
@@ -1059,7 +906,7 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
 
     // Specialization & Hospital
     const specialization = item.specialization || item.doctorSpecialization || (item.doctor && item.doctor.specialization) || item.department || item.departmentName || 'General Medicine';
-    const hospital = item.hospitalName || item.clinicName || (item.doctor && item.doctor.hospitalName) || 'Apollo Hospital';
+    const hospital = item.hospitalName || item.clinicName || (item.doctor && item.doctor.hospitalName) || '';
 
     // Status
     let status: 'Scheduled' | 'Completed' | 'Cancelled' = 'Scheduled';
@@ -1116,7 +963,7 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
       patientName: patientName,
       patientInitial: patientInitial,
       patientAvatarBg: patientAvatarBg,
-      patientPhone: item.patientPhone || item.patientMobileNumber || item.mobileNumber || item.phoneNumber || (item.patient && item.patient.mobileNumber) || '+91 98765 43210',
+      patientPhone: item.patientPhone || item.patientMobileNumber || item.mobileNumber || item.phoneNumber || (item.patient && item.patient.mobileNumber) || '',
       patientEmail: item.patientEmail || item.email || (item.patient && item.patient.email) || '',
       doctorId: docIdStr,
       doctorName: doctorName,
@@ -1130,7 +977,7 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
       cancellationReason: item.cancellationReason || '',
       cancelledAt: item.cancelledAt || '',
       cancelledBy: item.cancelledBy || '',
-      amount: item.consultationFee !== undefined ? item.consultationFee : (item.amount || item.fee || 500),
+      amount: item.consultationFee !== undefined ? item.consultationFee : (item.amount || item.fee || 0),
       mode: mode,
       allowedActions: allowedActions,
       createdAt: item.createdAt || '',
@@ -1198,9 +1045,6 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
     if (!name || typeof name !== 'string') return 'PT';
     const clean = name.replace(/^Dr\.\s*/i, '').trim();
     if (!clean) return 'PT';
-    if (clean === 'Pavan Kumar') return 'PK';
-    if (clean === 'Mari') return 'MA';
-    if (clean === 'Shivaa') return 'S';
     const parts = clean.split(/\s+/).filter((p: string) => p.length > 0);
     if (parts.length > 1) {
       return ((parts[0][0] || '') + (parts[parts.length - 1][0] || '')).toUpperCase();
