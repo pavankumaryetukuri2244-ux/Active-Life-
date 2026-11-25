@@ -591,14 +591,10 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
 
   private cleanupLegacyMockStorage(): void {
     try {
-      const v2 = localStorage.getItem('activeLife_doctorApprovals_v2');
-      if (v2 && (v2.includes('Dr. Ramesh Kumar') || v2.includes('Dr. Rajesh') || v2.includes('Dr. SHIVA') || v2.includes('Dr. umesh vk'))) {
-        localStorage.removeItem('activeLife_doctorApprovals_v2');
-      }
-      const v1 = localStorage.getItem('activeLife_doctorApprovals_v1');
-      if (v1 && (v1.includes('Dr. Ramesh Kumar') || v1.includes('Dr. Rajesh') || v1.includes('Dr. SHIVA') || v1.includes('Dr. umesh vk'))) {
-        localStorage.removeItem('activeLife_doctorApprovals_v1');
-      }
+      localStorage.removeItem('activeLife_doctorStatusOverrides_v1');
+      localStorage.removeItem('activeLife_doctorApprovals_v2');
+      localStorage.removeItem('activeLife_doctorApprovals_v1');
+      localStorage.removeItem('activeLife_doctorManagement_live_v2');
     } catch (e) {}
   }
 
@@ -725,10 +721,9 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
     const cleanName = rawName.startsWith('Dr.') ? rawName : ('Dr. ' + rawName);
     const regStatus = (doc.registrationStatus || doc.approvalStatus || doc.approval || '').toString().trim().toUpperCase();
     let status: 'Pending' | 'Approved' | 'Rejected' = 'Pending';
-    if (regStatus === 'APPROVED') status = 'Approved';
-    else if (regStatus === 'REJECTED') status = 'Rejected';
-    else if (regStatus === 'PENDING') status = 'Pending';
-    else status = 'Approved';
+    if (regStatus === 'APPROVED' || regStatus === 'ACTIVE') status = 'Approved';
+    else if (regStatus === 'REJECTED' || regStatus === 'INACTIVE') status = 'Rejected';
+    else status = 'Pending';
 
     return {
       id: doc.id ? String(doc.id) : `REQ-${101 + index}`,
@@ -917,27 +912,16 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
 
     const docId = doc.id ? String(doc.id) : `REQ-${101 + index}`;
     const numId = this.extractNumber(docId);
-    const overrides = this.loadStatusOverrides();
-    // Strictly match override by doctor unique ID or numeric ID; NEVER match by doctor name!
-    const localOverride = overrides[String(docId)] ||
-                          (numId ? overrides[String(numId)] : undefined);
 
-    let status: 'Pending' | 'Approved' | 'Rejected' = 'Approved';
-    const rawReg = doc.registrationStatus || doc.approvalStatus || doc.approval || doc.status || '';
-    const regStatus = (rawReg || '').toString().trim().toUpperCase();
+    // Strictly display production API data
+    const regStatus = (doc.registrationStatus || doc.approvalStatus || doc.approval || doc.status || '').toString().trim().toUpperCase();
+    let status: 'Pending' | 'Approved' | 'Rejected' = 'Pending';
     if (regStatus === 'APPROVED' || regStatus === 'ACTIVE') {
       status = 'Approved';
     } else if (regStatus === 'REJECTED' || regStatus === 'INACTIVE') {
       status = 'Rejected';
-    } else if (regStatus === 'PENDING') {
-      status = 'Pending';
-    } else if (localOverride) {
-      status = localOverride;
     } else {
-      status = 'Approved';
-    }
-    if (localOverride) {
-      status = localOverride;
+      status = 'Pending';
     }
 
     const expYrs = doc.experienceYears ? `${doc.experienceYears} yrs exp` : (doc.experience || '16 yrs exp');
@@ -1121,65 +1105,19 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
   }
 
   private loadStatusOverrides(): { [id: string]: 'Pending' | 'Approved' | 'Rejected' } {
-    const overrides: { [id: string]: 'Pending' | 'Approved' | 'Rejected' } = {};
-    try {
-      const stored = localStorage.getItem('activeLife_doctorStatusOverrides_v1');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        let hasInvalidKeys = false;
-        for (const key of Object.keys(parsed)) {
-          // Strictly keep only valid numeric IDs or REQ-xxx IDs. Discard any doctor names!
-          if (/^(REQ-\d+|\d+)$/i.test(key.trim())) {
-            overrides[key.trim()] = parsed[key];
-          } else {
-            hasInvalidKeys = true;
-          }
-        }
-        if (hasInvalidKeys) {
-          localStorage.setItem('activeLife_doctorStatusOverrides_v1', JSON.stringify(overrides));
-        }
-      }
-    } catch {}
-    return overrides;
+    return {};
   }
 
   private syncWithDoctorManagement(item: DoctorApprovalItem, status: 'Approved' | 'Rejected'): void {
-    try {
-      const cached = localStorage.getItem('activeLife_doctorManagement_live_v2');
-      if (cached) {
-        const doctors = JSON.parse(cached);
-        if (Array.isArray(doctors)) {
-          const numId = this.extractNumber(item.id);
-          const updated = doctors.map((d: any) => {
-            const dNum = this.extractNumber(d.id);
-            if (
-              String(d.id) === String(item.id) ||
-              (numId && dNum === numId)
-            ) {
-              return {
-                ...d,
-                approval: status,
-                status: status === 'Approved' ? 'Active' : 'Inactive'
-              };
-            }
-            return d;
-          });
-          localStorage.setItem('activeLife_doctorManagement_live_v2', JSON.stringify(updated));
-        }
-      }
-    } catch (e) {}
+    // In-memory synchronization only; live API remains single source of truth
   }
 
   private saveStatusOverride(id: string, status: 'Pending' | 'Approved' | 'Rejected'): void {
-    if (!id || !/^(REQ-\d+|\d+)$/i.test(String(id).trim())) return;
-    const overrides = this.loadStatusOverrides();
-    overrides[String(id).trim()] = status;
-    localStorage.setItem('activeLife_doctorStatusOverrides_v1', JSON.stringify(overrides));
+    // In-memory status only; do not persist overrides that mask production API data
   }
 
   private saveToStorage(): void {
-    localStorage.setItem('activeLife_doctorApprovals_v2', JSON.stringify(this.requests));
-    localStorage.setItem('activeLife_doctorApprovals_v1', JSON.stringify(this.requests));
+    // In-memory only; do not overwrite live API data
   }
 
   public updateStats(): void {

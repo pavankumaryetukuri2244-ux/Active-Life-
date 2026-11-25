@@ -609,6 +609,7 @@
             <button type="button" class="btn btn-sm btn-light" (click)="closeCertificateViewer()">
               Back to Details
             </button>
+            @if (activeCertificateDoctor.status !== 'Rejected') {
             <button type="button" class="btn btn-sm btn-outline-danger"
               (click)="openRejectModal(activeCertificateDoctor)">
               Reject Application
@@ -622,6 +623,7 @@
               </svg>
               <span>Approve Doctor</span>
             </button>
+            }
           </div>
         </div>
 

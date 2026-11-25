@@ -557,7 +557,9 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
   }
 
   private loadCachedOrInitial(): void {
-    // Strictly rely on live testing APIs - no static mock data
+    try {
+      localStorage.removeItem('activeLife_doctorStatusOverrides_v1');
+    } catch (e) {}
     this.doctors = [];
     this.filteredDoctors = [];
     this.updateStats();
@@ -586,22 +588,9 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
       approval = 'Approved';
     } else if (regStatus === 'REJECTED') {
       approval = 'Rejected';
-    } else if (regStatus === 'PENDING') {
+    } else {
       approval = 'Pending';
-    } else if (doc.approval) {
-      approval = doc.approval;
     }
-
-    try {
-      const statusOverridesStr = localStorage.getItem('activeLife_doctorStatusOverrides_v1');
-      if (statusOverridesStr) {
-        const statusOverrides = JSON.parse(statusOverridesStr);
-        const ov = statusOverrides[String(rawNumId)] || statusOverrides[doctorId];
-        if (ov) {
-          approval = ov;
-        }
-      }
-    } catch (e) {}
 
     // Respect user's explicit Active/Inactive status toggle
     try {
@@ -788,15 +777,6 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
     this.applyFilters();
     this.showToast(`Doctor ${doctor.name} approval status changed to ${status}`, 'success');
 
-    // Sync status override for Doctor Approvals page
-    try {
-      const overridesStr = localStorage.getItem('activeLife_doctorStatusOverrides_v1');
-      const overrides = overridesStr ? JSON.parse(overridesStr) : {};
-      overrides[String(doctor.id)] = status;
-      const numId = this.extractIdNumber(doctor.id);
-      if (numId) overrides[String(numId)] = status;
-      localStorage.setItem('activeLife_doctorStatusOverrides_v1', JSON.stringify(overrides));
-    } catch (e) {}
 
     // Call backend update-status API
     const numId = this.extractIdNumber(doctor.id) || 1;
