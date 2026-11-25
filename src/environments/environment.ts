@@ -4,7 +4,7 @@
 
 export const environment = {
   production: false,
-  serviceUrl: 'http://20.193.140.173:8085'
+  serviceUrl: 'https://api.activelifedeveloper.com/healthappadmin'
 };
 
 /*

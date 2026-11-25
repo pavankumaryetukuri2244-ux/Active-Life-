@@ -536,7 +536,7 @@ export class WebapiService {
       const cleanToken = token.replace(/^"(.*)"$/, '$1').trim();
       headers = headers.set('Authorization', 'Bearer ' + cleanToken);
     }
-    const url = this.WebApi + '/admin/api/doctors/list';
+    const url = `${this.WebApi}/admin/api/doctors/list`;
     return this.Http.post<any>(url, filters, { headers });
   }
 
