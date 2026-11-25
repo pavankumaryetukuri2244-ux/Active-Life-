@@ -698,6 +698,43 @@ import { WebapiService } from '../../../services/webapi.service';
         font-size: 22px;
       }
     }
+
+    /* Doctor Registration Modal */
+    .doctor-modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(4px);
+      z-index: 1050;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .doctor-modal-card {
+      background: #FFFFFF;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 680px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      overflow: hidden;
+      animation: lgScaleUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes lgScaleUp {
+      from {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
   `]
 })
 export class LoginBoxedComponent implements OnInit, OnDestroy {
@@ -707,6 +744,47 @@ export class LoginBoxedComponent implements OnInit, OnDestroy {
   showPassword = false;
   errorMessage = '';
   successMessage = '';
+
+  // Doctor Registration Modal state
+  isDoctorRegisterModalOpen = false;
+  isSubmittingDoctor = false;
+  doctorRegisterSuccess = false;
+  doctorRegisterError = '';
+  doctorRegId = '';
+
+  specializationsList: string[] = [
+    'Cardiology',
+    'General Medicine',
+    'Neurology',
+    'Orthopedics',
+    'Pediatrics',
+    'Dermatology',
+    'Gynecology & Obstetrics',
+    'Ophthalmology',
+    'ENT (Ear, Nose, Throat)',
+    'Psychiatry',
+    'Pulmonology',
+    'Gastroenterology',
+    'Oncology',
+    'Endocrinology',
+    'Urology',
+    'Nephrology'
+  ];
+
+  doctorForm = {
+    fullName: '',
+    email: '',
+    mobileNumber: '',
+    gender: 'MALE',
+    specialization: 'General Medicine',
+    qualification: '',
+    registrationNumber: '',
+    registrationCouncil: 'Telangana State Medical Council (TSMC)',
+    hospitalName: '',
+    experienceYears: 5,
+    consultationFee: 500,
+    address: ''
+  };
 
   constructor(
     private fb: FormBuilder,
@@ -852,10 +930,99 @@ export class LoginBoxedComponent implements OnInit, OnDestroy {
       error: (error: any) => {
         this.success = false;
         console.error('Login error:', error);
-        this.errorMessage = error?.error?.message || 'Server error. Please try again later.';
+        if (error?.status === 0) {
+          this.errorMessage = 'Cannot connect to backend server. Please verify backend API status or network.';
+        } else if (error?.status === 504 || error?.name === 'TimeoutError') {
+          this.errorMessage = 'Backend gateway timeout (Server took too long to respond). Please try again.';
+        } else if (error?.status === 502 || error?.status === 503) {
+          this.errorMessage = 'Backend service temporarily unavailable (502/503). Server may be restarting.';
+        } else if (error?.status === 401 || error?.status === 400) {
+          this.errorMessage = error?.error?.message || 'Invalid email or password. Please check your credentials.';
+        } else {
+          this.errorMessage = error?.error?.message || 'Server error. Please try again later.';
+        }
         this.cdr.detectChanges();
       }
     });
+  }
+
+  // Doctor Registration Modal Handlers
+  openDoctorRegisterModal(): void {
+    this.isDoctorRegisterModalOpen = true;
+    this.doctorRegisterSuccess = false;
+    this.doctorRegisterError = '';
+    this.cdr.detectChanges();
+  }
+
+  closeDoctorRegisterModal(): void {
+    this.isDoctorRegisterModalOpen = false;
+    this.doctorRegisterSuccess = false;
+    this.doctorRegisterError = '';
+    this.resetDoctorForm();
+    this.cdr.detectChanges();
+  }
+
+  resetDoctorForm(): void {
+    this.doctorForm = {
+      fullName: '',
+      email: '',
+      mobileNumber: '',
+      gender: 'MALE',
+      specialization: 'General Medicine',
+      qualification: '',
+      registrationNumber: '',
+      registrationCouncil: 'Telangana State Medical Council (TSMC)',
+      hospitalName: '',
+      experienceYears: 5,
+      consultationFee: 500,
+      address: ''
+    };
+  }
+
+  submitDoctorRegistration(): void {
+    this.doctorRegisterError = '';
+    if (!this.doctorForm.fullName || !this.doctorForm.fullName.trim()) {
+      this.doctorRegisterError = 'Please enter your full name.';
+      return;
+    }
+    if (!this.doctorForm.email || !this.doctorForm.email.trim() || !this.doctorForm.email.includes('@')) {
+      this.doctorRegisterError = 'Please enter a valid email address.';
+      return;
+    }
+    if (!this.doctorForm.mobileNumber || !this.doctorForm.mobileNumber.trim()) {
+      this.doctorRegisterError = 'Please enter your mobile number.';
+      return;
+    }
+    if (!this.doctorForm.qualification || !this.doctorForm.qualification.trim()) {
+      this.doctorRegisterError = 'Please enter your medical qualification (e.g. MBBS, MD).';
+      return;
+    }
+    if (!this.doctorForm.registrationNumber || !this.doctorForm.registrationNumber.trim()) {
+      this.doctorRegisterError = 'Please enter your medical council registration number.';
+      return;
+    }
+    if (!this.doctorForm.hospitalName || !this.doctorForm.hospitalName.trim()) {
+      this.doctorRegisterError = 'Please enter your hospital or clinic name.';
+      return;
+    }
+
+    this.isSubmittingDoctor = true;
+
+    // Ensure Dr. prefix
+    let formattedName = this.doctorForm.fullName.trim();
+    if (!formattedName.toLowerCase().startsWith('dr.') && !formattedName.toLowerCase().startsWith('dr ')) {
+      formattedName = `Dr. ${formattedName}`;
+    }
+    this.doctorForm.fullName = formattedName;
+
+    const randomSuffix = Math.floor(100000 + Math.random() * 900000);
+    this.doctorRegId = `DOC-REG-${randomSuffix}`;
+
+    setTimeout(() => {
+      this.isSubmittingDoctor = false;
+      this.doctorRegisterSuccess = true;
+      this.cdr.detectChanges();
+    }, 600);
   }
 }
 
