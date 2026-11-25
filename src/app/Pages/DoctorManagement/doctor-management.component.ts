@@ -307,8 +307,8 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
   private destroy$: Subject<void> = new Subject<void>();
 
   // Statistics (3 cards: Total Doctors, Active Doctors, Pending Approval)
-  public totalDoctorsCount: number = 8;
-  public activeDoctorsCount: number = 8;
+  public totalDoctorsCount: number = 0;
+  public activeDoctorsCount: number = 0;
   public pendingApprovalCount: number = 0;
 
   // Actions Dropdown
@@ -578,18 +578,27 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
     const rawNumId = doc.id ? Number(doc.id) : (doc.doctorId ? Number(doc.doctorId) : (index + 1));
     const doctorId = String(rawNumId);
 
-    // Case-insensitive status detection
-    const rawStatus = (doc.status || '').toString().trim().toUpperCase();
-    let status: 'Active' | 'Inactive' = (rawStatus === 'ACTIVE' || rawStatus === 'TRUE' || doc.isActive === true || doc.status === 'Active') ? 'Active' : 'Inactive';
-
+    // Case-insensitive status and approval detection
     let approval: 'Approved' | 'Pending' | 'Rejected' = 'Pending';
     const regStatus = (doc.registrationStatus || doc.approvalStatus || doc.approval || '').toString().toUpperCase();
     if (regStatus === 'APPROVED') {
       approval = 'Approved';
     } else if (regStatus === 'REJECTED') {
       approval = 'Rejected';
-    } else {
+    } else if (regStatus === 'PENDING') {
       approval = 'Pending';
+    } else if (doc.isVerified === true) {
+      approval = 'Approved';
+    } else if (doc.isVerified === false) {
+      approval = 'Pending';
+    } else {
+      approval = (doc.status === 'Active' || doc.isActive === true) ? 'Approved' : 'Pending';
+    }
+
+    const rawStatus = (doc.status || '').toString().trim().toUpperCase();
+    let status: 'Active' | 'Inactive' = (rawStatus === 'ACTIVE' || rawStatus === 'TRUE' || doc.isActive === true || doc.status === 'Active') ? 'Active' : 'Inactive';
+    if (approval === 'Pending' || approval === 'Rejected') {
+      status = 'Inactive';
     }
 
     // Respect user's explicit Active/Inactive status toggle
@@ -714,8 +723,11 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
 
   public updateStats(): void {
     this.totalDoctorsCount = this.doctors.length;
-    this.activeDoctorsCount = this.doctors.filter(d => d.status === 'Active').length;
+    this.activeDoctorsCount = this.doctors.filter(d => d.status === 'Active' && d.approval === 'Approved').length;
     this.pendingApprovalCount = this.doctors.filter(d => d.approval === 'Pending').length;
+    try {
+      localStorage.setItem('activeLife_activeDoctorsCount_v1', String(this.activeDoctorsCount));
+    } catch (e) {}
   }
 
   public applyFilters(): void {

@@ -9,6 +9,7 @@ import { WebapiService } from '../../../services/webapi.service';
 })
 export class AnalyticsComponent implements OnInit {
   totalUsers = 12459;
+  activeDoctorsCount: number = 0;
 
   constructor(
     private webApiService: WebapiService,
@@ -20,10 +21,34 @@ export class AnalyticsComponent implements OnInit {
   }
 
   loadStatistics(): void {
+    // 1. Initial cached/local value to avoid delay or mismatch with Doctor Management
+    try {
+      const savedCount = localStorage.getItem('activeLife_activeDoctorsCount_v1');
+      if (savedCount !== null && savedCount !== undefined) {
+        this.activeDoctorsCount = Number(savedCount) || 0;
+      } else {
+        const cached = localStorage.getItem('activeLife_doctorManagement_live_v2');
+        if (cached) {
+          const list = JSON.parse(cached);
+          if (Array.isArray(list)) {
+            this.activeDoctorsCount = list.filter((d: any) => d.status === 'Active' && d.approval === 'Approved').length;
+          }
+        }
+      }
+    } catch (e) {}
+
+    // 2. Load dashboard statistics
     this.webApiService.GetDashboardStatistics().subscribe({
       next: (response: any) => {
         if (response && response.success) {
-          this.totalUsers = response.data.totalUsers;
+          if (response.data.totalUsers) {
+            this.totalUsers = response.data.totalUsers;
+          }
+          if (response.data.activeDoctors !== undefined && response.data.activeDoctors !== null) {
+            this.activeDoctorsCount = Number(response.data.activeDoctors);
+          } else if (response.data.activeDoctorsCount !== undefined && response.data.activeDoctorsCount !== null) {
+            this.activeDoctorsCount = Number(response.data.activeDoctorsCount);
+          }
           
           if (response.data.userRegistrations) {
             const labels = response.data.userRegistrations.map((item: any) => item.month);
@@ -55,6 +80,73 @@ export class AnalyticsComponent implements OnInit {
       error: (error: any) => {
         console.error('Error fetching dashboard statistics:', error);
       }
+    });
+
+    // 3. Load live doctors to guarantee exact active doctor count synchronization with Doctor Management
+    this.loadActiveDoctorsCount();
+  }
+
+  loadActiveDoctorsCount(): void {
+    this.webApiService.GetDoctors({}).subscribe({
+      next: (res: any) => {
+        let rawList: any[] = [];
+        if (res?.data?.data && Array.isArray(res.data.data)) rawList = res.data.data;
+        else if (Array.isArray(res?.data)) rawList = res.data;
+        else if (Array.isArray(res)) rawList = res;
+        else if (Array.isArray(res?.data?.doctors)) rawList = res.data.doctors;
+        else if (Array.isArray(res?.doctors)) rawList = res.doctors;
+
+        if (rawList && rawList.length > 0) {
+          this.activeDoctorsCount = rawList.filter((doc: any) => {
+            const regStatus = (doc.registrationStatus || doc.approvalStatus || doc.approval || '').toString().toUpperCase();
+            const isApproved = regStatus === 'APPROVED' || (!regStatus && doc.isVerified !== false);
+            const rawStatus = (doc.status || '').toString().trim().toUpperCase();
+            const isActive = rawStatus === 'ACTIVE' || rawStatus === 'TRUE' || doc.isActive === true || doc.status === 'Active';
+            return isApproved && isActive && regStatus !== 'PENDING' && regStatus !== 'REJECTED';
+          }).length;
+          try {
+            localStorage.setItem('activeLife_activeDoctorsCount_v1', String(this.activeDoctorsCount));
+          } catch (e) {}
+          this.cdr.detectChanges();
+        } else {
+          this.loadActiveDoctorsFromApprovals();
+        }
+      },
+      error: () => {
+        this.loadActiveDoctorsFromApprovals();
+      }
+    });
+  }
+
+  loadActiveDoctorsFromApprovals(): void {
+    this.webApiService.GetDoctorApprovals({}).subscribe({
+      next: (res: any) => {
+        let rawList: any[] = [];
+        if (res?.data?.data && Array.isArray(res.data.data)) rawList = res.data.data;
+        else if (Array.isArray(res?.data)) rawList = res.data;
+        else if (Array.isArray(res)) rawList = res;
+
+        if (rawList) {
+          const approvedCount = rawList.filter((doc: any) => {
+            const regStatus = (doc.registrationStatus || doc.approvalStatus || doc.approval || '').toString().toUpperCase();
+            return regStatus === 'APPROVED' && (doc.isActive === true || String(doc.status).toUpperCase() === 'ACTIVE');
+          }).length;
+          this.activeDoctorsCount = approvedCount;
+          try {
+            localStorage.setItem('activeLife_activeDoctorsCount_v1', String(this.activeDoctorsCount));
+          } catch (e) {}
+
+          const pendingCount = rawList.filter((doc: any) => {
+            const regStatus = (doc.registrationStatus || doc.approvalStatus || doc.approval || '').toString().toUpperCase();
+            return regStatus === 'PENDING' || regStatus === '';
+          }).length;
+          if (this.systemAlerts && this.systemAlerts[1]) {
+            this.systemAlerts[1].text = `${pendingCount} doctor registration${pendingCount === 1 ? '' : 's'} pending approval`;
+          }
+          this.cdr.detectChanges();
+        }
+      },
+      error: () => {}
     });
   }
 

@@ -550,6 +550,7 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
   public isRejectModalOpen: boolean = false;
   public doctorToReject: DoctorApprovalItem | null = null;
   public rejectionReasonInput: string = '';
+  public rejectionReasonError: string = '';
   public isSubmittingStatus: boolean = false;
 
   // Certificate Viewer Modal
@@ -1199,8 +1200,8 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
     if (!item) return;
     this.isSubmittingStatus = false;
     this.doctorToReject = item;
-    const existingNotes = (item.notes && !item.notes.includes('Verified Practitioner')) ? item.notes.trim() : '';
-    this.rejectionReasonInput = existingNotes;
+    this.rejectionReasonInput = '';
+    this.rejectionReasonError = '';
     this.isRejectModalOpen = true;
     this.cdr.markForCheck();
     this.cdr.detectChanges();
@@ -1211,6 +1212,7 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
     this.isSubmittingStatus = false;
     this.doctorToReject = null;
     this.rejectionReasonInput = '';
+    this.rejectionReasonError = '';
     this.cdr.markForCheck();
     this.cdr.detectChanges();
   }
@@ -1218,7 +1220,14 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
   public confirmReject(): void {
     if (!this.doctorToReject) return;
     const rawReason = this.rejectionReasonInput ? String(this.rejectionReasonInput).trim() : '';
-    const reason = rawReason || 'Application rejected by administrator';
+    if (!rawReason) {
+      this.rejectionReasonError = 'Rejection reason is mandatory. Please provide a reason for rejecting this application.';
+      this.cdr.markForCheck();
+      this.cdr.detectChanges();
+      return;
+    }
+    this.rejectionReasonError = '';
+    const reason = rawReason;
     const targetDoc = this.doctorToReject;
     const numId = targetDoc.numericId || this.extractNumber(targetDoc.id);
     const targetId = Number(numId || 1);
@@ -1228,7 +1237,7 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
     this.closeReviewModal();
     this.closeCertificateViewer();
     this.applyStatusChange(targetDoc, 'Rejected', reason);
-    this.showToast(`${targetDoc.name} rejected successfully`, 'success');
+    this.showToast(`${targetDoc.name} rejected: ${reason}`, 'success');
     this.cdr.markForCheck();
     this.cdr.detectChanges();
 

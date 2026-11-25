@@ -666,9 +666,17 @@
             name="rejectionReasonInput"
             rows="3"
             [(ngModel)]="rejectionReasonInput"
-            placeholder="Enter reason for rejection (e.g. for so, Incomplete credentials, Documents not clear...)"
-            style="font-size: 13.5px; border-radius: 10px; border-color: #E2E8F0; resize: vertical;"></textarea>
-          <span class="text-muted" style="font-size: 11.5px;">This reason will be recorded and sent with the status update.</span>
+            (input)="rejectionReasonError = ''"
+            [class.is-invalid]="rejectionReasonError"
+            placeholder="Enter reason for rejection (e.g. Incomplete credentials, Documents not clear, Expired medical license...)"
+            style="font-size: 13.5px; border-radius: 10px; border-color: #E2E8F0; resize: vertical;"
+            required></textarea>
+          <div *ngIf="rejectionReasonError" class="invalid-feedback d-block text-danger mt-1 fw-medium" style="font-size: 12px;">
+            {{ rejectionReasonError }}
+          </div>
+          <span *ngIf="!rejectionReasonError" class="text-muted" style="font-size: 11.5px;">
+            A rejection reason is mandatory and will be recorded with this status update.
+          </span>
         </div>
 
         <!-- Footer -->
@@ -679,7 +687,7 @@
           <button
             type="button"
             class="btn btn-danger d-inline-flex align-items-center gap-2"
-            [disabled]="isSubmittingStatus"
+            [disabled]="isSubmittingStatus || !rejectionReasonInput || !rejectionReasonInput.trim()"
             (click)="confirmReject()">
             @if (isSubmittingStatus) {
               <span class="spinner-border spinner-border-sm"></span>
