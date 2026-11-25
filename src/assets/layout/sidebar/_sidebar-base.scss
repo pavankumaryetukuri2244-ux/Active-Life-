@@ -81,11 +81,16 @@ $sidebar-box-shadow: 7px 0 60px rgba(0, 0, 0, 0.05);
   .app-sidebar-content {
     flex-grow: 1;
     display: flex;
+    flex-direction: column;
+    min-height: 0;
     width: 100%;
 
     .app-sidebar-scroll {
       width: 100%;
       height: 100%;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
     }
   }
 

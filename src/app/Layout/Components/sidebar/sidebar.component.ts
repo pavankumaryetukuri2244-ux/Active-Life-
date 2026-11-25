@@ -18,15 +18,72 @@ import { WebapiService } from '../../../services/webapi.service';
       border-right: 1px solid rgba(0, 0, 0, 0.06) !important;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02) !important;
       transition: all 0.3s ease !important;
+      display: flex !important;
+      flex-direction: column !important;
+      height: 100vh !important;
+      max-height: 100vh !important;
+      overflow: hidden !important;
+      position: fixed !important;
+      top: 0 !important;
+      bottom: 0 !important;
     }
     
     :host ::ng-deep .app-sidebar-content {
       background: #ffffff !important;
+      flex: 1 1 auto !important;
+      min-height: 0 !important;
+      height: auto !important;
+      display: flex !important;
+      flex-direction: column !important;
+      width: 100% !important;
+      overflow: hidden !important;
     }
 
-    :host ::ng-deep .v-sidebar-menu,
+    :host ::ng-deep .app-sidebar-scroll {
+      width: 100% !important;
+      height: 100% !important;
+      flex: 1 1 auto !important;
+      min-height: 0 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      overflow: hidden !important;
+    }
+
+    :host ::ng-deep .sidebar-scrollbar {
+      width: 100% !important;
+      height: 100% !important;
+      flex: 1 1 auto !important;
+      min-height: 0 !important;
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+      scrollbar-width: thin !important;
+      scrollbar-color: rgba(148, 163, 184, 0.4) transparent !important;
+    }
+
+    :host ::ng-deep .sidebar-scrollbar::-webkit-scrollbar {
+      width: 5px !important;
+    }
+
+    :host ::ng-deep .sidebar-scrollbar::-webkit-scrollbar-track {
+      background: transparent !important;
+    }
+
+    :host ::ng-deep .sidebar-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.4) !important;
+      border-radius: 4px !important;
+    }
+
+    :host ::ng-deep .sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: rgba(100, 116, 139, 0.7) !important;
+    }
+
+    :host ::ng-deep .v-sidebar-menu {
+      width: 100% !important;
+      overflow-x: hidden !important;
+    }
+
     :host ::ng-deep .vsm-list {
-      padding: 6px 0 0 0 !important;
+      padding: 6px 0 20px 0 !important;
       margin: 0 !important;
       width: 100% !important;
       overflow-x: hidden !important;
@@ -43,7 +100,8 @@ import { WebapiService } from '../../../services/webapi.service';
       background: #ffffff !important;
       border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
       padding: 1rem 1.5rem !important;
-      height: 60px !important;
+      height: 65px !important;
+      flex: 0 0 65px !important;
       display: flex !important;
       align-items: center !important;
     }
@@ -221,17 +279,22 @@ import { WebapiService } from '../../../services/webapi.service';
       border-top: 1px solid #EEF2F6 !important;
       background: #FFFFFF !important;
       height: 74px !important;
+      min-height: 74px !important;
+      max-height: 74px !important;
       padding: 14px 14px !important;
-      position: absolute !important;
-      bottom: 0 !important;
-      left: 0 !important;
-      right: 0 !important;
+      position: relative !important;
+      flex: 0 0 74px !important;
+      margin-top: auto !important;
+      bottom: auto !important;
+      left: auto !important;
+      right: auto !important;
       z-index: 10 !important;
       display: flex !important;
       align-items: center !important;
       justify-content: space-between !important;
       box-sizing: border-box !important;
       gap: 6px !important;
+      width: 100% !important;
     }
 
     .sidebar-user-avatar {
@@ -316,10 +379,51 @@ import { WebapiService } from '../../../services/webapi.service';
       flex-direction: column !important;
       gap: 6px !important;
       height: 84px !important;
+      min-height: 84px !important;
+      max-height: 84px !important;
+      flex: 0 0 84px !important;
+      position: relative !important;
+      margin-top: auto !important;
+      width: 100% !important;
     }
 
     :host-context(.closed-sidebar) .sidebar-user-info {
       display: none !important;
+    }
+
+    /* Responsive compact styles for laptop screens (<= 850px viewport height) */
+    @media (max-height: 850px) {
+      :host-context(.app-container:not(.closed-sidebar)) ::ng-deep .vsm-list .vsm-item,
+      :host-context(.app-container:not(.closed-sidebar)) ::ng-deep .vsm-item {
+        margin: 1px 12px !important;
+        height: 36px !important;
+      }
+
+      :host-context(.app-container:not(.closed-sidebar)) ::ng-deep .vsm-list .vsm-link {
+        height: 36px !important;
+        padding: 5px 12px !important;
+        font-size: 13px !important;
+        gap: 10px !important;
+      }
+
+      :host-context(.app-container:not(.closed-sidebar)) ::ng-deep .vsm-list .vsm-icon-svg {
+        width: 17px !important;
+        height: 17px !important;
+        min-width: 17px !important;
+      }
+
+      :host ::ng-deep .app-header__logo {
+        height: 56px !important;
+        flex: 0 0 56px !important;
+      }
+
+      .sidebar-profile-footer {
+        height: 64px !important;
+        min-height: 64px !important;
+        max-height: 64px !important;
+        flex: 0 0 64px !important;
+        padding: 8px 12px !important;
+      }
     }
   `]
 })
