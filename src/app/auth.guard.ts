@@ -8,10 +8,16 @@ export class AuthGuard implements CanActivate {
   constructor(private router: Router) {}
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean | UrlTree {
-    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+    const token = localStorage.getItem('accessToken');
+    const hasValidToken = !!token && token !== 'null' && token !== 'undefined' && token.trim().length > 10;
+    const isLoggedIn = (localStorage.getItem('isLoggedIn') === 'true') || hasValidToken;
     if (!isLoggedIn) {
       // Redirect to login page if not logged in
       return this.router.parseUrl('/pages/login-boxed');
+    }
+
+    if (localStorage.getItem('isLoggedIn') !== 'true') {
+      localStorage.setItem('isLoggedIn', 'true');
     }
 
     const storedEmail = (localStorage.getItem('adminEmail') || '').trim().toLowerCase();

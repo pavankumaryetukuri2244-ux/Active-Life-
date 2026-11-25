@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnInit, OnDestroy, ChangeDetectorRef, NgZone } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CommonService } from '../../../services/common.service';
@@ -713,7 +713,8 @@ export class LoginBoxedComponent implements OnInit, OnDestroy {
     private router: Router,
     private cdr: ChangeDetectorRef,
     private webApiService: WebapiService,
-    public CF: CommonService
+    public CF: CommonService,
+    private ngZone: NgZone
   ) { }
 
   ngOnInit(): void {
@@ -725,6 +726,25 @@ export class LoginBoxedComponent implements OnInit, OnDestroy {
     // Force permanent scrollbar on login page
     document.documentElement.style.setProperty('overflow-y', 'scroll', 'important');
     document.documentElement.style.setProperty('scrollbar-gutter', 'stable', 'important');
+
+    // Auto-redirect to dashboard if session already active
+    try {
+      const token = localStorage.getItem('accessToken');
+      const hasToken = !!token && token !== 'null' && token !== 'undefined' && token.trim().length > 10;
+      if (localStorage.getItem('isLoggedIn') === 'true' || hasToken) {
+        const email = (localStorage.getItem('adminEmail') || '').trim().toLowerCase();
+        const targetDashboard = (email === 'testadmin@healthfamily.com') ? '/dashboards/users' : '/dashboards/analytics';
+        this.ngZone.run(() => {
+          this.router.navigateByUrl(targetDashboard).then(navigated => {
+            if (!navigated) window.location.href = targetDashboard;
+          }).catch(() => {
+            window.location.href = targetDashboard;
+          });
+        });
+      }
+    } catch (e) {
+      // ignore
+    }
   }
 
   ngOnDestroy(): void {
@@ -755,39 +775,77 @@ export class LoginBoxedComponent implements OnInit, OnDestroy {
     this.webApiService.LoginAdmin(requestBody).subscribe({
       next: (response: any) => {
         this.success = false;
-        if (response && response.success) {
-          localStorage.setItem('isLoggedIn', 'true');
-          localStorage.setItem('accessToken', response.data.accessToken);
-          localStorage.setItem('tokenType', response.data.tokenType);
-          localStorage.setItem('expiresIn', response.data.expiresIn.toString());
-          
+        if (response && (response.success || response.data?.accessToken || response.accessToken)) {
+          const accessToken = (response.data?.accessToken || response.accessToken || response.data?.token || response.token || '').trim();
+          const tokenType = response.data?.tokenType || response.tokenType || 'Bearer';
+          const expiresIn = response.data?.expiresIn != null ? String(response.data.expiresIn) : '43200';
           const enteredEmail = (this.Form.value.loginid || '').trim().toLowerCase();
+
+          localStorage.setItem('isLoggedIn', 'true');
+          localStorage.setItem('accessToken', accessToken);
+          localStorage.setItem('tokenType', tokenType);
+          localStorage.setItem('expiresIn', expiresIn);
           localStorage.setItem('adminEmail', enteredEmail);
           if (this.Form.value.password) {
             localStorage.setItem('lastKnownPassword', this.Form.value.password);
           }
 
           let adminProfile: any = {};
-          if (response.data && response.data.admin && typeof response.data.admin === 'object') {
-            adminProfile = { ...response.data.admin };
+          try {
+            if (accessToken && accessToken.includes('.')) {
+              const payloadPart = accessToken.split('.')[1];
+              const decoded = JSON.parse(atob(payloadPart.replace(/-/g, '+').replace(/_/g, '/')));
+              adminProfile = {
+                name: decoded.name || decoded.preferred_username || enteredEmail.split('@')[0],
+                email: decoded.email || enteredEmail,
+                username: decoded.preferred_username || enteredEmail.split('@')[0],
+                roles: decoded.realm_access?.roles || []
+              };
+            }
+          } catch (e) {
+            console.warn('JWT parse notice:', e);
           }
-          adminProfile.email = enteredEmail;
-          if (!adminProfile.name) {
-            adminProfile.name = enteredEmail.split('@')[0];
+
+          if (response.data?.admin && typeof response.data.admin === 'object') {
+            adminProfile = { ...adminProfile, ...response.data.admin };
           }
+          if (!adminProfile.email) adminProfile.email = enteredEmail;
+          if (!adminProfile.name) adminProfile.name = enteredEmail.split('@')[0];
+
           localStorage.setItem('adminProfile', JSON.stringify(adminProfile));
 
+          // Sync with CommonService and StorageService reactive subjects
+          this.CF.SetLS$('accessToken', accessToken);
+          this.CF.SetLS$('isLoggedIn', 'true');
+          this.CF.SetLS$('adminEmail', enteredEmail);
+          this.CF.SetLS$('adminProfile', JSON.stringify(adminProfile));
+          this.CF.refreshLogin$.next(true);
           this.CF.showAuth = false;
 
           const targetDashboard = (enteredEmail === 'testadmin@healthfamily.com')
             ? '/dashboards/users'
             : '/dashboards/analytics';
 
+          // Immediate navigation inside NgZone with hard redirect fallback
+          this.ngZone.run(() => {
+            this.router.navigateByUrl(targetDashboard).then((navigated: boolean) => {
+              if (!navigated) {
+                window.location.href = targetDashboard;
+              }
+            }).catch((err: any) => {
+              console.warn('Router navigation error, using window.location.href:', err);
+              window.location.href = targetDashboard;
+            });
+          });
+
+          // Fast fallback: if router did not transition within 120ms, force redirect
           setTimeout(() => {
-            this.router.navigate([targetDashboard]);
-          }, 150);
+            if (window.location.pathname.includes('login')) {
+              window.location.href = targetDashboard;
+            }
+          }, 120);
         } else {
-          this.errorMessage = response.message || 'Login failed. Please check your credentials.';
+          this.errorMessage = response?.message || 'Login failed. Please check your credentials.';
         }
         this.cdr.detectChanges();
       },

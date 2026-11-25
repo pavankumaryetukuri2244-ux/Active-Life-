@@ -13,25 +13,35 @@ export class WebapiService {
     public Http: HttpClient
   ) { }
 
+  public getAuthHeaders(includeContentType: boolean = true): HttpHeaders {
+    let headers = new HttpHeaders();
+    if (includeContentType) {
+      headers = headers.set('Content-Type', 'application/json');
+    }
+    const token = localStorage.getItem('accessToken');
+    if (token && token !== 'null' && token !== 'undefined') {
+      const cleanToken = token.replace(/^"(.*)"$/, '$1').trim();
+      if (cleanToken.length > 0) {
+        headers = headers.set('Authorization', cleanToken.startsWith('Bearer ') ? cleanToken : ('Bearer ' + cleanToken));
+      }
+    }
+    return headers;
+  }
+
+
   public LoginAdmin(body: { email: string; password: string }) {
     const url = `${this.WebApi}/api/v1/auth/login`;
     return this.Http.post<any>(url, body);
   }
 
   public GetDashboardStatistics() {
-    const token = localStorage.getItem('accessToken');
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
-    });
+    const headers = this.getAuthHeaders();
     const url = `${this.WebApi}/api/v1/admin/dashboard`;
     return this.Http.post<any>(url, {}, { headers });
   }
 
   public GetAuditLogs() {
-    const token = localStorage.getItem('accessToken');
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
-    });
+    const headers = this.getAuthHeaders();
     const url = `${this.WebApi}/api/v1/audit-logs`;
     return this.Http.post<any>(url, {}, { headers });
   }
@@ -48,19 +58,13 @@ export class WebapiService {
     sortBy?: string;
     sortDirection?: string;
   }) {
-    const token = localStorage.getItem('accessToken');
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
-    });
+    const headers = this.getAuthHeaders();
     const url = `${this.WebApi}/api/v1/audit-logs`;
     return this.Http.post<any>(url, filters, { headers });
   }
 
   public GetUsers() {
-    const token = localStorage.getItem('accessToken');
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
-    });
+    const headers = this.getAuthHeaders();
     const url = `${this.WebApi}/api/v1/users`;
     return this.Http.post<any>(url, {}, { headers });
   }
@@ -73,32 +77,19 @@ export class WebapiService {
     sortBy?: string;
     sortDirection?: string;
   }) {
-    const token = localStorage.getItem('accessToken');
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
-    });
+    const headers = this.getAuthHeaders();
     const url = `${this.WebApi}/api/v1/users`;
     return this.Http.post<any>(url, filters, { headers });
   }
 
   public UpdateUserStatus(userId: number, action: string) {
-    const token = localStorage.getItem('accessToken');
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
-    });
+    const headers = this.getAuthHeaders();
     const url = `${this.WebApi}/api/v1/users/status`;
     return this.Http.post<any>(url, { userId, action }, { headers });
   }
 
   public GetPreventiveCare() {
-    const token = localStorage.getItem('accessToken');
-    let headers = new HttpHeaders({
-      'Content-Type': 'application/json'
-    });
-    if (token && token !== 'null' && token !== 'undefined') {
-      const cleanToken = token.replace(/^"(.*)"$/, '$1').trim();
-      headers = headers.set('Authorization', 'Bearer ' + cleanToken);
-    }
+    const headers = this.getAuthHeaders();
     const url = `${this.WebApi}/api/v1/admin/preventive-care`;
     return this.Http.post<any>(url, {}, { headers });
   }
@@ -109,10 +100,7 @@ export class WebapiService {
     milestones: string;
     scan: string;
   }) {
-    const token = localStorage.getItem('accessToken');
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
-    });
+    const headers = this.getAuthHeaders();
     const url = `${this.WebApi}/api/v1/admin/preventive-care/pregnancy-stage`;
     return this.Http.post<any>(url, body, { headers });
   }
@@ -127,10 +115,7 @@ export class WebapiService {
   }
 
   public TogglePregnancyStageStatus(stageId: number) {
-    const token = localStorage.getItem('accessToken');
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
-    });
+    const headers = this.getAuthHeaders();
     const url = `${this.WebApi}/api/v1/admin/preventive-care/pregnancy-stage/status?stageId=${stageId}`;
     return this.Http.post<any>(url, { stageId }, { headers });
   }
@@ -142,10 +127,7 @@ export class WebapiService {
     numberOfDoses: number;
     recommendedAge: string;
   }) {
-    const token = localStorage.getItem('accessToken');
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
-    });
+    const headers = this.getAuthHeaders();
     const url = `${this.WebApi}/api/v1/admin/preventive-care/child-vaccines`;
     return this.Http.post<any>(url, body, { headers });
   }
@@ -166,10 +148,7 @@ export class WebapiService {
     recommendedTiming: string;
     description: string;
   }) {
-    const token = localStorage.getItem('accessToken');
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
-    });
+    const headers = this.getAuthHeaders();
     const url = `${this.WebApi}/api/v1/admin/preventive-care/add-pregnancy-vaccine`;
     return this.Http.post<any>(url, body, { headers });
   }
@@ -194,10 +173,7 @@ export class WebapiService {
     viewCount?: number;
     views?: number;
   }) {
-    const token = localStorage.getItem('accessToken');
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
-    });
+    const headers = this.getAuthHeaders();
     const url = `${this.WebApi}/api/v1/content/upload`;
     return this.Http.post<any>(url, body, { headers });
   }
@@ -213,10 +189,7 @@ export class WebapiService {
     viewCount?: number;
     views?: number;
   }) {
-    const token = localStorage.getItem('accessToken');
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
-    });
+    const headers = this.getAuthHeaders();
     const url = `${this.WebApi}/api/v1/content/upload`;
     return this.Http.post<any>(url, body, { headers });
   }
@@ -226,23 +199,13 @@ export class WebapiService {
   }
 
   public GetAllContent(filters: any = {}) {
-    const token = localStorage.getItem('accessToken');
-    let headers = new HttpHeaders({
-      'Content-Type': 'application/json'
-    });
-    if (token && token !== 'null' && token !== 'undefined') {
-      const cleanToken = token.replace(/^"(.*)"$/, '$1').trim();
-      headers = headers.set('Authorization', 'Bearer ' + cleanToken);
-    }
+    const headers = this.getAuthHeaders();
     const url = `${this.WebApi}/api/v1/content/all`;
     return this.Http.post<any>(url, filters, { headers });
   }
 
   public ContentStatus(id: number, isActive?: boolean) {
-    const token = localStorage.getItem('accessToken');
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
-    });
+    const headers = this.getAuthHeaders();
     const url = `${this.WebApi}/api/v1/content/status?contentId=${id}`;
     const payload: any = {
       contentId: id,
@@ -281,23 +244,23 @@ export class WebapiService {
     );
   }
 
-  public Logout(token: string) {
-    const url = `${this.WebApi}/api/v1/auth/logout`;
+  public Logout(token?: string) {
+    const raw = token || localStorage.getItem('accessToken') || '';
+    const cleanToken = raw.replace(/^"(.*)"$/, '$1').trim();
+    const bearer = cleanToken.startsWith('Bearer ') ? cleanToken : ('Bearer ' + cleanToken);
     const headers = new HttpHeaders({
-      'Content-Type': 'text/plain',
-      'Authorization': `Bearer ${token}`
+      'Content-Type': 'application/json',
+      'Authorization': bearer
     });
-    return this.Http.post<any>(url, token, { headers });
+    const url = `${this.WebApi}/api/v1/auth/logout`;
+    return this.Http.post<any>(url, {}, { headers });
   }
 
   // ==========================================
   // Health Awareness API Methods
   // ==========================================
   public GetHealthAwareness(filters: any = {}) {
-    const token = localStorage.getItem('accessToken');
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
-    });
+    const headers = this.getAuthHeaders();
     const url = `${this.WebApi}/admin/api/health-content/list`;
     return this.Http.post<any>(url, filters, { headers });
   }
@@ -308,10 +271,7 @@ export class WebapiService {
     description: string;
     id?: number | string;
   }) {
-    const token = localStorage.getItem('accessToken');
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
-    });
+    const headers = this.getAuthHeaders();
     const url = `${this.WebApi}/admin/api/health-content/create`;
     const payload: any = {
       title: body.title,
@@ -329,10 +289,7 @@ export class WebapiService {
   }
 
   public ToggleHealthAwarenessStatus(id: number | string, isActive: boolean) {
-    const token = localStorage.getItem('accessToken');
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
-    });
+    const headers = this.getAuthHeaders();
     const url = `${this.WebApi}/admin/api/health-content/toggle-status`;
     const payload = {
       id: Number(id),
@@ -350,10 +307,7 @@ export class WebapiService {
   }
 
   public GetMedicalCategories(body: any = {}) {
-    const token = localStorage.getItem('accessToken');
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
-    });
+    const headers = this.getAuthHeaders();
     const url = `${this.WebApi}/admin/api/masterdata/categories`;
     return this.Http.post<any>(url, body, { headers });
   }
@@ -366,19 +320,13 @@ export class WebapiService {
   // Healthcare Champions API Methods
   // ==========================================
   public GetHealthcareChampions(filters: any = {}) {
-    const token = localStorage.getItem('accessToken');
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
-    });
+    const headers = this.getAuthHeaders();
     const url = `${this.WebApi}/admin/api/healthcare-champions/list`;
     return this.Http.post<any>(url, filters, { headers });
   }
 
   public CreateHealthcareChampion(body: any) {
-    const token = localStorage.getItem('accessToken');
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
-    });
+    const headers = this.getAuthHeaders();
     const url = `${this.WebApi}/admin/api/healthcare-champions/create`;
     return this.Http.post<any>(url, body, { headers });
   }
@@ -388,10 +336,7 @@ export class WebapiService {
   }
 
   public ToggleHealthcareChampionStatus(id: number | string, isActive: boolean) {
-    const token = localStorage.getItem('accessToken');
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
-    });
+    const headers = this.getAuthHeaders();
     const url = `${this.WebApi}/admin/api/healthcare-champions/toggle-status`;
     const payload = {
       id: Number(id),
@@ -408,28 +353,19 @@ export class WebapiService {
   // Home Remedies API Methods
   // ==========================================
   public GetHomeRemedies(filters: any = {}) {
-    const token = localStorage.getItem('accessToken');
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
-    });
+    const headers = this.getAuthHeaders();
     const url = `${this.WebApi}/admin/api/home-remedies/list`;
     return this.Http.post<any>(url, filters, { headers });
   }
 
   public CreateHomeRemedy(body: any) {
-    const token = localStorage.getItem('accessToken');
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
-    });
+    const headers = this.getAuthHeaders();
     const url = `${this.WebApi}/admin/api/home-remedies/create`;
     return this.Http.post<any>(url, body, { headers });
   }
 
   public UpdateHomeRemedy(body: any) {
-    const token = localStorage.getItem('accessToken');
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
-    });
+    const headers = this.getAuthHeaders();
     const url = `${this.WebApi}/admin/api/home-remedies/create`;
     return this.Http.post<any>(url, body, { headers });
   }
@@ -439,10 +375,7 @@ export class WebapiService {
   }
 
   public ToggleHomeRemedyStatus(id: number | string, isActive: boolean) {
-    const token = localStorage.getItem('accessToken');
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
-    });
+    const headers = this.getAuthHeaders();
     const url = `${this.WebApi}/admin/api/home-remedies/toggle-status`;
     const payload = {
       id: Number(id),
@@ -456,10 +389,7 @@ export class WebapiService {
   }
 
   public GetHomeRemedyCategories(body: any = {}) {
-    const token = localStorage.getItem('accessToken');
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
-    });
+    const headers = this.getAuthHeaders();
     const url = `${this.WebApi}/admin/api/masterdata/home-remedy-categories`;
     return this.Http.post<any>(url, body, { headers });
   }
@@ -468,28 +398,19 @@ export class WebapiService {
   // Support Groups API Methods
   // ==========================================
   public GetSupportGroups(filters: any = {}) {
-    const token = localStorage.getItem('accessToken');
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
-    });
+    const headers = this.getAuthHeaders();
     const url = `${this.WebApi}/admin/api/support-groups/list`;
     return this.Http.post<any>(url, filters, { headers });
   }
 
   public CreateSupportGroup(body: any) {
-    const token = localStorage.getItem('accessToken');
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
-    });
+    const headers = this.getAuthHeaders();
     const url = `${this.WebApi}/admin/api/support-groups/save`;
     return this.Http.post<any>(url, body, { headers });
   }
 
   public UpdateSupportGroup(body: any) {
-    const token = localStorage.getItem('accessToken');
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
-    });
+    const headers = this.getAuthHeaders();
     const url = `${this.WebApi}/admin/api/support-groups/save`;
     return this.Http.post<any>(url, body, { headers });
   }
@@ -499,10 +420,7 @@ export class WebapiService {
   }
 
   public ToggleSupportGroupStatus(id: number | string, isActive: boolean) {
-    const token = localStorage.getItem('accessToken');
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
-    });
+    const headers = this.getAuthHeaders();
     const url = `${this.WebApi}/admin/api/support-groups/toggle-status`;
     const payload = {
       id: Number(id),
@@ -516,10 +434,7 @@ export class WebapiService {
   }
 
   public JoinSupportGroupMember(groupId: string, memberData: any) {
-    const token = localStorage.getItem('accessToken');
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
-    });
+    const headers = this.getAuthHeaders();
     const url = `${this.WebApi}/api/v1/support-groups/join`;
     return this.Http.post<any>(url, { groupId, ...memberData }, { headers });
   }
@@ -528,14 +443,7 @@ export class WebapiService {
   // Doctor Management API Methods
   // ==========================================
   public GetDoctors(filters: any = {}) {
-    const token = localStorage.getItem('accessToken');
-    let headers = new HttpHeaders({
-      'Content-Type': 'application/json'
-    });
-    if (token && token !== 'null' && token !== 'undefined') {
-      const cleanToken = token.replace(/^"(.*)"$/, '$1').trim();
-      headers = headers.set('Authorization', 'Bearer ' + cleanToken);
-    }
+    const headers = this.getAuthHeaders();
     const url = `${this.WebApi}/admin/api/doctors/list`;
     return this.Http.post<any>(url, filters, { headers });
   }
@@ -554,27 +462,13 @@ export class WebapiService {
     consultationFee?: number;
     [key: string]: any;
   }) {
-    const token = localStorage.getItem('accessToken');
-    let headers = new HttpHeaders({
-      'Content-Type': 'application/json'
-    });
-    if (token && token !== 'null' && token !== 'undefined') {
-      const cleanToken = token.replace(/^"(.*)"$/, '$1').trim();
-      headers = headers.set('Authorization', 'Bearer ' + cleanToken);
-    }
+    const headers = this.getAuthHeaders();
     const url = `${this.WebApi}/admin/api/doctors/edit`;
     return this.Http.post<any>(url, body, { headers });
   }
 
   public ToggleDoctorStatus(body: { id: number; isActive: boolean }) {
-    const token = localStorage.getItem('accessToken');
-    let headers = new HttpHeaders({
-      'Content-Type': 'application/json'
-    });
-    if (token && token !== 'null' && token !== 'undefined') {
-      const cleanToken = token.replace(/^"(.*)"$/, '$1').trim();
-      headers = headers.set('Authorization', 'Bearer ' + cleanToken);
-    }
+    const headers = this.getAuthHeaders();
     const payload = {
       id: Number(body.id),
       isActive: Boolean(body.isActive)
@@ -584,14 +478,7 @@ export class WebapiService {
   }
 
   public GetDoctorAvailability(body: { id: number | string }) {
-    const token = localStorage.getItem('accessToken');
-    let headers = new HttpHeaders({
-      'Content-Type': 'application/json'
-    });
-    if (token && token !== 'null' && token !== 'undefined') {
-      const cleanToken = token.replace(/^"(.*)"$/, '$1').trim();
-      headers = headers.set('Authorization', 'Bearer ' + cleanToken);
-    }
+    const headers = this.getAuthHeaders();
     const payload = {
       id: Number(body.id)
     };
@@ -612,14 +499,7 @@ export class WebapiService {
       location?: string;
     }>;
   }) {
-    const token = localStorage.getItem('accessToken');
-    let headers = new HttpHeaders({
-      'Content-Type': 'application/json'
-    });
-    if (token && token !== 'null' && token !== 'undefined') {
-      const cleanToken = token.replace(/^"(.*)"$/, '$1').trim();
-      headers = headers.set('Authorization', 'Bearer ' + cleanToken);
-    }
+    const headers = this.getAuthHeaders();
     const payload = {
       id: Number(body.id),
       day: String(body.day).toUpperCase().trim(),
@@ -639,14 +519,7 @@ export class WebapiService {
     if (body && body.day) {
       return this.UpdateDoctorAvailability(body);
     }
-    const token = localStorage.getItem('accessToken');
-    let headers = new HttpHeaders({
-      'Content-Type': 'application/json'
-    });
-    if (token && token !== 'null' && token !== 'undefined') {
-      const cleanToken = token.replace(/^"(.*)"$/, '$1').trim();
-      headers = headers.set('Authorization', 'Bearer ' + cleanToken);
-    }
+    const headers = this.getAuthHeaders();
     const url = `${this.WebApi}/admin/api/doctors/availability/update`;
     console.log('[WebapiService] POST SaveDoctorAvailability:', url, body);
     return this.Http.post<any>(url, body, { headers });
@@ -656,27 +529,13 @@ export class WebapiService {
   // Doctor Approval API Methods
   // ==========================================
   public GetDoctorApprovals(filters: any = {}) {
-    const token = localStorage.getItem('accessToken');
-    let headers = new HttpHeaders({
-      'Content-Type': 'application/json'
-    });
-    if (token && token !== 'null' && token !== 'undefined') {
-      const cleanToken = token.replace(/^"(.*)"$/, '$1').trim();
-      headers = headers.set('Authorization', 'Bearer ' + cleanToken);
-    }
+    const headers = this.getAuthHeaders();
     const url = `${this.WebApi}/admin/api/doctor-approvals/list`;
     return this.Http.post<any>(url, filters, { headers });
   }
 
   public UpdateDoctorApprovalStatus(body: { id: number; status: 'APPROVED' | 'REJECTED'; rejectionReason?: string }) {
-    const token = localStorage.getItem('accessToken');
-    let headers = new HttpHeaders({
-      'Content-Type': 'application/json'
-    });
-    if (token && token !== 'null' && token !== 'undefined') {
-      const cleanToken = token.replace(/^"(.*)"$/, '$1').trim();
-      headers = headers.set('Authorization', 'Bearer ' + cleanToken);
-    }
+    const headers = this.getAuthHeaders();
     const payload: { id: number; status: 'APPROVED' | 'REJECTED'; rejectionReason?: string } = {
       id: Number(body.id),
       status: body.status
@@ -692,14 +551,7 @@ export class WebapiService {
   }
 
   public VerifyDoctorDocument(body: { documentId: number | string; isVerified?: boolean;[key: string]: any }) {
-    const token = localStorage.getItem('accessToken');
-    let headers = new HttpHeaders({
-      'Content-Type': 'application/json'
-    });
-    if (token && token !== 'null' && token !== 'undefined') {
-      const cleanToken = token.replace(/^"(.*)"$/, '$1').trim();
-      headers = headers.set('Authorization', 'Bearer ' + cleanToken);
-    }
+    const headers = this.getAuthHeaders();
     const payload = {
       documentId: Number(body.documentId),
       isVerified: body.isVerified !== undefined ? Boolean(body.isVerified) : true
@@ -710,12 +562,7 @@ export class WebapiService {
   }
 
   public GetDocumentBlob(url: string) {
-    const token = localStorage.getItem('accessToken');
-    let headers = new HttpHeaders();
-    if (token && token !== 'null' && token !== 'undefined') {
-      const cleanToken = token.replace(/^"(.*)"$/, '$1').trim();
-      headers = headers.set('Authorization', 'Bearer ' + cleanToken);
-    }
+    const headers = this.getAuthHeaders(false);
     return this.Http.get(url, { headers, responseType: 'blob' });
   }
 
@@ -723,14 +570,7 @@ export class WebapiService {
   // Appointment Management API Methods
   // ==========================================
   public GetAppointments(filters: any = {}) {
-    const token = localStorage.getItem('accessToken');
-    let headers = new HttpHeaders({
-      'Content-Type': 'application/json'
-    });
-    if (token && token !== 'null' && token !== 'undefined') {
-      const cleanToken = token.replace(/^"(.*)"$/, '$1').trim();
-      headers = headers.set('Authorization', 'Bearer ' + cleanToken);
-    }
+    const headers = this.getAuthHeaders();
     const url = `${this.WebApi}/admin/api/appointments/list`;
     const payload = (filters && typeof filters === 'object') ? filters : {};
     console.log('[WebapiService] POST GetAppointments:', url, payload);
@@ -738,14 +578,7 @@ export class WebapiService {
   }
 
   public MarkAppointmentComplete(body: { id: number | string; appointmentId?: number | string; bookingReference?: string;[key: string]: any }) {
-    const token = localStorage.getItem('accessToken');
-    let headers = new HttpHeaders({
-      'Content-Type': 'application/json'
-    });
-    if (token && token !== 'null' && token !== 'undefined') {
-      const cleanToken = token.replace(/^"(.*)"$/, '$1').trim();
-      headers = headers.set('Authorization', 'Bearer ' + cleanToken);
-    }
+    const headers = this.getAuthHeaders();
     const numId = Number(body.id || body.appointmentId) || 1;
     const payload: any = {
       id: numId,
@@ -765,14 +598,7 @@ export class WebapiService {
   }
 
   public CancelAppointment(body: { id: number | string; appointmentId?: number | string; reason?: string }) {
-    const token = localStorage.getItem('accessToken');
-    let headers = new HttpHeaders({
-      'Content-Type': 'application/json'
-    });
-    if (token && token !== 'null' && token !== 'undefined') {
-      const cleanToken = token.replace(/^"(.*)"$/, '$1').trim();
-      headers = headers.set('Authorization', 'Bearer ' + cleanToken);
-    }
+    const headers = this.getAuthHeaders();
     const numId = Number(body.id || body.appointmentId) || 1;
     const reasonText = (body.reason && body.reason.trim()) ? body.reason.trim() : 'Cancelled by administrator';
     const payload: any = {
@@ -796,38 +622,19 @@ export class WebapiService {
   // Notification Management API Methods
   // ==========================================
   public GetNotifications(filters: any = {}) {
-    const token = localStorage.getItem('accessToken');
-    let headers = new HttpHeaders({
-      'Content-Type': 'application/json'
-    });
-    if (token) {
-      headers = headers.set('Authorization', 'Bearer ' + token);
-    }
+    const headers = this.getAuthHeaders();
     const url = `${this.WebApi}/admin/api/notifications/list`;
     return this.Http.post<any>(url, filters, { headers });
   }
 
   public CreateNotification(body: any) {
-    const token = localStorage.getItem('accessToken');
-    let headers = new HttpHeaders({
-      'Content-Type': 'application/json'
-    });
-    if (token) {
-      headers = headers.set('Authorization', 'Bearer ' + token);
-    }
+    const headers = this.getAuthHeaders();
     const url = `${this.WebApi}/admin/api/notifications/create`;
     return this.Http.post<any>(url, body, { headers });
   }
 
   public GetTargetAudiences(body: any = {}) {
-    const token = localStorage.getItem('accessToken');
-    let headers = new HttpHeaders({
-      'Content-Type': 'application/json'
-    });
-    if (token && token !== 'null' && token !== 'undefined') {
-      const cleanToken = token.replace(/^"(.*)"$/, '$1').trim();
-      headers = headers.set('Authorization', 'Bearer ' + cleanToken);
-    }
+    const headers = this.getAuthHeaders();
     const url = `${this.WebApi}/admin/api/masterdata/target-audiences`;
     return this.Http.post<any>(url, body, { headers }).pipe(
       catchError((err: any) => {
@@ -843,14 +650,7 @@ export class WebapiService {
   // Analytics API Methods
   // ==========================================
   public GetAnalytics(body: any = {}) {
-    const token = localStorage.getItem('accessToken');
-    let headers = new HttpHeaders({
-      'Content-Type': 'application/json'
-    });
-    if (token && token !== 'null' && token !== 'undefined') {
-      const cleanToken = token.replace(/^"(.*)"$/, '$1').trim();
-      headers = headers.set('Authorization', 'Bearer ' + cleanToken);
-    }
+    const headers = this.getAuthHeaders();
     const url = `${this.WebApi}/admin/api/analytics`;
     return this.Http.post<any>(url, body, { headers });
   }
