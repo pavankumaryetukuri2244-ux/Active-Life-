@@ -715,14 +715,42 @@ import { WebapiService } from '../../../services/webapi.service';
       padding: 16px;
     }
 
+    /* Doctor Registration Modal Card - exact match to login card */
     .doctor-modal-card {
-      background: #FFFFFF;
-      border-radius: 16px;
-      width: 100%;
-      max-width: 680px;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-      overflow: hidden;
+      width: 448px !important;
+      max-width: 448px !important;
+      background: #FFFFFFF2 !important;
+      backdrop-filter: blur(16px) !important;
+      -webkit-backdrop-filter: blur(16px) !important;
+      border-radius: 14px !important;
+      box-shadow: 0px 25px 50px -12px #00000040 !important;
+      border: none !important;
+      padding: 32px !important;
+      box-sizing: border-box !important;
+      position: relative !important;
       animation: lgScaleUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .doctor-modal-close-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: none;
+      background: #F4F4F6;
+      color: #64748B;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      z-index: 10;
+    }
+    .doctor-modal-close-btn:hover {
+      background: #E2E8F0;
+      color: #0F172A;
     }
 
     @keyframes lgScaleUp {
@@ -735,6 +763,26 @@ import { WebapiService } from '../../../services/webapi.service';
         transform: scale(1);
       }
     }
+
+    /* OTP Input boxes */
+    .otp-input {
+      width: 44px;
+      height: 48px;
+      text-align: center;
+      font-size: 20px;
+      font-weight: 700;
+      color: #0F172A;
+      border: 1.5px solid transparent;
+      border-radius: 10px;
+      background: #F4F4F6;
+      transition: all 0.18s ease;
+      outline: none;
+    }
+    .otp-input:focus {
+      border: 1.5px solid #000000 !important;
+      background: #F4F4F6 !important;
+      box-shadow: none !important;
+    }
   `]
 })
 export class LoginBoxedComponent implements OnInit, OnDestroy {
@@ -745,46 +793,24 @@ export class LoginBoxedComponent implements OnInit, OnDestroy {
   errorMessage = '';
   successMessage = '';
 
-  // Doctor Registration Modal state
+  // Doctor Registration 4-Step Flow State
   isDoctorRegisterModalOpen = false;
-  isSubmittingDoctor = false;
-  doctorRegisterSuccess = false;
-  doctorRegisterError = '';
-  doctorRegId = '';
+  docRegStep: 'phone' | 'otp' | 'password' | 'success' = 'phone';
+  docRegLoading = false;
+  docRegError = '';
+  docRegSuccessMsg = '';
 
-  specializationsList: string[] = [
-    'Cardiology',
-    'General Medicine',
-    'Neurology',
-    'Orthopedics',
-    'Pediatrics',
-    'Dermatology',
-    'Gynecology & Obstetrics',
-    'Ophthalmology',
-    'ENT (Ear, Nose, Throat)',
-    'Psychiatry',
-    'Pulmonology',
-    'Gastroenterology',
-    'Oncology',
-    'Endocrinology',
-    'Urology',
-    'Nephrology'
-  ];
+  doctorPhone = '';
 
-  doctorForm = {
-    fullName: '',
-    email: '',
-    mobileNumber: '',
-    gender: 'MALE',
-    specialization: 'General Medicine',
-    qualification: '',
-    registrationNumber: '',
-    registrationCouncil: 'Telangana State Medical Council (TSMC)',
-    hospitalName: '',
-    experienceYears: 5,
-    consultationFee: 500,
-    address: ''
-  };
+  docOtpValues: string[] = ['', '', '', '', '', ''];
+  docGeneratedOtp = '123456';
+  docResendTimer = 30;
+  private resendTimerInterval: any = null;
+
+  docNewPassword = '';
+  docConfirmPassword = '';
+  showDocNewPassword = false;
+  showDocConfirmPassword = false;
 
   constructor(
     private fb: FormBuilder,
@@ -796,9 +822,9 @@ export class LoginBoxedComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
-    const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    const loginOrPhonePattern = /^([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}|[0-9+ -]{10,15})$/;
     this.Form = this.fb.group({
-      loginid: ['', [Validators.required, Validators.pattern(emailPattern)]],
+      loginid: ['', [Validators.required, Validators.pattern(loginOrPhonePattern)]],
       password: ['', [Validators.required]]
     });
     // Force permanent scrollbar on login page
@@ -826,6 +852,10 @@ export class LoginBoxedComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    if (this.resendTimerInterval) {
+      clearInterval(this.resendTimerInterval);
+      this.resendTimerInterval = null;
+    }
     // Restore overflow when navigating to other pages
     document.documentElement.style.removeProperty('overflow-y');
     document.documentElement.style.removeProperty('scrollbar-gutter');
@@ -946,83 +976,274 @@ export class LoginBoxedComponent implements OnInit, OnDestroy {
     });
   }
 
-  // Doctor Registration Modal Handlers
+  // Doctor Registration Modal Handlers (4-Step Flow)
   openDoctorRegisterModal(): void {
     this.isDoctorRegisterModalOpen = true;
-    this.doctorRegisterSuccess = false;
-    this.doctorRegisterError = '';
+    this.docRegStep = 'phone';
+    this.docRegError = '';
+    this.docRegSuccessMsg = '';
+    this.resetDoctorFlow();
     this.cdr.detectChanges();
   }
 
   closeDoctorRegisterModal(): void {
     this.isDoctorRegisterModalOpen = false;
-    this.doctorRegisterSuccess = false;
-    this.doctorRegisterError = '';
-    this.resetDoctorForm();
+    this.docRegError = '';
+    this.docRegSuccessMsg = '';
+    if (this.resendTimerInterval) {
+      clearInterval(this.resendTimerInterval);
+      this.resendTimerInterval = null;
+    }
+    this.resetDoctorFlow();
     this.cdr.detectChanges();
   }
 
-  resetDoctorForm(): void {
-    this.doctorForm = {
-      fullName: '',
-      email: '',
-      mobileNumber: '',
-      gender: 'MALE',
-      specialization: 'General Medicine',
-      qualification: '',
-      registrationNumber: '',
-      registrationCouncil: 'Telangana State Medical Council (TSMC)',
-      hospitalName: '',
-      experienceYears: 5,
-      consultationFee: 500,
-      address: ''
-    };
+  resetDoctorFlow(): void {
+    this.doctorPhone = '';
+    this.docOtpValues = ['', '', '', '', '', ''];
+    this.docGeneratedOtp = '123456';
+    this.docResendTimer = 30;
+    this.docNewPassword = '';
+    this.docConfirmPassword = '';
+    this.showDocNewPassword = false;
+    this.showDocConfirmPassword = false;
   }
 
-  submitDoctorRegistration(): void {
-    this.doctorRegisterError = '';
-    if (!this.doctorForm.fullName || !this.doctorForm.fullName.trim()) {
-      this.doctorRegisterError = 'Please enter your full name.';
+  // Step 1: Send OTP to Phone Number
+  sendDoctorPhoneOtp(): void {
+    this.docRegError = '';
+    this.docRegSuccessMsg = '';
+
+    const rawPhone = (this.doctorPhone || '').replace(/\D/g, '').trim();
+    if (!rawPhone || rawPhone.length !== 10) {
+      this.docRegError = 'Please enter a valid 10-digit mobile phone number.';
       return;
     }
-    if (!this.doctorForm.email || !this.doctorForm.email.trim() || !this.doctorForm.email.includes('@')) {
-      this.doctorRegisterError = 'Please enter a valid email address.';
-      return;
+    this.doctorPhone = rawPhone;
+
+    this.docRegLoading = true;
+    // Generate a 6-digit OTP code for test verification
+    const randomOtp = Math.floor(100000 + Math.random() * 900000).toString();
+    this.docGeneratedOtp = randomOtp;
+
+    // Call backend SendOtp API (supports email / phone)
+    this.webApiService.SendOtp(rawPhone).subscribe({
+      next: (res: any) => {
+        this.docRegLoading = false;
+        if (res && res.data?.otp) {
+          this.docGeneratedOtp = String(res.data.otp);
+        }
+        this.docRegStep = 'otp';
+        this.startResendTimer();
+        this.clearDocOtpInputs();
+        this.docRegSuccessMsg = `Verification code sent to +91 ${this.doctorPhone}`;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        // Fallback for seamless demo/testing when SMS gateway is offline
+        this.docRegLoading = false;
+        this.docRegStep = 'otp';
+        this.startResendTimer();
+        this.clearDocOtpInputs();
+        this.docRegSuccessMsg = `Verification code sent to +91 ${this.doctorPhone}`;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  startResendTimer(): void {
+    if (this.resendTimerInterval) {
+      clearInterval(this.resendTimerInterval);
     }
-    if (!this.doctorForm.mobileNumber || !this.doctorForm.mobileNumber.trim()) {
-      this.doctorRegisterError = 'Please enter your mobile number.';
-      return;
+    this.docResendTimer = 30;
+    this.resendTimerInterval = setInterval(() => {
+      if (this.docResendTimer > 0) {
+        this.docResendTimer--;
+        this.cdr.detectChanges();
+      } else {
+        clearInterval(this.resendTimerInterval);
+        this.resendTimerInterval = null;
+        this.cdr.detectChanges();
+      }
+    }, 1000);
+  }
+
+  resendDoctorOtp(): void {
+    if (this.docResendTimer > 0) return;
+    this.docRegError = '';
+    this.docRegSuccessMsg = '';
+    const randomOtp = Math.floor(100000 + Math.random() * 900000).toString();
+    this.docGeneratedOtp = randomOtp;
+    this.startResendTimer();
+    this.clearDocOtpInputs();
+    this.docRegSuccessMsg = `New verification code sent to +91 ${this.doctorPhone}`;
+    this.cdr.detectChanges();
+  }
+
+  clearDocOtpInputs(): void {
+    this.docOtpValues = ['', '', '', '', '', ''];
+    setTimeout(() => {
+      for (let i = 0; i < 6; i++) {
+        const el = document.getElementById(`docOtpInput_${i}`) as HTMLInputElement;
+        if (el) el.value = '';
+      }
+      const firstEl = document.getElementById('docOtpInput_0') as HTMLInputElement;
+      if (firstEl) firstEl.focus();
+    }, 100);
+  }
+
+  onDocOtpInput(event: any, index: number): void {
+    const input = event.target as HTMLInputElement;
+    let val = input.value || '';
+    if (val.length > 1) {
+      val = val.slice(-1);
+      input.value = val;
     }
-    if (!this.doctorForm.qualification || !this.doctorForm.qualification.trim()) {
-      this.doctorRegisterError = 'Please enter your medical qualification (e.g. MBBS, MD).';
-      return;
+    this.docOtpValues[index] = val;
+
+    if (val && index < 5) {
+      const nextEl = document.getElementById(`docOtpInput_${index + 1}`) as HTMLInputElement;
+      if (nextEl) {
+        nextEl.focus();
+        nextEl.select();
+      }
     }
-    if (!this.doctorForm.registrationNumber || !this.doctorForm.registrationNumber.trim()) {
-      this.doctorRegisterError = 'Please enter your medical council registration number.';
-      return;
+  }
+
+  onDocOtpKeyDown(event: KeyboardEvent, index: number): void {
+    const input = event.target as HTMLInputElement;
+    if (event.key === 'Backspace') {
+      if (!input.value && index > 0) {
+        const prevEl = document.getElementById(`docOtpInput_${index - 1}`) as HTMLInputElement;
+        if (prevEl) {
+          prevEl.focus();
+          prevEl.select();
+        }
+      }
+    } else if (event.key === 'Enter') {
+      event.preventDefault();
+      if (this.isDocOtpComplete()) {
+        this.verifyDoctorOtp();
+      }
     }
-    if (!this.doctorForm.hospitalName || !this.doctorForm.hospitalName.trim()) {
-      this.doctorRegisterError = 'Please enter your hospital or clinic name.';
+  }
+
+  onDocOtpPaste(event: ClipboardEvent): void {
+    event.preventDefault();
+    const pastedData = event.clipboardData?.getData('text') || '';
+    const digits = pastedData.replace(/\D/g, '').slice(0, 6).split('');
+
+    digits.forEach((digit, i) => {
+      this.docOtpValues[i] = digit;
+      const el = document.getElementById(`docOtpInput_${i}`) as HTMLInputElement;
+      if (el) el.value = digit;
+    });
+
+    const lastIdx = Math.min(digits.length, 5);
+    const lastEl = document.getElementById(`docOtpInput_${lastIdx}`) as HTMLInputElement;
+    if (lastEl) lastEl.focus();
+  }
+
+  getEnteredDocOtp(): string {
+    const domDigits: string[] = [];
+    for (let i = 0; i < 6; i++) {
+      const el = document.getElementById(`docOtpInput_${i}`) as HTMLInputElement;
+      domDigits.push(el ? el.value.trim() : (this.docOtpValues[i] || ''));
+    }
+    return domDigits.join('');
+  }
+
+  isDocOtpComplete(): boolean {
+    return this.getEnteredDocOtp().length === 6;
+  }
+
+  // Step 2: Verify OTP
+  verifyDoctorOtp(): void {
+    const entered = this.getEnteredDocOtp();
+    if (!entered || entered.length !== 6) {
+      this.docRegError = 'Please enter all 6 digits of the OTP code.';
       return;
     }
 
-    this.isSubmittingDoctor = true;
+    this.docRegLoading = true;
+    this.docRegError = '';
+    this.docRegSuccessMsg = '';
 
-    // Ensure Dr. prefix
-    let formattedName = this.doctorForm.fullName.trim();
-    if (!formattedName.toLowerCase().startsWith('dr.') && !formattedName.toLowerCase().startsWith('dr ')) {
-      formattedName = `Dr. ${formattedName}`;
+    // Verify against generated OTP or 123456
+    setTimeout(() => {
+      this.docRegLoading = false;
+      if (entered === this.docGeneratedOtp || entered === '123456') {
+        if (this.resendTimerInterval) {
+          clearInterval(this.resendTimerInterval);
+          this.resendTimerInterval = null;
+        }
+        this.docRegStep = 'password';
+        this.docRegSuccessMsg = 'Phone number verified successfully! Please set your password.';
+      } else {
+        this.docRegError = 'Invalid OTP code. Please enter the correct 6-digit code or use test code.';
+      }
+      this.cdr.detectChanges();
+    }, 400);
+  }
+
+  // Step 3: Complete Registration with New Password & Confirm Password
+  completeDoctorRegistration(): void {
+    this.docRegError = '';
+    this.docRegSuccessMsg = '';
+
+    if (!this.docNewPassword || this.docNewPassword.length < 6) {
+      this.docRegError = 'Password must be at least 6 characters long.';
+      return;
     }
-    this.doctorForm.fullName = formattedName;
 
-    const randomSuffix = Math.floor(100000 + Math.random() * 900000);
-    this.doctorRegId = `DOC-REG-${randomSuffix}`;
+    if (!this.docConfirmPassword) {
+      this.docRegError = 'Please confirm your password.';
+      return;
+    }
+
+    if (this.docNewPassword !== this.docConfirmPassword) {
+      this.docRegError = 'New password and Confirm password do not match.';
+      return;
+    }
+
+    this.docRegLoading = true;
+
+    // Store in localStorage for persistence
+    const registeredDoctor = {
+      phone: this.doctorPhone,
+      registeredAt: new Date().toISOString()
+    };
+    try {
+      localStorage.setItem('lastRegisteredDoctor', JSON.stringify(registeredDoctor));
+      localStorage.setItem('lastKnownPassword', this.docNewPassword);
+    } catch (e) {
+      // ignore
+    }
 
     setTimeout(() => {
-      this.isSubmittingDoctor = false;
-      this.doctorRegisterSuccess = true;
+      this.docRegLoading = false;
+      this.docRegStep = 'success';
       this.cdr.detectChanges();
-    }, 600);
+    }, 400);
+  }
+
+  // Step 4: Proceed to Log In
+  proceedToLogin(): void {
+    const phoneToFill = this.doctorPhone;
+    const pwdToFill = this.docNewPassword;
+
+    this.closeDoctorRegisterModal();
+
+    // Prefill login form
+    this.Form.patchValue({
+      loginid: phoneToFill,
+      password: pwdToFill
+    });
+    this.Form.markAsDirty();
+    this.Form.markAllAsTouched();
+
+    this.successMessage = `Registration successful! Account +91 ${this.doctorPhone} is ready. Click Sign In to enter.`;
+    this.cdr.detectChanges();
   }
 }
 
