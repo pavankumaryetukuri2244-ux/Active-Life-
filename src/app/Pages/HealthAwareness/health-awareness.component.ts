@@ -270,7 +270,8 @@ export interface HealthAwarenessForm {
       width: 100% !important;
       max-width: 100% !important;
       min-width: 0 !important;
-      height: 100% !important;
+      height: auto !important;
+      min-height: auto !important;
       background: #FFFFFF !important;
       border: 1px solid rgba(0, 0, 0, 0.1) !important;
       border-radius: 14px !important;
@@ -376,15 +377,21 @@ export interface HealthAwarenessForm {
 
     /* Point-wise Description Container inside Cards */
     .ha-card-desc-container {
-      font-size: 13px;
-      line-height: 1.55;
-      color: #475569;
-      margin-bottom: 12px;
-      max-height: 140px;
+      font-size: 13.5px;
+      line-height: 1.5;
+      color: #1E293B;
+      max-height: 240px;
       overflow-y: auto;
+      overflow-x: hidden;
       scrollbar-width: thin;
       scrollbar-color: #CBD5E1 transparent;
       padding-right: 4px;
+      margin-bottom: 0 !important;
+      min-width: 0 !important;
+      max-width: 100% !important;
+      word-break: break-word !important;
+      overflow-wrap: anywhere !important;
+      word-wrap: break-word !important;
     }
     .ha-card-desc-container::-webkit-scrollbar {
       width: 5px;
@@ -398,20 +405,6 @@ export interface HealthAwarenessForm {
     }
     .ha-card-desc-container::-webkit-scrollbar-thumb:hover {
       background: #94A3B8;
-    }
-    .ha-card-desc-container {
-      font-size: 13.5px;
-      line-height: 1.6;
-      color: #1E293B;
-      max-height: 120px;
-      overflow-y: auto;
-      overflow-x: hidden;
-      padding-right: 4px;
-      min-width: 0 !important;
-      max-width: 100% !important;
-      word-break: break-word !important;
-      overflow-wrap: anywhere !important;
-      word-wrap: break-word !important;
     }
     .ha-points-wrapper,
     .ha-point-intro,
@@ -1183,6 +1176,10 @@ export class HealthAwarenessComponent implements OnInit, OnDestroy {
     const hasHtml = /<[a-z][\s\S]*>/i.test(raw);
     if (hasHtml) {
       let processed = raw;
+      // Remove empty paragraphs, empty divs, and consecutive line breaks that create unwanted white space
+      processed = processed.replace(/<(?:p|div)[^>]*>\s*(?:<br\s*\/?>|&nbsp;|\s)*\s*<\/(?:p|div)>/gi, '');
+      processed = processed.replace(/(?:<br\s*\/?>\s*){2,}/gi, '<br>');
+      processed = processed.trim();
       if (/[•°✓✔▪▫·–—]/.test(processed)) {
         processed = processed.replace(/<(?:p|div)[^>]*>\s*[•°✓✔▪▫·–—]\s*(.*?)<\/(?:p|div)>/gi, '<li class="ha-desc-item mb-1">$1</li>');
         processed = processed.replace(/(<li class="ha-desc-item mb-1">[\s\S]*?<\/li>\s*)+/gi, (match) => {
@@ -1232,7 +1229,7 @@ export class HealthAwarenessComponent implements OnInit, OnDestroy {
 
         if (!inTable) {
           inTable = true;
-          tableHtml = '<div class="table-responsive my-2"><table class="table table-bordered table-sm ha-content-table mb-0"><thead><tr>';
+          tableHtml = '<div class="table-responsive my-1"><table class="table table-bordered table-sm ha-content-table mb-0"><thead><tr>';
           cells.forEach(c => {
             tableHtml += `<th>${formatInline(c)}</th>`;
           });

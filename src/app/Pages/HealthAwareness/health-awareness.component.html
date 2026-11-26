@@ -137,13 +137,13 @@
 @if (!isLoading && filteredArticles.length > 0) {
   <div class="row g-4 mb-4">
     @for (item of filteredArticles; track item.id) {
-      <div class="col-12 col-md-6 col-lg-4 d-flex" [style.z-index]="openDropdownId === item.id ? '1000' : '1'" style="position: relative; min-width: 0;">
-        <div class="card cm-media-card border-0 shadow-sm w-100 d-flex flex-column"
+      <div class="col-12 col-md-6 col-lg-4" [style.z-index]="openDropdownId === item.id ? '1000' : '1'" style="position: relative; min-width: 0;">
+        <div class="card cm-media-card border-0 shadow-sm w-100"
           [style.z-index]="openDropdownId === item.id ? '1000' : '1'"
-          style="border-radius: 14px; background: #FFFFFF; border: 1px solid rgba(0, 0, 0, 0.1); overflow: visible !important; position: relative; min-width: 0; max-width: 100%; word-break: break-word; overflow-wrap: anywhere;">
+          style="border-radius: 14px; background: #FFFFFF; border: 1px solid rgba(0, 0, 0, 0.1); overflow: visible !important; position: relative; min-width: 0; max-width: 100%; height: auto !important; min-height: auto !important; word-break: break-word; overflow-wrap: anywhere;">
 
           <!-- Card Body -->
-          <div class="card-body p-3 d-flex flex-column justify-content-between flex-grow-1" style="min-width: 0; width: 100%;">
+          <div class="card-body p-3" style="min-width: 0; width: 100%;">
             <div style="min-width: 0; width: 100%;">
               <!-- Title & 3-dots dropdown Actions Menu -->
               <div class="d-flex align-items-start justify-content-between mb-1" style="position: relative; width: 100%; min-width: 0; gap: 8px;">
