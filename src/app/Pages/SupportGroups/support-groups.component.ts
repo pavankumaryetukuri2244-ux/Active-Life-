@@ -396,7 +396,7 @@ export class SupportGroupsComponent implements OnInit, OnDestroy {
   }
 
   // Loading & Action States
-  public isLoading: boolean = false;
+  public isLoading: boolean = true;
   public isSaving: boolean = false;
   public isTogglingId: number | null = null;
   public openDropdownId: number | null = null;
@@ -562,19 +562,6 @@ export class SupportGroupsComponent implements OnInit, OnDestroy {
       },
       error: () => {
         this.isLoading = false;
-        const cached = localStorage.getItem('activeLife_supportGroups');
-        if (cached) {
-          try {
-            const parsed = JSON.parse(cached);
-            if (Array.isArray(parsed) && parsed.length > 0 && typeof parsed[0].id === 'number') {
-              this.groups = parsed;
-              this.updateStats();
-              this.updateCategories();
-              this.applyFilters();
-              return;
-            }
-          } catch (e) {}
-        }
         this.groups = [];
         this.updateStats();
         this.applyFilters();
@@ -631,7 +618,9 @@ export class SupportGroupsComponent implements OnInit, OnDestroy {
   }
 
   private saveToStorage(): void {
-    localStorage.setItem('activeLife_supportGroups', JSON.stringify(this.groups));
+    try {
+      localStorage.removeItem('activeLife_supportGroups');
+    } catch (e) {}
   }
 
   // Modals & CRUD

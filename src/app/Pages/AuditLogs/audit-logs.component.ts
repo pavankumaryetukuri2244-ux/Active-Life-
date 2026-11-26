@@ -648,14 +648,14 @@ export class AuditLogsComponent implements OnInit {
     totalLogs: 0,
     todayActivity: 0,
     failedActions: 0,
-    activeAdmins: 2
+    activeAdmins: 0
   };
 
   // Table data
   allLogs: AuditLog[] = [];
   filteredLogs: AuditLog[] = [];
   logsList: AuditLog[] = [];
-  isLoading = false;
+  isLoading = true;
   errorMessage = '';
 
   // Pagination
@@ -748,11 +748,16 @@ export class AuditLogsComponent implements OnInit {
           const maxLogId = this.allLogs.reduce((max, log) => Math.max(max, log.id || 0), 0);
           const trueTotalLogs = Math.max(pageData?.totalElements || 0, maxLogId, this.allLogs.length);
 
+          const uniqueAdmins = new Set(
+            this.allLogs.map((log: any) => (log.adminCode || log.adminName || '').trim()).filter((v: string) => v.length > 0)
+          );
+          const apiActiveAdmins = res?.data?.activeAdmins ?? res?.data?.activeAdminsCount;
+
           this.stats = {
             totalLogs: trueTotalLogs || res.data.totalLogs || 0,
             todayActivity: todayCount || res.data.todayActivity || 0,
             failedActions: failedCount || res.data.failedActions || 0,
-            activeAdmins: 2 // Exactly two active admins: Super Admin and Test Admin
+            activeAdmins: apiActiveAdmins !== undefined && apiActiveAdmins !== null ? Number(apiActiveAdmins) : uniqueAdmins.size
           };
 
           // Immediately apply frontend filters to slice and display

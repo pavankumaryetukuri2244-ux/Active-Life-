@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy, NgZone } from '@angular/core';
 
 @Component({
   selector: 'app-root',
@@ -9,105 +9,65 @@ export class AppComponent implements OnInit, OnDestroy {
   title = 'ArchitectUI - Angular 20 Bootstrap 5 & Material Design Admin Dashboard Template';
 
   private modalObserver?: MutationObserver;
-  private backdropWheelHandler?: (e: WheelEvent) => void;
-  private backdropTouchHandler?: (e: TouchEvent) => void;
+  private isModalScrollLocked = false;
+  private checkRafId: number | null = null;
+
+  constructor(private ngZone: NgZone) {}
 
   ngOnInit(): void {
-    if (typeof document !== 'undefined' && typeof window !== 'undefined') {
-      const checkAndLockScroll = () => {
-        const modalBackdrops = document.querySelectorAll(
-          '[class*="modal-backdrop"], [class*="-backdrop"], .modal.d-block, .ha-modal-backdrop, .apt-modal-backdrop, .da-modal-backdrop, .dm-modal-backdrop, .nt-modal-backdrop, .doctor-modal-backdrop'
-        );
-        const hasOpenModal = modalBackdrops.length > 0;
+    if (typeof document === 'undefined') {
+      return;
+    }
 
-        if (hasOpenModal) {
-          if (!document.body.classList.contains('modal-open')) {
-            document.body.classList.add('modal-open');
-          }
-          if (!document.documentElement.classList.contains('modal-open')) {
-            document.documentElement.classList.add('modal-open');
-          }
-          document.body.style.overflow = 'hidden';
-          document.documentElement.style.overflow = 'hidden';
-        } else {
-          if (document.body.classList.contains('modal-open')) {
-            document.body.classList.remove('modal-open');
-          }
-          if (document.documentElement.classList.contains('modal-open')) {
-            document.documentElement.classList.remove('modal-open');
-          }
-          document.body.style.overflow = '';
-          document.documentElement.style.overflow = '';
-        }
-      };
+    const syncModalScrollLock = () => {
+      const hasOpenModal = !!document.querySelector(
+        '.ha-modal-backdrop, .dm-modal-backdrop, .da-modal-backdrop, .da-cert-modal-backdrop, .apt-modal-backdrop, .nt-modal-backdrop, .doctor-modal-backdrop, .modal-backdrop, .modal.d-block'
+      );
 
-      // Watch for any modal backdrop element added or removed from the DOM
-      this.modalObserver = new MutationObserver(() => {
-        checkAndLockScroll();
+      if (hasOpenModal === this.isModalScrollLocked) {
+        return;
+      }
+      this.isModalScrollLocked = hasOpenModal;
+
+      document.body.classList.toggle('modal-open', hasOpenModal);
+      document.documentElement.classList.toggle('modal-open', hasOpenModal);
+    };
+
+    const scheduleCheck = () => {
+      if (this.checkRafId !== null) {
+        return;
+      }
+      this.checkRafId = window.requestAnimationFrame(() => {
+        this.checkRafId = null;
+        syncModalScrollLock();
       });
+    };
 
+    // Run outside Angular Zone and watch ONLY childList additions/removals so
+    // toggling classes/styles never re-triggers MutationObserver or Change Detection.
+    this.ngZone.runOutsideAngular(() => {
+      this.modalObserver = new MutationObserver(scheduleCheck);
       this.modalObserver.observe(document.body, {
         childList: true,
-        subtree: true,
-        attributes: true,
-        attributeFilter: ['class', 'style']
+        subtree: true
       });
-
-      // Prevent wheel/touch events on the backdrop overlay from propagating to background
-      this.backdropWheelHandler = (event: WheelEvent) => {
-        const target = event.target as HTMLElement | null;
-        if (target && this.isBackdropElement(target)) {
-          event.preventDefault();
-        }
-      };
-
-      this.backdropTouchHandler = (event: TouchEvent) => {
-        const target = event.target as HTMLElement | null;
-        if (target && this.isBackdropElement(target)) {
-          event.preventDefault();
-        }
-      };
-
-      window.addEventListener('wheel', this.backdropWheelHandler, { passive: false });
-      window.addEventListener('touchmove', this.backdropTouchHandler, { passive: false });
-
-      // Initial check
-      checkAndLockScroll();
-    }
-  }
-
-  private isBackdropElement(target: HTMLElement): boolean {
-    const className = typeof target.className === 'string' ? target.className : '';
-    return (
-      className.includes('backdrop') ||
-      className.includes('modal-backdrop') ||
-      className.includes('ha-modal-backdrop') ||
-      className.includes('dm-modal-backdrop') ||
-      className.includes('da-modal-backdrop') ||
-      className.includes('apt-modal-backdrop') ||
-      className.includes('nt-modal-backdrop') ||
-      className.includes('doctor-modal-backdrop') ||
-      (className.includes('modal') && className.includes('d-block'))
-    );
+      syncModalScrollLock();
+    });
   }
 
   ngOnDestroy(): void {
+    if (this.checkRafId !== null && typeof window !== 'undefined') {
+      window.cancelAnimationFrame(this.checkRafId);
+      this.checkRafId = null;
+    }
     if (this.modalObserver) {
       this.modalObserver.disconnect();
-    }
-    if (typeof window !== 'undefined') {
-      if (this.backdropWheelHandler) {
-        window.removeEventListener('wheel', this.backdropWheelHandler);
-      }
-      if (this.backdropTouchHandler) {
-        window.removeEventListener('touchmove', this.backdropTouchHandler);
-      }
+      this.modalObserver = undefined;
     }
     if (typeof document !== 'undefined') {
       document.body.classList.remove('modal-open');
       document.documentElement.classList.remove('modal-open');
-      document.body.style.overflow = '';
-      document.documentElement.style.overflow = '';
+      this.isModalScrollLocked = false;
     }
   }
 }

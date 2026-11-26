@@ -1526,8 +1526,8 @@ textarea.form-control.is-invalid:focus {
   background-image: none !important;
 }
 
-/* Always show vertical scrollbar gutter when no modal is open */
-html:not(.modal-open):not(:has([class*="modal-backdrop"])):not(:has(.modal.d-block)):not(:has([class*="-backdrop"])) {
+/* Always show vertical scrollbar gutter */
+html {
   overflow-y: scroll !important;
   scrollbar-gutter: stable !important;
 }
@@ -1539,70 +1539,47 @@ body {
 
 /* ================================================================
    MODAL BACKGROUND SCROLL LOCK & SCROLL CONTAINMENT
-   Freezes the background page completely whenever any popup / modal is open
+   Freezes the background page whenever any modal / popup is open
    ================================================================ */
 html.modal-open,
-body.modal-open,
-html:has([class*="modal-backdrop"]),
-body:has([class*="modal-backdrop"]),
-html:has(.modal.d-block),
-body:has(.modal.d-block),
-html:has([class*="-backdrop"]),
-body:has([class*="-backdrop"]) {
+body.modal-open {
   overflow: hidden !important;
   overflow-y: hidden !important;
-  height: 100% !important;
+  height: 100vh !important;
   max-height: 100vh !important;
   overscroll-behavior: none !important;
-  touch-action: none !important;
 }
 
 body.modal-open .app-container,
 body.modal-open .app-main,
 body.modal-open .app-main__outer,
 body.modal-open .app-main__inner,
-body:has([class*="modal-backdrop"]) .app-container,
-body:has([class*="modal-backdrop"]) .app-main,
-body:has([class*="modal-backdrop"]) .app-main__outer,
-body:has([class*="modal-backdrop"]) .app-main__inner,
-body:has(.modal.d-block) .app-container,
-body:has(.modal.d-block) .app-main,
-body:has(.modal.d-block) .app-main__outer,
-body:has(.modal.d-block) .app-main__inner,
-body:has([class*="-backdrop"]) .app-container,
-body:has([class*="-backdrop"]) .app-main,
-body:has([class*="-backdrop"]) .app-main__outer,
-body:has([class*="-backdrop"]) .app-main__inner {
+body.modal-open .login-bg {
   overflow: hidden !important;
   overflow-y: hidden !important;
   overscroll-behavior: none !important;
 }
 
-/* Prevent scroll chaining on all modal backdrops */
-[class*="modal-backdrop"],
-[class*="-backdrop"],
+/* Prevent scroll chaining on all modal backdrops and dialog boxes */
+.modal-backdrop,
 .modal.d-block,
 .ha-modal-backdrop,
 .apt-modal-backdrop,
 .da-modal-backdrop,
+.da-cert-modal-backdrop,
 .dm-modal-backdrop,
 .nt-modal-backdrop,
-.doctor-modal-backdrop {
-  overscroll-behavior: contain !important;
-  touch-action: none !important;
-}
-
-/* Ensure modal content dialogs only scroll their own form content */
-[class*="modal-content"],
-[class*="modal-dialog"],
+.doctor-modal-backdrop,
+.modal-content,
+.modal-dialog,
 .ha-modal-content,
 .dm-modal-content,
 .da-modal-content,
+.da-cert-modal-content,
 .apt-modal-content,
 .nt-modal-dialog,
 .doctor-modal-card {
   overscroll-behavior: contain !important;
-  touch-action: pan-y !important;
 }
 
 /* Modern clean scrollbar styling */

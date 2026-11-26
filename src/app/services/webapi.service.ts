@@ -1,6 +1,6 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { timeout, catchError, throwError } from 'rxjs';
+import { timeout, catchError, throwError, switchMap, of } from 'rxjs';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -230,6 +230,32 @@ export class WebapiService {
     );
   }
 
+  /**
+   * Role-based Send OTP API for Doctor Registration.
+   * Targets /userservice/v1/auth/otp/send with role: 'DOCTOR'.
+   */
+  public SendDoctorOtp(body: {
+    countryCode?: string;
+    mobileNumber: string;
+    purpose?: string;
+    role?: string;
+    resendOtp?: boolean;
+  }) {
+    const baseUserService = (environment as any).userServiceUrl || 'https://api.activelifedeveloper.com/userservice';
+    const url = `${baseUserService}/v1/auth/otp/send`;
+    const payload = {
+      countryCode: body.countryCode || '91',
+      mobileNumber: body.mobileNumber,
+      purpose: body.purpose || 'REGISTER_MPIN',
+      role: body.role || 'DOCTOR',
+      resendOtp: Boolean(body.resendOtp)
+    };
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    return this.Http.post<any>(url, payload, { headers }).pipe(
+      timeout(15000)
+    );
+  }
+
   public VerifyOtp(email: string, otp: string) {
     const url = `${this.WebApi}/api/v1/admin/auth/verify-otp`;
     return this.Http.post<any>(url, { email, otp }).pipe(
@@ -309,7 +335,14 @@ export class WebapiService {
   public GetMedicalCategories(body: any = {}) {
     const headers = this.getAuthHeaders();
     const url = `${this.WebApi}/admin/api/masterdata/categories`;
-    return this.Http.post<any>(url, body, { headers });
+    return this.Http.post<any>(url, body, { headers }).pipe(
+      catchError((err: any) => {
+        if (err?.status === 405) {
+          return this.Http.get<any>(url, { headers });
+        }
+        return throwError(() => err);
+      })
+    );
   }
 
   public GetCategories(body: any = {}) {
@@ -389,9 +422,18 @@ export class WebapiService {
   }
 
   public GetHomeRemedyCategories(body: any = {}) {
-    const headers = this.getAuthHeaders();
     const url = `${this.WebApi}/admin/api/masterdata/home-remedy-categories`;
-    return this.Http.post<any>(url, body, { headers });
+    const postHeaders = this.getAuthHeaders(true);
+    const getHeaders = this.getAuthHeaders(false);
+    return this.Http.post<any>(url, body, { headers: postHeaders }).pipe(
+      switchMap((res: any) => {
+        if (res && res.success === false) {
+          return this.Http.get<any>(url, { headers: getHeaders });
+        }
+        return of(res);
+      }),
+      catchError(() => this.Http.get<any>(url, { headers: getHeaders }))
+    );
   }
 
   // ==========================================

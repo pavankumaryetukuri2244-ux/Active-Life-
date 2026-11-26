@@ -383,32 +383,22 @@ export class HomeRemediesComponent implements OnInit, OnDestroy {
   public isTogglingId: number | null = null;
 
   // Master Data Categories from API
-  public masterCategories: string[] = [];
-
-  // Categories
-  public categories: string[] = [
-    'All',
+  public readonly defaultHomeRemedyCategories: string[] = [
     'Respiratory',
     'Immunity',
     'Pain Relief',
     'Heart Health',
     'Digestion'
   ];
+  public masterCategories: string[] = [];
+  public isLoadingCategories: boolean = false;
 
-  // Full medical master categories (same as other modules)
-  public selectableCategories: string[] = [
-    'Cardiology', 'Psychiatry', 'Endocrinology', 'Pediatrics', 'Oncology',
-    'Neurology', 'Orthopedics', 'Dermatology', 'ENT', 'Gastroenterology',
-    'Urology', 'Gynecology', 'Pulmonology', 'Nephrology', 'Rheumatology',
-    'Ophthalmology', 'Dentistry', 'General Medicine', 'Surgery', 'Anesthesiology'
-  ];
+  // Categories
+  public categories: string[] = ['All', ...this.defaultHomeRemedyCategories];
 
   public get allCategories(): string[] {
-    // Prefer master categories from API; fall back to the full medical master list
-    const list = this.masterCategories.length > 0
-      ? this.masterCategories
-      : this.selectableCategories;
-    return list.filter(c => c !== 'All');
+    return (this.masterCategories.length > 0 ? this.masterCategories : this.defaultHomeRemedyCategories)
+      .filter(c => c !== 'All');
   }
 
   public get dynamicCategories(): string[] {
@@ -430,7 +420,7 @@ export class HomeRemediesComponent implements OnInit, OnDestroy {
   public formModel: HomeRemedyForm = this.getEmptyForm();
   public formError: string = '';
   public titleError: string = '';
-  public isLoading: boolean = false;
+  public isLoading: boolean = true;
   public isSaving: boolean = false;
 
   // Table & Content Formatting state
@@ -461,28 +451,54 @@ export class HomeRemediesComponent implements OnInit, OnDestroy {
     this.loadRemedies();
   }
 
+  private extractCategoryNames(res: any): string[] {
+    if (!res) return [];
+    const d = res.data ?? res;
+    let rawList: any[] = [];
+    if (Array.isArray(d)) rawList = d;
+    else if (typeof d === 'string') rawList = d.split(',').map((s: string) => s.trim());
+    else if (Array.isArray(d.data)) rawList = d.data;
+    else if (Array.isArray(d.categories)) rawList = d.categories;
+    else if (Array.isArray(d.homeRemedyCategories)) rawList = d.homeRemedyCategories;
+    else if (Array.isArray(d.content)) rawList = d.content;
+    else if (Array.isArray(d.list)) rawList = d.list;
+    else if (Array.isArray(d.items)) rawList = d.items;
+
+    const names = rawList
+      .map((item: any) => {
+        if (typeof item === 'string') return item.trim();
+        if (item && typeof item === 'object') {
+          return String(item.name || item.categoryName || item.category || item.title || item.label || item.value || item.code || '').trim();
+        }
+        return '';
+      })
+      .filter((c: string) => c.length > 0 && c !== 'All');
+
+    return Array.from(new Set(names));
+  }
+
+  private applyLoadedMasterCategories(cats: string[]): void {
+    this.masterCategories = cats.length > 0 ? cats : [...this.defaultHomeRemedyCategories];
+    this.isLoadingCategories = false;
+    if (this.masterCategories.length > 0) {
+      if (!this.formModel.category || (!this.isEditing && !this.masterCategories.includes(this.formModel.category))) {
+        this.formModel.category = this.masterCategories[0];
+      }
+    }
+    this.updateCategories();
+  }
+
   public loadMasterCategories(): void {
+    this.isLoadingCategories = true;
     this.webApiService.GetHomeRemedyCategories({}).pipe(
       takeUntil(this.destroy$)
     ).subscribe({
       next: (res: any) => {
-        if (res && res.success && Array.isArray(res.data)) {
-          this.masterCategories = res.data;
-        } else if (Array.isArray(res?.data?.data)) {
-          this.masterCategories = res.data.data;
-        } else if (Array.isArray(res)) {
-          this.masterCategories = res;
-        }
-        if (this.masterCategories.length > 0 && !this.formModel.category) {
-          this.formModel.category = this.masterCategories[0];
-        }
-        this.updateCategories();
+        const fetched = this.extractCategoryNames(res);
+        this.applyLoadedMasterCategories(fetched);
       },
       error: () => {
-        if (this.masterCategories.length === 0) {
-          this.masterCategories = ['Respiratory', 'Immunity', 'Pain Relief', 'Heart Health', 'Digestion'];
-        }
-        this.updateCategories();
+        this.applyLoadedMasterCategories([...this.defaultHomeRemedyCategories]);
       }
     });
   }
@@ -582,19 +598,6 @@ export class HomeRemediesComponent implements OnInit, OnDestroy {
       },
       error: () => {
         this.isLoading = false;
-        const cached = localStorage.getItem('activeLife_homeRemedies');
-        if (cached) {
-          try {
-            const parsed = JSON.parse(cached);
-            if (Array.isArray(parsed) && parsed.length > 0 && typeof parsed[0].id === 'number') {
-              this.remedies = parsed;
-              this.updateStats();
-              this.updateCategories();
-              this.applyFilters();
-              return;
-            }
-          } catch (e) {}
-        }
         this.remedies = [];
         this.updateStats();
         this.applyFilters();
@@ -670,20 +673,22 @@ export class HomeRemediesComponent implements OnInit, OnDestroy {
 
   public updateCategories(): void {
     const present = Array.from(new Set(this.remedies.map(r => r.category).filter(c => c && c.trim())));
-    const base = this.masterCategories.length > 0
-      ? this.masterCategories
-      : ['Respiratory', 'Immunity', 'Pain Relief', 'Heart Health', 'Digestion'];
-    const merged = Array.from(new Set(['All', ...base, ...present]));
+    const merged = Array.from(new Set(['All', ...this.masterCategories, ...present]));
     this.categories = merged;
   }
 
   private saveToStorage(): void {
-    localStorage.setItem('activeLife_homeRemedies', JSON.stringify(this.remedies));
+    try {
+      localStorage.removeItem('activeLife_homeRemedies');
+    } catch (e) {}
   }
 
   // Modals & CRUD
   public openCreateModal(): void {
     this.isEditing = false;
+    if (this.masterCategories.length === 0) {
+      this.loadMasterCategories();
+    }
     this.formModel = this.getEmptyForm();
     this.formError = '';
     this.titleError = '';
@@ -1071,9 +1076,10 @@ export class HomeRemediesComponent implements OnInit, OnDestroy {
   }
 
   private getEmptyForm(): HomeRemedyForm {
+    const fallback = (this.defaultHomeRemedyCategories && this.defaultHomeRemedyCategories.length > 0) ? this.defaultHomeRemedyCategories[0] : 'Respiratory';
     return {
       title: '',
-      category: (this.masterCategories && this.masterCategories.length > 0) ? this.masterCategories[0] : 'Heart Health',
+      category: (this.masterCategories && this.masterCategories.length > 0) ? this.masterCategories[0] : fallback,
       description: '',
       remedyContent: ''
     };

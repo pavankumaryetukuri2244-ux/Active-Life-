@@ -64,6 +64,15 @@ export class CommonService {
   public SendOtp(email: string, resendOtp: boolean = false) {
     return this.api.SendOtp(email, resendOtp);
   }
+  public SendDoctorOtp(body: {
+    countryCode?: string;
+    mobileNumber: string;
+    purpose?: string;
+    role?: string;
+    resendOtp?: boolean;
+  }) {
+    return this.api.SendDoctorOtp(body);
+  }
   public VerifyOtp(email: string, otp: string) {
     return this.api.VerifyOtp(email, otp);
   }

@@ -359,10 +359,10 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
   private destroy$: Subject<void> = new Subject<void>();
 
   // Stat Numbers
-  public totalAppointmentsCount: number = 4;
+  public totalAppointmentsCount: number = 0;
   public todayAppointmentsCount: number = 0;
   public scheduledCount: number = 0;
-  public completedCount: number = 1;
+  public completedCount: number = 0;
 
   // Pagination
   public Math = Math;
@@ -384,7 +384,7 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
   public rescheduleTime: string = '';
 
   // Loading & Toast
-  public isLoading: boolean = false;
+  public isLoading: boolean = true;
   public toastMessage: string = '';
   public toastType: 'success' | 'error' = 'success';
   private toastTimer: any = null;
@@ -420,7 +420,7 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     try {
       localStorage.removeItem('activeLife_appointments_v1');
-    } catch (e) {}
+    } catch (e) { }
     this.destroy$ = new Subject<void>();
     this.initSearchDebounce();
     this.loadAppointments();
@@ -603,7 +603,6 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
         this.isLoading = false;
         console.log('[Appointments] API Response:', res);
         const rawList = this.extractAppointments(res);
-        const stats = this.extractStats(res);
 
         if (rawList && rawList.length > 0) {
           console.log('[Appointments] Extracted rawList count:', rawList.length, rawList);
@@ -617,12 +616,12 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
           }).filter((item: any): item is AppointmentItem => item !== null);
 
           this.appointments = this.sortAppointmentsAscending(mapped);
-          this.saveToStorage();
         } else {
           console.log('[Appointments] API returned empty appointment list');
           this.appointments = [];
         }
 
+        const stats = this.extractStats(res);
         this.updateStats(stats);
         this.applyFilters();
         this.cdr.detectChanges();
@@ -717,22 +716,39 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
     return [];
   }
 
+  private getLocalDateKey(date: Date): string {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+
+  private normalizeDateKey(raw: string): string {
+    if (!raw) return '';
+    const str = String(raw).trim();
+    if (!str) return '';
+    const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (isoMatch) return `${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}`;
+    const dmyMatch = str.match(/^(\d{2})-(\d{2})-(\d{4})/);
+    if (dmyMatch) return `${dmyMatch[3]}-${dmyMatch[2]}-${dmyMatch[1]}`;
+    const parsed = new Date(str);
+    if (!isNaN(parsed.getTime())) {
+      return this.getLocalDateKey(parsed);
+    }
+    return '';
+  }
+
+  private isAppointmentToday(dateStr?: string): boolean {
+    if (!dateStr) return false;
+    const todayLocal = this.getLocalDateKey(new Date());
+    return this.normalizeDateKey(dateStr) === todayLocal;
+  }
+
   private extractStats(res: any): { total: number; today: number; scheduled: number; completed: number } {
     const d = res?.data || res || {};
     const s = d.stats || d.statistics || d;
 
-    const now = new Date();
-    const y = now.getFullYear();
-    const m = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    const todayLocal = `${y}-${m}-${day}`;
-    const todayIso = now.toISOString().split('T')[0];
-
-    const todayComputed = this.appointments.filter(a => {
-      if (!a.appointmentDate) return false;
-      return a.appointmentDate.startsWith(todayLocal) || a.appointmentDate.startsWith(todayIso);
-    }).length;
-
+    const todayComputed = this.appointments.filter(a => this.isAppointmentToday(a.appointmentDate)).length;
     const scheduledComputed = this.appointments.filter(a => a.status === 'Scheduled').length;
     const completedComputed = this.appointments.filter(a => a.status === 'Completed').length;
 
@@ -747,32 +763,17 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
       this.appointments.length
     );
 
-    const today = Number(
-      s.todaysAppointments ??
-      s.todayAppointments ??
-      s.todayCount ??
-      d.todaysAppointments ??
-      d.todayAppointments ??
-      todayComputed
-    );
+    const hasLoadedList = this.appointments.length > 0;
+    const serverToday = s.todaysAppointments ?? s.todayAppointments ?? s.todayCount ?? d.todaysAppointments ?? d.todayAppointments;
+    const today = hasLoadedList ? todayComputed : Number(serverToday ?? 0);
 
-    const scheduled = Number(
-      s.scheduled ??
-      s.scheduledCount ??
-      s.scheduledAppointments ??
-      d.scheduled ??
-      d.scheduledCount ??
-      scheduledComputed
-    );
+    const scheduled = hasLoadedList
+      ? scheduledComputed
+      : Number(s.scheduled ?? s.scheduledCount ?? s.scheduledAppointments ?? d.scheduled ?? d.scheduledCount ?? 0);
 
-    const completed = Number(
-      s.completed ??
-      s.completedCount ??
-      s.completedAppointments ??
-      d.completed ??
-      d.completedCount ??
-      completedComputed
-    );
+    const completed = hasLoadedList
+      ? completedComputed
+      : Number(s.completed ?? s.completedCount ?? s.completedAppointments ?? d.completed ?? d.completedCount ?? 0);
 
     return { total, today, scheduled, completed };
   }
@@ -783,16 +784,10 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
     this.applyFilters();
   }
 
-  private saveToStorage(): void {
-    try {
-      localStorage.setItem('activeLife_appointments_v1', JSON.stringify(this.appointments));
-    } catch (e) {
-      console.warn('[Appointments] Storage quota exceeded or error saving:', e);
-    }
-  }
+  private saveToStorage(): void {}
 
   public updateStats(serverStats?: { total: number; today: number; scheduled: number; completed: number }): void {
-    if (serverStats !== undefined && serverStats !== null) {
+    if (serverStats !== undefined && serverStats !== null && this.appointments.length === 0) {
       this.totalAppointmentsCount = Number(serverStats.total || 0);
       this.todayAppointmentsCount = Number(serverStats.today || 0);
       this.scheduledCount = Number(serverStats.scheduled || 0);
@@ -800,18 +795,8 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const now = new Date();
-    const y = now.getFullYear();
-    const m = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    const todayLocal = `${y}-${m}-${day}`;
-    const todayIso = now.toISOString().split('T')[0];
-
-    this.totalAppointmentsCount = this.appointments.length;
-    this.todayAppointmentsCount = this.appointments.filter(a => {
-      if (!a.appointmentDate) return false;
-      return a.appointmentDate.includes(todayLocal) || a.appointmentDate.includes(todayIso) || a.appointmentDate.includes(`${day}-${m}-${y}`);
-    }).length;
+    this.totalAppointmentsCount = serverStats?.total !== undefined ? Math.max(Number(serverStats.total), this.appointments.length) : this.appointments.length;
+    this.todayAppointmentsCount = this.appointments.filter(a => this.isAppointmentToday(a.appointmentDate)).length;
     this.scheduledCount = this.appointments.filter(a => (a.status || '').toLowerCase() === 'scheduled').length;
     this.completedCount = this.appointments.filter(a => (a.status || '').toLowerCase() === 'completed').length;
   }
@@ -821,16 +806,7 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
 
     if (this.activeTab !== 'All') {
       if (this.activeTab === 'Today') {
-        const now = new Date();
-        const y = now.getFullYear();
-        const m = String(now.getMonth() + 1).padStart(2, '0');
-        const d = String(now.getDate()).padStart(2, '0');
-        const todayLocal = `${y}-${m}-${d}`;
-        const todayIso = now.toISOString().split('T')[0];
-        result = result.filter(a => {
-          if (!a.appointmentDate) return false;
-          return a.appointmentDate.includes(todayLocal) || a.appointmentDate.includes(todayIso) || a.appointmentDate.includes(`${d}-${m}-${y}`);
-        });
+        result = result.filter(a => this.isAppointmentToday(a.appointmentDate));
       } else {
         result = result.filter(a => (a.status || '').toLowerCase() === this.activeTab.toLowerCase());
       }
@@ -933,9 +909,7 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
     if (!dateStr && item.createdAt) {
       dateStr = String(item.createdAt).split('T')[0];
     }
-    if (!dateStr) {
-      dateStr = new Date().toISOString().split('T')[0];
-    } else if (dateStr.includes('T')) {
+    if (dateStr && dateStr.includes('T')) {
       dateStr = dateStr.split('T')[0];
     }
 

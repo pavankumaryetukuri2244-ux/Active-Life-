@@ -886,7 +886,7 @@
               </span>
             </div>
             <span class="text-muted small">
-              {{ activeCertificateDoctor.name }} • Registration: {{ activeCertificateDoc.certificateNumber || activeCertificateDoctor.registrationNumber || 'TGMC-123456' }}
+              {{ activeCertificateDoctor.name }} • Registration: {{ activeCertificateDoc.certificateNumber || activeCertificateDoctor.registrationNumber || '—' }}
             </span>
           </div>
         </div>
@@ -951,7 +951,7 @@
               </svg>
             </div>
             <h2 class="da-cert-title">
-              {{ activeCertificateDoc.issuer || 'TELANGANA STATE MEDICAL COUNCIL' }}
+              {{ activeCertificateDoc.issuer || activeCertificateDoctor.registrationCouncil || 'Medical Council Certificate' }}
             </h2>
             <div class="da-cert-subtitle">
               GOVERNMENT OF TELANGANA • DIRECTORATE OF MEDICAL EDUCATION &amp; PRACTICE
@@ -965,15 +965,15 @@
           <div class="d-flex align-items-center justify-content-between p-2 px-3 rounded border mb-4 flex-wrap" style="background: #F8FAFC; font-family: 'Inter', sans-serif; font-size: 12px; gap: 8px;">
             <div>
               <span class="text-muted">Registration Number: </span>
-              <strong class="text-dark">{{ activeCertificateDoc.certificateNumber || activeCertificateDoctor.registrationNumber || 'TGMC-123456' }}</strong>
+              <strong class="text-dark">{{ activeCertificateDoc.certificateNumber || activeCertificateDoctor.registrationNumber || '—' }}</strong>
             </div>
             <div>
               <span class="text-muted">Issue Date: </span>
-              <strong class="text-dark">{{ activeCertificateDoc.issueDate || 'Oct 28, 2026' }}</strong>
+              <strong class="text-dark">{{ activeCertificateDoc.issueDate || '—' }}</strong>
             </div>
             <div>
               <span class="text-muted">Valid Till: </span>
-              <strong class="text-dark">{{ activeCertificateDoc.expiryDate || 'Oct 27, 2036' }}</strong>
+              <strong class="text-dark">{{ activeCertificateDoc.expiryDate || '—' }}</strong>
             </div>
           </div>
 
@@ -994,7 +994,7 @@
           <div class="row g-3 mb-4 p-3 rounded-3" style="background: #FDFBF7; border: 1px dashed #E2E8F0; font-family: 'Inter', sans-serif; font-size: 13px;">
             <div class="col-sm-6">
               <span class="text-muted d-block" style="font-size: 11.5px;">Recognized Medical Qualification:</span>
-              <strong class="text-dark">{{ activeCertificateDoctor.qualification || 'MBBS' }}, MD ({{ activeCertificateDoctor.specialization }})</strong>
+              <strong class="text-dark">{{ activeCertificateDoctor.qualification || '—' }} ({{ activeCertificateDoctor.specialization }})</strong>
             </div>
             <div class="col-sm-6">
               <span class="text-muted d-block" style="font-size: 11.5px;">Specialization Discipline:</span>
@@ -1006,7 +1006,7 @@
             </div>
             <div class="col-sm-6">
               <span class="text-muted d-block" style="font-size: 11.5px;">Primary Hospital / Medical Center:</span>
-              <strong class="text-dark">{{ activeCertificateDoctor.hospitalName || 'Apollo Hospital' }}</strong>
+              <strong class="text-dark">{{ activeCertificateDoctor.hospitalName || '—' }}</strong>
             </div>
           </div>
 
@@ -1034,19 +1034,19 @@
             <!-- Official Gold Seal -->
             <div class="da-cert-seal-badge text-center">
               <div style="font-size: 8px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;">
-                TSMC<br>SEAL<br>2026
+                MEDICAL<br>SEAL<br>{{ currentYear }}
               </div>
             </div>
 
             <!-- Registrar Signature -->
             <div class="text-end">
               <div style="font-family: 'Brush Script MT', cursive, serif; font-size: 20px; color: #1E3A8A; font-style: italic; line-height: 1;">
-                Dr. K. Srinivas Rao
+                Verified Registrar
               </div>
               <div style="font-size: 11.5px; font-weight: 700; color: #0F172A; margin-top: 4px;">
                 Registrar &amp; Secretary
               </div>
-              <span class="text-muted" style="font-size: 10.5px;">Telangana State Medical Council</span>
+              <span class="text-muted" style="font-size: 10.5px;">{{ activeCertificateDoctor.registrationCouncil || 'Medical Council' }}</span>
             </div>
           </div>
 

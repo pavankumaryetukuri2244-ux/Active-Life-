@@ -484,7 +484,7 @@ export class NotificationsComponent implements OnInit, OnDestroy {
     delivered: '0'
   };
 
-  isLoading: boolean = false;
+  isLoading: boolean = true;
   apiError: string = '';
 
   // Quick Send Form Model
@@ -537,22 +537,12 @@ export class NotificationsComponent implements OnInit, OnDestroy {
   constructor(private webApiService: WebapiService) {}
 
   ngOnInit(): void {
+    try {
+      localStorage.removeItem('pms_notifications_cache');
+    } catch (e) {}
+
     // Load target audiences from Master Data API
     this.loadTargetAudiences();
-
-    // Load persisted notifications if available as fast initial cache
-    const saved = localStorage.getItem('pms_notifications_cache');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          this.notifications = parsed;
-          this.recalculateStats();
-        }
-      } catch (e) {
-        console.error('Failed to parse notifications cache', e);
-      }
-    }
 
     this.searchSubject.pipe(
       debounceTime(250),
@@ -561,7 +551,6 @@ export class NotificationsComponent implements OnInit, OnDestroy {
       this.searchQuery = term;
     });
 
-    // Call Notifications API: POST http://20.193.140.173:8085/admin/api/notifications/list with body {}
     this.loadNotifications();
   }
 
@@ -928,13 +917,7 @@ export class NotificationsComponent implements OnInit, OnDestroy {
     this.stats.delivered = sentCount > 0 ? '100%' : '0';
   }
 
-  private saveCache(): void {
-    try {
-      localStorage.setItem('pms_notifications_cache', JSON.stringify(this.notifications));
-    } catch (e) {
-      console.warn('LocalStorage save failed', e);
-    }
-  }
+  private saveCache(): void {}
 
   private showToast(msg: string, type: 'success' | 'error' = 'success'): void {
     this.toastMessage = msg;

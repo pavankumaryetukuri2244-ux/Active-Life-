@@ -4,7 +4,8 @@
 
 export const environment = {
   production: false,
-  serviceUrl: 'https://api.activelifedeveloper.com/healthappadmin'
+  serviceUrl: 'https://api.activelifedeveloper.com/healthappadmin',
+  userServiceUrl: 'https://api.activelifedeveloper.com/userservice'
 };
 
 /*

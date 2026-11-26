@@ -443,7 +443,7 @@ export class HealthcareChampionsComponent implements OnInit, OnDestroy {
   public genderError: string = '';
   public phoneTouched: boolean = false;
   public emailTouched: boolean = false;
-  public isLoading: boolean = false;
+  public isLoading: boolean = true;
   public isSaving: boolean = false;
 
   // Toast feedback
@@ -584,19 +584,6 @@ export class HealthcareChampionsComponent implements OnInit, OnDestroy {
       },
       error: () => {
         this.isLoading = false;
-        const cached = localStorage.getItem('activeLife_healthcareChampions');
-        if (cached) {
-          try {
-            const parsed = JSON.parse(cached);
-            if (Array.isArray(parsed) && parsed.length > 0 && typeof parsed[0].id === 'number') {
-              this.champions = parsed;
-              this.updateStats();
-              this.updateSpecializations();
-              this.applyFilters();
-              return;
-            }
-          } catch (e) {}
-        }
         this.champions = [];
         this.updateStats();
         this.applyFilters();
@@ -778,7 +765,7 @@ export class HealthcareChampionsComponent implements OnInit, OnDestroy {
     return t.trim();
   }
 
-  public formatExperience(e?: string, name?: string): string {
+  public formatExperience(e?: string, _name?: string): string {
     const trimmed = (e || '').trim();
     if (trimmed && trimmed.toLowerCase() !== 'string') {
       if (/experience/i.test(trimmed)) {
@@ -790,16 +777,7 @@ export class HealthcareChampionsComponent implements OnInit, OnDestroy {
       }
       return `${trimmed} Experience`;
     }
-
-    // Fallback for remaining champions with empty or missing experience
-    if (name) {
-      const lowerName = name.toLowerCase();
-      if (lowerName.includes('kavitha')) return '12 Years Experience';
-      if (lowerName.includes('shiv')) return '8 Years Experience';
-      if (lowerName.includes('umesh')) return '6 Years Experience';
-      if (lowerName.includes('pavan')) return '5 Years Experience';
-    }
-    return '5+ Years Experience';
+    return '—';
   }
 
   public updateStats(totalElements?: number): void {
@@ -815,7 +793,9 @@ export class HealthcareChampionsComponent implements OnInit, OnDestroy {
   }
 
   private saveToStorage(): void {
-    localStorage.setItem('activeLife_healthcareChampions', JSON.stringify(this.champions));
+    try {
+      localStorage.removeItem('activeLife_healthcareChampions');
+    } catch (e) {}
   }
 
   // Form Field Validation Helpers - strictly backend validations

@@ -210,9 +210,11 @@
             <input
               id="docPhoneInput"
               type="tel"
+              inputmode="numeric"
               class="form-control custom-input-field m-0"
               style="width: 100% !important;"
               [(ngModel)]="doctorPhone"
+              (input)="onDoctorPhoneInput($event)"
               (keydown.enter)="sendDoctorPhoneOtp()"
               placeholder="10-digit mobile number"
               maxlength="10"
@@ -248,7 +250,9 @@
       <div *ngIf="docRegStep === 'otp'" class="animate-fade-in text-center">
         <div class="login-header-block text-start mb-3" style="height: auto !important; padding-bottom: 12px !important;">
           <h2 class="login-heading">Verify Phone Number</h2>
-          <p class="login-subheading">Enter the 6-digit code sent to +91 {{ doctorPhone }}</p>
+          <p class="login-subheading" style="white-space: normal !important; height: auto !important;">
+            Enter the 6-digit code sent to +{{ doctorCountryCode }} {{ docMaskedMobile || doctorPhone }}
+          </p>
         </div>
 
         <!-- 6 OTP Boxes -->
@@ -267,9 +271,15 @@
                  (input)="onDocOtpInput($event, 5)" (keydown)="onDocOtpKeyDown($event, 5)">
         </div>
 
-        <div class="mb-3">
-          <span class="badge" style="background: #F1F5F9; color: #475569; font-weight: 500; font-size: 12px; padding: 6px 12px; border-radius: 6px;">
-            Hint / Test OTP: {{ docGeneratedOtp }}
+        <div class="mb-3 d-flex flex-column align-items-center" style="gap: 6px;">
+          <span *ngIf="docGeneratedOtp" class="badge" style="background: #F1F5F9; color: #475569; font-weight: 500; font-size: 12px; padding: 6px 12px; border-radius: 6px;">
+            OTP Code: {{ docGeneratedOtp }}
+          </span>
+          <span *ngIf="docOtpExpiryTimer > 0" class="text-muted" style="font-size: 12px;">
+            Code expires in {{ formatOtpExpiry(docOtpExpiryTimer) }}
+          </span>
+          <span *ngIf="docOtpExpiryTimer === 0" class="text-danger" style="font-size: 12px;">
+            OTP expired. Please resend OTP.
           </span>
         </div>
 
@@ -284,12 +294,12 @@
         </div>
 
         <div class="d-flex align-items-center justify-content-between pt-2" style="font-size: 13.5px;">
-          <button type="button" class="btn btn-link p-0 text-decoration-none" (click)="docRegStep = 'phone'" style="color: #64748B;">
+          <button type="button" class="btn btn-link p-0 text-decoration-none" (click)="goBackToDoctorPhone()" style="color: #64748B;">
             &larr; Change Phone
           </button>
           <div>
             <span *ngIf="docResendTimer > 0" class="text-muted">Resend in {{ docResendTimer }}s</span>
-            <button *ngIf="docResendTimer === 0" type="button" class="btn btn-link p-0 text-decoration-none fw-semibold" (click)="resendDoctorOtp()" style="color: #155DFC;">
+            <button *ngIf="docResendTimer === 0" type="button" class="btn btn-link p-0 text-decoration-none fw-semibold" (click)="resendDoctorOtp()" [disabled]="docRegLoading" style="color: #155DFC;">
               Resend OTP
             </button>
           </div>

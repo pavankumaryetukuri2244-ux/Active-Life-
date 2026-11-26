@@ -228,38 +228,51 @@ export class ReportsAnalyticsComponent implements OnInit {
   selectedRange: string = 'Last 30 days';
   ranges: string[] = ['Last 7 days', 'Last 30 days', 'Last 90 days', 'This Year'];
   public liveAnalyticsData: any = null;
+  public isLoading: boolean = true;
 
-  // Four Stat Cards matching exact Figma mockup & live API data
+  private readonly monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+  private getRecentMonthLabels(count: number = 6): string[] {
+    const now = new Date();
+    const labels: string[] = [];
+    for (let i = count - 1; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      labels.push(this.monthNames[d.getMonth()]);
+    }
+    return labels;
+  }
+
+  // Four Stat Cards initialized to zero until live API data arrives
   metrics: MetricCard[] = [
     {
       title: 'Total Revenue',
-      value: '₹500',
+      value: '₹0',
       colorTheme: 'green'
     },
     {
       title: 'Active Users',
-      value: '98',
+      value: '0',
       colorTheme: 'blue'
     },
     {
       title: 'Active Doctors',
-      value: '8',
+      value: '0',
       colorTheme: 'purple'
     },
     {
       title: 'Monthly Appointments',
-      value: '3',
+      value: '0',
       colorTheme: 'amber'
     }
   ];
 
   // 1. User Engagement Trends (Area Line Chart)
   public engagementData: ChartConfiguration<'line'>['data'] = {
-    labels: ['Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov'],
+    labels: this.getRecentMonthLabels(6),
     datasets: [
       {
         label: 'Total Users',
-        data: [0, 0, 30, 87, 107, 107],
+        data: [0, 0, 0, 0, 0, 0],
         borderColor: '#3B82F6',
         backgroundColor: 'rgba(59, 130, 246, 0.40)',
         borderWidth: 2.5,
@@ -273,7 +286,7 @@ export class ReportsAnalyticsComponent implements OnInit {
       },
       {
         label: 'Active Users',
-        data: [0, 0, 23, 78, 98, 98],
+        data: [0, 0, 0, 0, 0, 0],
         borderColor: '#10B981',
         backgroundColor: 'rgba(16, 185, 129, 0.45)',
         borderWidth: 2.5,
@@ -336,11 +349,11 @@ export class ReportsAnalyticsComponent implements OnInit {
 
   // 2. Appointment Breakdown (Grouped Bar Chart)
   public appointmentBreakdownData: ChartConfiguration<'bar'>['data'] = {
-    labels: ['Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov'],
+    labels: this.getRecentMonthLabels(6),
     datasets: [
       {
         label: 'Consultations',
-        data: [0, 0, 0, 0, 0, 3],
+        data: [0, 0, 0, 0, 0, 0],
         backgroundColor: '#2563EB',
         hoverBackgroundColor: '#1D4ED8',
         borderRadius: 4,
@@ -407,11 +420,11 @@ export class ReportsAnalyticsComponent implements OnInit {
 
   // 4. Revenue Trends (Line Chart)
   public revenueTrendsData: ChartConfiguration<'line'>['data'] = {
-    labels: ['Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov'],
+    labels: this.getRecentMonthLabels(6),
     datasets: [
       {
         label: 'Revenue',
-        data: [0, 0, 0, 0, 0, 500],
+        data: [0, 0, 0, 0, 0, 0],
         borderColor: '#F59E0B',
         backgroundColor: 'rgba(245, 158, 11, 0.08)',
         borderWidth: 2.5,
@@ -486,8 +499,10 @@ export class ReportsAnalyticsComponent implements OnInit {
   }
 
   fetchLiveStats(): void {
+    this.isLoading = true;
     this.webApiService.GetAnalytics({}).subscribe({
       next: (res: any) => {
+        this.isLoading = false;
         if (res && res.success && res.data) {
           this.applyAnalyticsData(res.data);
         } else {
@@ -495,7 +510,8 @@ export class ReportsAnalyticsComponent implements OnInit {
         }
       },
       error: (err: any) => {
-        console.warn('[ReportsAnalytics] Analytics API error, falling back to dashboard stats', err);
+        this.isLoading = false;
+        console.warn('[ReportsAnalytics] Analytics API error, checking live dashboard stats', err);
         this.fallbackDashboardStats();
       }
     });
@@ -505,17 +521,20 @@ export class ReportsAnalyticsComponent implements OnInit {
     this.webApiService.GetDashboardStatistics().subscribe({
       next: (res: any) => {
         if (res && res.success && res.data) {
-          if (res.data.totalUsers) {
+          if (res.data.totalUsers !== undefined && res.data.totalUsers !== null) {
             this.metrics[1].value = Number(res.data.totalUsers).toLocaleString();
           }
-          if (res.data.appointmentsCount) {
+          if (res.data.activeDoctors !== undefined && res.data.activeDoctors !== null) {
+            this.metrics[2].value = Number(res.data.activeDoctors).toLocaleString();
+          }
+          if (res.data.appointmentsCount !== undefined && res.data.appointmentsCount !== null) {
             this.metrics[3].value = Number(res.data.appointmentsCount).toLocaleString();
           }
           this.cdr.detectChanges();
         }
       },
       error: (err: any) => {
-        console.warn('[ReportsAnalytics] Dashboard stats fallback also failed', err);
+        console.warn('[ReportsAnalytics] Dashboard stats API failed', err);
       }
     });
   }
@@ -697,26 +716,6 @@ export class ReportsAnalyticsComponent implements OnInit {
       this.applyAnalyticsData(this.liveAnalyticsData);
       return;
     }
-    if (range === 'Last 7 days') {
-      this.metrics[0].value = '$18,500';
-      this.metrics[1].value = '2,840';
-      this.metrics[2].value = '7m 15s';
-      this.metrics[3].value = '412';
-    } else if (range === 'Last 90 days') {
-      this.metrics[0].value = '$220,000';
-      this.metrics[1].value = '28,400';
-      this.metrics[2].value = '9m 10s';
-      this.metrics[3].value = '5,420';
-    } else if (range === 'This Year') {
-      this.metrics[0].value = '$850,000';
-      this.metrics[1].value = '84,500';
-      this.metrics[2].value = '8m 55s';
-      this.metrics[3].value = '21,300';
-    } else {
-      this.metrics[0].value = '$75,000';
-      this.metrics[1].value = '10,200';
-      this.metrics[2].value = '8m 42s';
-      this.metrics[3].value = '1,847';
-    }
+    this.fetchLiveStats();
   }
 }

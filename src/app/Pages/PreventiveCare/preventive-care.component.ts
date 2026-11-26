@@ -369,7 +369,7 @@ export class PreventiveCareComponent implements OnInit {
 
   activeTab: 'Pregnancy Care' | 'Pregnancy Vaccines' | 'Child Vaccines' = 'Pregnancy Care';
   selectedItem: any = null;
-  isLoading = false;
+  isLoading = true;
   errorMessage = '';
 
   setTab(tab: 'Pregnancy Care' | 'Pregnancy Vaccines' | 'Child Vaccines') {
@@ -451,21 +451,10 @@ export class PreventiveCareComponent implements OnInit {
   }
 
   private getStoredInactiveStages(): Stage[] {
-    try {
-      const raw = localStorage.getItem('inactive_pregnancy_stages');
-      return raw ? JSON.parse(raw) : [];
-    } catch {
-      return [];
-    }
+    return [];
   }
 
-  private saveStoredInactiveStages(stages: Stage[]): void {
-    try {
-      localStorage.setItem('inactive_pregnancy_stages', JSON.stringify(stages));
-    } catch (e) {
-      console.error('Error saving inactive stages:', e);
-    }
-  }
+  private saveStoredInactiveStages(_stages: Stage[]): void {}
 
   private saveSingleInactiveStage(stage: Stage): void {
     const list = this.getStoredInactiveStages().filter(s => s.id !== stage.id);
@@ -833,6 +822,7 @@ export class PreventiveCareComponent implements OnInit {
 
   ngOnInit() {
     try {
+      localStorage.removeItem('inactive_pregnancy_stages');
       localStorage.removeItem('inactive_pregnancy_vaccines');
       localStorage.removeItem('inactive_child_vaccines');
     } catch {
@@ -885,20 +875,14 @@ export class PreventiveCareComponent implements OnInit {
               };
             });
 
-            // Preserve inactive stages that backend might omit from its active-only response
-            const storedInactive = this.getStoredInactiveStages();
-            const activeIds = new Set(activeMapped.map(s => s.id));
-            const validInactive = storedInactive.filter(s => s.id && !activeIds.has(s.id));
-            this.saveStoredInactiveStages(validInactive);
-
-            this.stagesList = [...activeMapped, ...validInactive];
+            this.stagesList = activeMapped;
             this.stagesList.sort((a: any, b: any) => {
               const aStart = a.raw?.weekRangeStart || a.raw?.weekStart || 0;
               const bStart = b.raw?.weekRangeStart || b.raw?.weekStart || 0;
               return aStart - bStart;
             });
           } else {
-            this.stagesList = this.getStoredInactiveStages();
+            this.stagesList = [];
           }
 
           // 2. Map pregnancy vaccines from API

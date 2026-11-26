@@ -560,7 +560,7 @@ export class HealthAwarenessComponent implements OnInit, OnDestroy {
   public formModel: HealthAwarenessForm = this.getEmptyForm();
   public formError: string = '';
   public titleError: string = '';
-  public isLoading: boolean = false;
+  public isLoading: boolean = true;
   public isSaving: boolean = false;
 
   // Toast feedback
@@ -684,21 +684,7 @@ export class HealthAwarenessComponent implements OnInit, OnDestroy {
       },
       error: () => {
         this.isLoading = false;
-        // Attempt to read previously cached real API items
-        const cached = localStorage.getItem('activeLife_healthAwareness');
-        if (cached) {
-          try {
-            const parsed = JSON.parse(cached);
-            if (Array.isArray(parsed) && parsed.length > 0 && typeof parsed[0].id === 'number') {
-              this.articles = parsed;
-              this.updateStats();
-              this.updateCategories();
-              this.applyFilters();
-              return;
-            }
-          } catch (e) {}
-        }
-        // ONLY DISPLAY API DATA - NO MOCK DATA
+        // ONLY DISPLAY API DATA - NO MOCK OR STALE CACHE DATA
         this.articles = [];
         this.updateStats();
         this.applyFilters();
@@ -762,7 +748,9 @@ export class HealthAwarenessComponent implements OnInit, OnDestroy {
   }
 
   private saveToStorage(): void {
-    localStorage.setItem('activeLife_healthAwareness', JSON.stringify(this.articles));
+    try {
+      localStorage.removeItem('activeLife_healthAwareness');
+    } catch (e) {}
   }
 
   // Modals & CRUD

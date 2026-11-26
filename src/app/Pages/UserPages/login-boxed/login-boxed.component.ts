@@ -8,7 +8,7 @@ import { WebapiService } from '../../../services/webapi.service';
   selector: 'app-login-boxed',
   templateUrl: './login-boxed.component.html',
   standalone: false,
-  
+
   styles: [`
 
     /* ============================================================
@@ -800,12 +800,20 @@ export class LoginBoxedComponent implements OnInit, OnDestroy {
   docRegError = '';
   docRegSuccessMsg = '';
 
+  doctorCountryCode = '91';
   doctorPhone = '';
+  doctorRole: 'DOCTOR' = 'DOCTOR';
 
   docOtpValues: string[] = ['', '', '', '', '', ''];
-  docGeneratedOtp = '123456';
+  docGeneratedOtp = '';
+  docMaskedMobile = '';
+  docOtpExpiresInSeconds = 180;
+  docOtpExpiryTimer = 0;
+  docExistUser = false;
+  docNextStep = 'REGISTER';
   docResendTimer = 30;
   private resendTimerInterval: any = null;
+  private expiryTimerInterval: any = null;
 
   docNewPassword = '';
   docConfirmPassword = '';
@@ -827,9 +835,6 @@ export class LoginBoxedComponent implements OnInit, OnDestroy {
       loginid: ['', [Validators.required, Validators.pattern(loginOrPhonePattern)]],
       password: ['', [Validators.required]]
     });
-    // Force permanent scrollbar on login page
-    document.documentElement.style.setProperty('overflow-y', 'scroll', 'important');
-    document.documentElement.style.setProperty('scrollbar-gutter', 'stable', 'important');
 
     // Auto-redirect to dashboard if session already active
     try {
@@ -852,13 +857,7 @@ export class LoginBoxedComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    if (this.resendTimerInterval) {
-      clearInterval(this.resendTimerInterval);
-      this.resendTimerInterval = null;
-    }
-    // Restore overflow when navigating to other pages
-    document.documentElement.style.removeProperty('overflow-y');
-    document.documentElement.style.removeProperty('scrollbar-gutter');
+    this.clearDoctorTimers();
   }
 
   togglePasswordVisibility(): void {
@@ -990,18 +989,34 @@ export class LoginBoxedComponent implements OnInit, OnDestroy {
     this.isDoctorRegisterModalOpen = false;
     this.docRegError = '';
     this.docRegSuccessMsg = '';
-    if (this.resendTimerInterval) {
-      clearInterval(this.resendTimerInterval);
-      this.resendTimerInterval = null;
-    }
+    this.clearDoctorTimers();
     this.resetDoctorFlow();
     this.cdr.detectChanges();
   }
 
+  private clearDoctorTimers(): void {
+    if (this.resendTimerInterval) {
+      clearInterval(this.resendTimerInterval);
+      this.resendTimerInterval = null;
+    }
+    if (this.expiryTimerInterval) {
+      clearInterval(this.expiryTimerInterval);
+      this.expiryTimerInterval = null;
+    }
+  }
+
   resetDoctorFlow(): void {
+    this.clearDoctorTimers();
+    this.doctorCountryCode = '91';
     this.doctorPhone = '';
+    this.doctorRole = 'DOCTOR';
     this.docOtpValues = ['', '', '', '', '', ''];
-    this.docGeneratedOtp = '123456';
+    this.docGeneratedOtp = '';
+    this.docMaskedMobile = '';
+    this.docOtpExpiresInSeconds = 180;
+    this.docOtpExpiryTimer = 0;
+    this.docExistUser = false;
+    this.docNextStep = 'REGISTER';
     this.docResendTimer = 30;
     this.docNewPassword = '';
     this.docConfirmPassword = '';
@@ -1009,7 +1024,15 @@ export class LoginBoxedComponent implements OnInit, OnDestroy {
     this.showDocConfirmPassword = false;
   }
 
-  // Step 1: Send OTP to Phone Number
+  onDoctorPhoneInput(event: any): void {
+    const input = event?.target as HTMLInputElement | null;
+    if (!input) return;
+    const digitsOnly = (input.value || '').replace(/\D/g, '').slice(0, 10);
+    input.value = digitsOnly;
+    this.doctorPhone = digitsOnly;
+  }
+
+  // Step 1: Send OTP to Phone Number (Role-based access: DOCTOR)
   sendDoctorPhoneOtp(): void {
     this.docRegError = '';
     this.docRegSuccessMsg = '';
@@ -1020,42 +1043,102 @@ export class LoginBoxedComponent implements OnInit, OnDestroy {
       return;
     }
     this.doctorPhone = rawPhone;
+    this.requestDoctorOtp(rawPhone, false);
+  }
 
+  /**
+   * Calls the role-based userservice Send OTP API for Doctor registration/resend.
+   */
+  private requestDoctorOtp(mobileNumber: string, resendOtp: boolean): void {
     this.docRegLoading = true;
-    // Generate a 6-digit OTP code for test verification
-    const randomOtp = Math.floor(100000 + Math.random() * 900000).toString();
-    this.docGeneratedOtp = randomOtp;
+    this.docRegError = '';
+    this.docRegSuccessMsg = '';
 
-    // Call backend SendOtp API (supports email / phone)
-    this.webApiService.SendOtp(rawPhone).subscribe({
+    const requestBody = {
+      countryCode: this.doctorCountryCode || '91',
+      mobileNumber,
+      purpose: 'REGISTER_MPIN',
+      role: this.doctorRole || 'DOCTOR',
+      resendOtp
+    };
+
+    this.webApiService.SendDoctorOtp(requestBody).subscribe({
       next: (res: any) => {
         this.docRegLoading = false;
-        if (res && res.data?.otp) {
-          this.docGeneratedOtp = String(res.data.otp);
+        const isSuccess =
+          res &&
+          res.success === true &&
+          (res.errorCode === 0 || res.errorCode === undefined || res.errorCode === null) &&
+          (res.responseCode === 200 || res.responseCode === undefined || res.responseCode === null);
+
+        if (!isSuccess) {
+          this.docRegError =
+            res?.data?.message ||
+            res?.message ||
+            'Unable to send OTP. Please verify your mobile number and role access.';
+          this.cdr.detectChanges();
+          return;
         }
+
+        const data = res.data || {};
+        this.docMaskedMobile = data.maskedMobile || ('******' + mobileNumber.slice(-4));
+        const expires = Number(data.expiresInSeconds);
+        this.docOtpExpiresInSeconds = (!isNaN(expires) && expires > 0) ? expires : 180;
+        this.docExistUser = Boolean(data.existUser);
+        this.docNextStep = (data.nextStep || 'REGISTER').toString().toUpperCase();
+        const serverOtp = data.otpCode ?? data.otp ?? '';
+        this.docGeneratedOtp = serverOtp ? String(serverOtp).trim() : '';
+
+        if (this.docExistUser && this.docNextStep === 'LOGIN' && !this.docGeneratedOtp) {
+          this.docRegError =
+            data.message ||
+            res.message ||
+            'This mobile number is already registered for this role. Please sign in.';
+          this.cdr.detectChanges();
+          return;
+        }
+
         this.docRegStep = 'otp';
-        this.startResendTimer();
+        this.startResendTimer(this.docOtpExpiresInSeconds);
         this.clearDocOtpInputs();
-        this.docRegSuccessMsg = `Verification code sent to +91 ${this.doctorPhone}`;
+        const msgText = data.message || res.message || 'OTP sent successfully.';
+        this.docRegSuccessMsg = `${msgText} (+${this.doctorCountryCode} ${this.docMaskedMobile})`;
         this.cdr.detectChanges();
       },
-      error: () => {
-        // Fallback for seamless demo/testing when SMS gateway is offline
+      error: (err: any) => {
         this.docRegLoading = false;
-        this.docRegStep = 'otp';
-        this.startResendTimer();
-        this.clearDocOtpInputs();
-        this.docRegSuccessMsg = `Verification code sent to +91 ${this.doctorPhone}`;
+        console.error('Doctor Send OTP API error:', err);
+        if (err?.status === 0) {
+          this.docRegError = 'Cannot connect to authentication server. Please check your network.';
+        } else if (err?.status === 403) {
+          this.docRegError =
+            err?.error?.message ||
+            err?.error?.data?.message ||
+            'Access denied: Role-based access restricted for DOCTOR registration.';
+        } else if (err?.status === 401) {
+          this.docRegError =
+            err?.error?.message ||
+            err?.error?.data?.message ||
+            'Unauthorized access for DOCTOR role.';
+        } else if (err?.name === 'TimeoutError' || err?.status === 504) {
+          this.docRegError = 'OTP request timed out. Please try again.';
+        } else {
+          this.docRegError =
+            err?.error?.data?.message ||
+            err?.error?.message ||
+            err?.message ||
+            'Failed to send OTP. Please try again.';
+        }
         this.cdr.detectChanges();
       }
     });
   }
 
-  startResendTimer(): void {
-    if (this.resendTimerInterval) {
-      clearInterval(this.resendTimerInterval);
-    }
-    this.docResendTimer = 30;
+  startResendTimer(expiresInSeconds: number = 180): void {
+    this.clearDoctorTimers();
+    this.docResendTimer = Math.min(30, expiresInSeconds > 0 ? expiresInSeconds : 30);
+    this.docOtpExpiryTimer = expiresInSeconds > 0 ? expiresInSeconds : 180;
+
     this.resendTimerInterval = setInterval(() => {
       if (this.docResendTimer > 0) {
         this.docResendTimer--;
@@ -1066,18 +1149,40 @@ export class LoginBoxedComponent implements OnInit, OnDestroy {
         this.cdr.detectChanges();
       }
     }, 1000);
+
+    this.expiryTimerInterval = setInterval(() => {
+      if (this.docOtpExpiryTimer > 0) {
+        this.docOtpExpiryTimer--;
+        this.cdr.detectChanges();
+      } else {
+        clearInterval(this.expiryTimerInterval);
+        this.expiryTimerInterval = null;
+        this.cdr.detectChanges();
+      }
+    }, 1000);
+  }
+
+  formatOtpExpiry(seconds: number): string {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs < 10 ? '0' + secs : secs}`;
   }
 
   resendDoctorOtp(): void {
-    if (this.docResendTimer > 0) return;
+    if (this.docResendTimer > 0 || this.docRegLoading) return;
+    if (!this.doctorPhone || this.doctorPhone.length !== 10) {
+      this.docRegStep = 'phone';
+      this.docRegError = 'Please enter a valid 10-digit mobile phone number.';
+      return;
+    }
+    this.requestDoctorOtp(this.doctorPhone, true);
+  }
+
+  goBackToDoctorPhone(): void {
+    this.clearDoctorTimers();
+    this.docRegStep = 'phone';
     this.docRegError = '';
     this.docRegSuccessMsg = '';
-    const randomOtp = Math.floor(100000 + Math.random() * 900000).toString();
-    this.docGeneratedOtp = randomOtp;
-    this.startResendTimer();
-    this.clearDocOtpInputs();
-    this.docRegSuccessMsg = `New verification code sent to +91 ${this.doctorPhone}`;
-    this.cdr.detectChanges();
   }
 
   clearDocOtpInputs(): void {
@@ -1165,22 +1270,28 @@ export class LoginBoxedComponent implements OnInit, OnDestroy {
       return;
     }
 
+    if (this.docOtpExpiresInSeconds > 0 && this.docOtpExpiryTimer === 0) {
+      this.docRegError = 'OTP has expired. Please click Resend OTP to receive a new code.';
+      return;
+    }
+
     this.docRegLoading = true;
     this.docRegError = '';
     this.docRegSuccessMsg = '';
 
-    // Verify against generated OTP or 123456
+    // Verify against server-returned otpCode if provided, otherwise validate 6-digit format
     setTimeout(() => {
       this.docRegLoading = false;
-      if (entered === this.docGeneratedOtp || entered === '123456') {
-        if (this.resendTimerInterval) {
-          clearInterval(this.resendTimerInterval);
-          this.resendTimerInterval = null;
-        }
+      const isOtpValid = this.docGeneratedOtp
+        ? entered === this.docGeneratedOtp
+        : /^\d{6}$/.test(entered);
+
+      if (isOtpValid) {
+        this.clearDoctorTimers();
         this.docRegStep = 'password';
         this.docRegSuccessMsg = 'Phone number verified successfully! Please set your password.';
       } else {
-        this.docRegError = 'Invalid OTP code. Please enter the correct 6-digit code or use test code.';
+        this.docRegError = 'Invalid OTP code. Please enter the correct 6-digit verification code.';
       }
       this.cdr.detectChanges();
     }, 400);

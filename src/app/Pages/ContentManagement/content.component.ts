@@ -325,13 +325,7 @@ interface ContentItem {
 })
 export class ContentManagementComponent implements OnInit {
 
-  contentList: ContentItem[] = [
-    { id: 'C001', title: 'Morning Yoga Flow', duration: '20 min', category: 'Meditation', status: 'Active', tags: ['Beginner', 'Morning'], views: '1,234 views', viewsRaw: 1234, created: '2026-03-15', path: '/content/meditation/morning-yoga.mp4' },
-    { id: 'C002', title: 'HIIT Cardio Workout', duration: '30 min', category: 'Gym', status: 'Active', tags: ['Advanced', 'Cardio'], views: '2,156 views', viewsRaw: 2156, created: '2026-03-20', path: 'https://www.youtube.com/watch?v=q6z_UCBM5Ek' },
-    { id: 'C003', title: 'Prenatal Stretching', duration: '15 min', category: 'Videos', status: 'Active', tags: ['Pregnancy', 'Stretching'], views: '892 views', viewsRaw: 892, created: '2026-03-10', path: 'https://youtu.be/q6z_UCBM5Ek' },
-    { id: 'C004', title: 'Mindfulness Meditation', duration: '25 min', category: 'Meditation', status: 'Active', tags: ['All Ages', 'Mindfulness'], views: '3,421 views', viewsRaw: 3421, created: '2026-03-05' },
-    { id: 'C005', title: 'Strength Training Basics', duration: '40 min', category: 'Gym', status: 'Disabled', tags: ['Beginner', 'Strength'], views: '1,567 views', viewsRaw: 1567, created: '2026-02-28' }
-  ];
+  contentList: ContentItem[] = [];
 
   filteredContent: ContentItem[] = [];
   searchQuery: string = '';
@@ -339,7 +333,7 @@ export class ContentManagementComponent implements OnInit {
   selectedLevel: string = 'All Levels';
   selectedStatus: string = 'All Status';
   showUploadModal = false;
-  isLoading = false;
+  isLoading = true;
 
   stats = {
     totalContent: 0,
@@ -569,7 +563,7 @@ export class ContentManagementComponent implements OnInit {
         if (res && res.data) {
           const retViews = res.data.viewCount !== undefined ? res.data.viewCount
             : (res.data.views !== undefined ? res.data.views
-            : (res.data.totalViews !== undefined ? res.data.totalViews : undefined));
+              : (res.data.totalViews !== undefined ? res.data.totalViews : undefined));
           if (retViews !== undefined && typeof retViews === 'number') {
             newViews = retViews;
           }

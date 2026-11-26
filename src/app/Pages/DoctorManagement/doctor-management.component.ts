@@ -474,7 +474,7 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
   }
 
 
-  public isLoading: boolean = false;
+  public isLoading: boolean = true;
 
   constructor(
     private webApiService: WebapiService
@@ -555,7 +555,6 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
       takeUntil(this.destroy$)
     ).subscribe({
       next: (res: any) => {
-        this.isLoading = false;
         let rawList: any[] = [];
 
         if (res?.data?.data && Array.isArray(res.data.data)) {
@@ -578,18 +577,17 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
           const mapped: DoctorItem[] = rawList.map((doc: any, index: number) => this.mapApiDoctor(doc, index));
           this.doctors = this.sortDoctorsAscending(mapped);
           this.filteredDoctors = [...this.doctors];
-          this.saveToStorage();
 
           // Compute accurate stats directly from doctors list
           this.updateStats();
 
           this.totalPages = Math.ceil(this.filteredDoctors.length / this.pageSize) || 1;
+          this.isLoading = false;
         } else {
           this.loadDoctorsFromApprovalsApi();
         }
       },
       error: (err: any) => {
-        this.isLoading = false;
         console.warn('GetDoctors API returned error, attempting fallback to approvals API:', err);
         this.loadDoctorsFromApprovalsApi();
       }
@@ -614,15 +612,16 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
           const mapped: DoctorItem[] = rawList.map((doc: any, index: number) => this.mapApiDoctor(doc, index));
           this.doctors = this.sortDoctorsAscending(mapped);
           this.filteredDoctors = [...this.doctors];
-          this.saveToStorage();
           this.updateStats();
           this.totalPages = Math.ceil(this.filteredDoctors.length / this.pageSize) || 1;
         } else {
           this.loadCachedOrInitial();
         }
+        this.isLoading = false;
       },
       error: () => {
         this.loadCachedOrInitial();
+        this.isLoading = false;
       }
     });
   }
@@ -630,6 +629,10 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
   private loadCachedOrInitial(): void {
     try {
       localStorage.removeItem('activeLife_doctorStatusOverrides_v1');
+      localStorage.removeItem('activeLife_doctorStatusActive_v1');
+      localStorage.removeItem('activeLife_doctorEditOverrides_v1');
+      localStorage.removeItem('activeLife_doctorManagement_live_v2');
+      localStorage.removeItem('activeLife_activeDoctorsCount_v1');
     } catch (e) {}
     this.doctors = [];
     this.filteredDoctors = [];
@@ -671,18 +674,6 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
     if (approval === 'Pending' || approval === 'Rejected') {
       status = 'Inactive';
     }
-
-    // Respect user's explicit Active/Inactive status toggle
-    try {
-      const activeOverridesStr = localStorage.getItem('activeLife_doctorStatusActive_v1');
-      if (activeOverridesStr) {
-        const activeOverrides = JSON.parse(activeOverridesStr);
-        const actOv = activeOverrides[String(rawNumId)] || activeOverrides[doctorId];
-        if (actOv === 'Active' || actOv === 'Inactive') {
-          status = actOv;
-        }
-      }
-    } catch (e) {}
 
     const expYrs = doc.experienceYears !== undefined && doc.experienceYears !== null
       ? `${doc.experienceYears} yrs`
@@ -751,28 +742,10 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
       raw: doc
     };
 
-    try {
-      const overridesStr = localStorage.getItem('activeLife_doctorEditOverrides_v1');
-      if (overridesStr) {
-        const overrides = JSON.parse(overridesStr);
-        const saved = overrides[String(rawNumId)] || overrides[doctorId];
-        if (saved) {
-          Object.assign(item, saved);
-        }
-      }
-    } catch (e) {}
-
     return item;
   }
 
-  private saveDoctorOverride(doctorId: number | string, updatedFields: Partial<DoctorItem>): void {
-    try {
-      const overridesStr = localStorage.getItem('activeLife_doctorEditOverrides_v1');
-      const overrides = overridesStr ? JSON.parse(overridesStr) : {};
-      overrides[String(doctorId)] = updatedFields;
-      localStorage.setItem('activeLife_doctorEditOverrides_v1', JSON.stringify(overrides));
-    } catch (e) {}
-  }
+  private saveDoctorOverride(_doctorId: number | string, _updatedFields: Partial<DoctorItem>): void {}
 
   private getDoctorInitial(name: string): string {
     const clean = name.replace(/^Dr\.\s*/i, '').trim();
@@ -780,25 +753,12 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
     return clean[0].toUpperCase();
   }
 
-  private saveToStorage(): void {
-    try {
-      const cleanDoctors = this.doctors.map(d => {
-        const { raw, documents, ...rest } = d;
-        return rest;
-      });
-      localStorage.setItem('activeLife_doctorManagement_live_v2', JSON.stringify(cleanDoctors));
-    } catch (e) {
-      console.warn('saveToStorage failed:', e);
-    }
-  }
+  private saveToStorage(): void {}
 
   public updateStats(): void {
     this.totalDoctorsCount = this.doctors.length;
     this.activeDoctorsCount = this.doctors.filter(d => d.status === 'Active' && d.approval === 'Approved').length;
     this.pendingApprovalCount = this.doctors.filter(d => d.approval === 'Pending').length;
-    try {
-      localStorage.setItem('activeLife_activeDoctorsCount_v1', String(this.activeDoctorsCount));
-    } catch (e) {}
   }
 
   public applyFilters(): void {
@@ -1037,12 +997,12 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
   }
 
   public getHospitalName(hospitalId?: number): string {
-    if (!this.doctorAvailability || !this.doctorAvailability.hospitals) return 'Apollo Hospital';
+    if (!this.doctorAvailability || !this.doctorAvailability.hospitals) return '';
     if (hospitalId === undefined || hospitalId === null) {
-      return this.doctorAvailability.hospitals[0]?.hospitalName || 'Apollo Hospital';
+      return this.doctorAvailability.hospitals[0]?.hospitalName || '';
     }
     const found = this.doctorAvailability.hospitals.find(h => h.id === Number(hospitalId));
-    return found ? found.hospitalName : (this.doctorAvailability.hospitals[0]?.hospitalName || 'Apollo Hospital');
+    return found ? found.hospitalName : (this.doctorAvailability.hospitals[0]?.hospitalName || '');
   }
 
   public updateDayAvailability(dayItem: AvailabilityDay, closeOnSuccess: boolean = true): void {
@@ -1210,84 +1170,28 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
   }
 
   public getDefaultDocuments(doctor: DoctorItem): DoctorDocument[] {
-    const rawDocs = doctor.raw?.documents;
+    const rawDocs = doctor.raw?.documents || doctor.raw?.doctorDocuments || doctor.raw?.verificationDocuments;
     if (Array.isArray(rawDocs) && rawDocs.length > 0) {
       return rawDocs.map((d: any, dIdx: number) => ({
         id: d.id || (dIdx + 1),
-        name: d.documentType === 'OTHER' ? `Registration Council Proof (${doctor.registrationCouncil || 'Medical Council'})` : (d.documentType || 'Medical Verification Document'),
+        name: d.name || d.documentName || (d.documentType === 'OTHER' ? `Registration Council Proof (${doctor.registrationCouncil || 'Medical Council'})` : (d.documentType || `Medical Document ${dIdx + 1}`)),
         type: (d.documentUrl && d.documentUrl.toLowerCase().endsWith('.pdf')) ? 'PDF' : ((d.documentUrl && d.documentUrl.toLowerCase().endsWith('.png')) ? 'PNG' : 'JPG'),
-        status: 'Verified',
-        verifiedDate: d.uploadedAt ? new Date(d.uploadedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Verified',
+        status: (d.verificationStatus === 'VERIFIED' || d.isVerified === true || doctor.approval === 'Approved') ? 'Verified' : 'Pending',
+        verifiedDate: (d.verifiedAt || d.uploadedAt) ? new Date(d.verifiedAt || d.uploadedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '',
         url: d.documentUrl || d.url || '',
-        certificateNumber: doctor.registrationNumber || `TGMC-${123450 + (doctor.numericId || 1)}`,
-        issuer: doctor.registrationCouncil || 'Telangana State Medical Council (TSMC)',
-        issueDate: 'Oct 28, 2026',
-        expiryDate: 'Oct 27, 2036'
+        certificateNumber: d.certificateNumber || doctor.registrationNumber || '',
+        issuer: d.issuer || doctor.registrationCouncil || '',
+        issueDate: d.createdAt ? new Date(d.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '',
+        expiryDate: d.expiryDate ? new Date(d.expiryDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : ''
       }));
     }
-
-    const regNum = doctor.registrationNumber || `TGMC-${98420 + (doctor.numericId || 1)}`;
-    const council = doctor.registrationCouncil || 'Telangana State Medical Council (TSMC)';
-
-    return [
-      {
-        id: 1,
-        name: 'State Medical Council Registration Certificate',
-        type: 'PDF',
-        status: 'Verified',
-        verifiedDate: 'Oct 28, 2026',
-        certificateNumber: regNum,
-        issuer: council,
-        issueDate: 'Oct 28, 2026',
-        expiryDate: 'Oct 27, 2036'
-      },
-      {
-        id: 2,
-        name: 'MBBS & Postgraduate Degree Certificates',
-        type: 'PNG',
-        status: 'Verified',
-        verifiedDate: 'Oct 29, 2026',
-        certificateNumber: regNum,
-        issuer: 'Osmania Medical College / TSMC',
-        issueDate: 'Oct 29, 2026',
-        expiryDate: 'Oct 27, 2036'
-      },
-      {
-        id: 3,
-        name: 'Government Medical ID / Certificate of Practice',
-        type: 'JPG',
-        status: 'Verified',
-        verifiedDate: 'Oct 28, 2026',
-        certificateNumber: regNum,
-        issuer: 'National Health Authority (NHA)',
-        issueDate: 'Oct 28, 2026',
-        expiryDate: 'Oct 27, 2036'
-      },
-      {
-        id: 4,
-        name: 'Hospital Affiliation & Clinical Experience Proof',
-        type: 'PDF',
-        status: 'Verified',
-        verifiedDate: 'Oct 28, 2026',
-        certificateNumber: regNum,
-        issuer: doctor.hospitalName || 'Apollo Hospitals',
-        issueDate: 'Oct 28, 2026',
-        expiryDate: 'Oct 27, 2036'
-      }
-    ];
+    return [];
   }
 
   public setDoctorStatus(doctor: DoctorItem, status: 'Active' | 'Inactive'): void {
     const isActive = status === 'Active';
     const numId = Number(doctor.numericId || this.extractIdNumber(doctor.id) || 1);
-
-    // Optimistically update local state & persist Active/Inactive override
     const previousStatus = doctor.status;
-    doctor.status = status;
-    this.saveDoctorStatusActiveOverride(numId, status);
-    this.updateStats();
-    this.applyFilters();
-    this.saveToStorage();
 
     const payload = {
       id: numId,
@@ -1311,39 +1215,33 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
           if (apiData.allowedActions) {
             doctor.allowedActions = apiData.allowedActions;
           }
+        } else {
+          doctor.status = status;
         }
-        this.saveDoctorStatusActiveOverride(numId, doctor.status);
         this.updateStats();
         this.applyFilters();
-        this.saveToStorage();
         this.showToast(res?.message || `Doctor ${doctor.name} is now ${doctor.status}`, 'success');
       },
       error: (err: any) => {
-        console.warn('ToggleDoctorStatus API notice:', err);
-        // Persist the user's optimistic status change so it is not lost
-        this.saveDoctorStatusActiveOverride(numId, status);
+        doctor.status = previousStatus;
         this.updateStats();
         this.applyFilters();
-        this.saveToStorage();
-        this.showToast(`Doctor ${doctor.name} status updated to ${status}`, 'success');
+        this.showToast(err?.error?.message || 'Failed to update doctor status', 'error');
       }
     });
   }
 
-  private saveDoctorStatusActiveOverride(doctorId: number | string, status: 'Active' | 'Inactive'): void {
-    try {
-      const overridesStr = localStorage.getItem('activeLife_doctorStatusActive_v1');
-      const overrides = overridesStr ? JSON.parse(overridesStr) : {};
-      overrides[String(doctorId)] = status;
-      localStorage.setItem('activeLife_doctorStatusActive_v1', JSON.stringify(overrides));
-    } catch (e) {}
-  }
+  private saveDoctorStatusActiveOverride(_doctorId: number | string, _status: 'Active' | 'Inactive'): void {}
 
   public openAddModal(): void {
     this.isEditing = false;
     this.formModel = this.getEmptyForm();
     this.formError = '';
     this.isAddModalOpen = true;
+  }
+
+  public get currentYear(): number {
+    return new Date().getFullYear();
   }
 
   public get todayDate(): string {
@@ -1620,48 +1518,6 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
         about: (this.formModel.address || '').trim()
       };
 
-      try {
-        if (this.editingDoctor) {
-          Object.assign(this.editingDoctor, updatedFields);
-        }
-
-        let idx = this.editingDoctor ? this.doctors.indexOf(this.editingDoctor) : -1;
-        if (idx === -1) {
-          idx = this.doctors.findIndex(d =>
-            (d.numericId && Number(d.numericId) === doctorIdNum) ||
-            (String(d.id) === String(this.formModel.id)) ||
-            (this.extractIdNumber(d.id) === doctorIdNum) ||
-            (d.name.toLowerCase().trim() === name.toLowerCase().trim())
-          );
-        }
-
-        if (idx !== -1) {
-          this.doctors[idx] = {
-            ...this.doctors[idx],
-            ...updatedFields
-          };
-        } else if (this.editingDoctor) {
-          this.doctors.unshift(this.editingDoctor);
-        }
-
-        if (this.selectedDoctor && (Number(this.selectedDoctor.numericId || this.extractIdNumber(this.selectedDoctor.id)) === doctorIdNum)) {
-          this.selectedDoctor = {
-            ...this.selectedDoctor,
-            ...updatedFields
-          };
-        }
-
-        this.saveDoctorOverride(doctorIdNum, updatedFields);
-        this.saveToStorage();
-        this.updateStats();
-        this.applyFilters();
-      } catch (err) {
-        console.warn('Error during doctor state update:', err);
-      } finally {
-        this.closeAddModal();
-        this.showToast('Doctor profile updated successfully', 'success');
-      }
-
       // Send partial update payload to backend API (only populated fields, without approval status, status, or keycloak ID)
       const payload: any = {
         id: doctorIdNum
@@ -1686,21 +1542,34 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
         takeUntil(this.destroy$)
       ).subscribe({
         next: (res: any) => {
-          console.log('EditDoctor backend response:', res);
-          if (res?.data) {
-            const returned = res.data;
-            const targetIdx = this.doctors.findIndex(d => Number(d.numericId || d.id) === doctorIdNum);
-            if (targetIdx !== -1) {
-              if (returned.fullName) this.doctors[targetIdx].name = returned.fullName;
-              if (returned.email) this.doctors[targetIdx].email = returned.email;
-              if (returned.mobileNumber) this.doctors[targetIdx].phone = returned.mobileNumber;
-              this.saveToStorage();
-              this.applyFilters();
-            }
+          const returned = res?.data;
+          let idx = this.editingDoctor ? this.doctors.indexOf(this.editingDoctor) : -1;
+          if (idx === -1) {
+            idx = this.doctors.findIndex(d =>
+              (d.numericId && Number(d.numericId) === doctorIdNum) ||
+              (String(d.id) === String(this.formModel.id)) ||
+              (this.extractIdNumber(d.id) === doctorIdNum)
+            );
           }
+          if (idx !== -1) {
+            this.doctors[idx] = {
+              ...this.doctors[idx],
+              ...updatedFields,
+              ...(returned?.fullName ? { name: returned.fullName } : {}),
+              ...(returned?.email ? { email: returned.email } : {}),
+              ...(returned?.mobileNumber ? { phone: returned.mobileNumber } : {})
+            };
+          }
+          if (this.selectedDoctor && (Number(this.selectedDoctor.numericId || this.extractIdNumber(this.selectedDoctor.id)) === doctorIdNum)) {
+            this.selectedDoctor = { ...this.selectedDoctor, ...updatedFields };
+          }
+          this.updateStats();
+          this.applyFilters();
+          this.closeAddModal();
+          this.showToast(res?.message || 'Doctor profile updated successfully', 'success');
         },
         error: (err: any) => {
-          console.warn('EditDoctor backend notice:', err);
+          this.showToast(err?.error?.message || 'Failed to update doctor profile', 'error');
         }
       });
 

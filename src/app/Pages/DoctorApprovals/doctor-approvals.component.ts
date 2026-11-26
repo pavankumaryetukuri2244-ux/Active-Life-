@@ -700,7 +700,7 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
   private toastTimer: any = null;
 
 
-  public isLoading: boolean = false;
+  public isLoading: boolean = true;
 
   constructor(
     private webApiService: WebapiService,
@@ -728,6 +728,11 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
       localStorage.removeItem('activeLife_doctorApprovals_v2');
       localStorage.removeItem('activeLife_doctorApprovals_v1');
       localStorage.removeItem('activeLife_doctorManagement_live_v2');
+      localStorage.removeItem('activeLife_doctorViewedDocs_v1');
+      localStorage.removeItem('activeLife_doctorVerifiedCounts_v1');
+      localStorage.removeItem('activeLife_activeDoctorsCount_v1');
+      localStorage.removeItem('activeLife_doctorEditOverrides_v1');
+      localStorage.removeItem('activeLife_doctorStatusActive_v1');
     } catch (e) {}
   }
 
@@ -859,35 +864,36 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
     else status = 'Pending';
 
     return {
-      id: doc.id ? String(doc.id) : `REQ-${101 + index}`,
+      id: doc.id ? String(doc.id) : String(index + 1),
       numericId: Number(doc.id || (index + 1)),
       name: cleanName,
       initial: this.getDoctorInitial(cleanName),
       avatarBg: ['#8B5CF6', '#EC4899', '#A855F7', '#06B6D4', '#F59E0B'][index % 5],
-      specialization: doc.specialization || 'Cardiology',
-      experience: doc.experienceYears ? `${doc.experienceYears} yrs exp` : (doc.experience || '16 yrs exp'),
+      specialization: doc.specialization || '—',
+      experience: doc.experienceYears ? `${doc.experienceYears} yrs exp` : (doc.experience || '—'),
       email: doc.email || '',
-      location: doc.hospitalName || doc.address || 'Apollo Hospital',
-      appliedDate: 'Applied Recently',
+      location: doc.hospitalName || doc.address || '—',
+      appliedDate: doc.createdAt ? ('Applied ' + this.safeFormatDate(doc.createdAt, '')) : '',
       status: status,
       registrationStatus: regStatus,
-      verifiedDocsCount: status === 'Approved' ? 2 : 0,
-      totalDocsCount: 2,
+      verifiedDocsCount: 0,
+      totalDocsCount: 0,
       phone: doc.mobileNumber || doc.phone || '',
-      hospitalName: doc.hospitalName || 'Apollo Hospital',
-      qualification: doc.qualification || 'MBBS',
-      licenseNumber: doc.registrationNumber || 'TGMC-123456',
+      hospitalName: doc.hospitalName || '',
+      qualification: doc.qualification || '',
+      licenseNumber: doc.registrationNumber || doc.licenseNumber || '',
       documents: [],
-      notes: doc.rejectionReason || 'Practitioner'
+      notes: doc.rejectionReason || ''
     };
   }
 
   public loadApprovals(): void {
+    this.isLoading = true;
+    this.cdr.markForCheck();
     const payload: any = { page: 0, size: 50 };
 
     this.webApiService.GetDoctorApprovals(payload).subscribe({
       next: (res: any) => {
-        this.isLoading = false;
         console.log('[DoctorApprovals] API Response:', res);
         let rawList: any[] = [];
 
@@ -966,16 +972,19 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
 
           if (mapped.length > 0) {
             this.requests = this.sortApprovalsAscending(mapped);
-            this.saveToStorage();
-          }
-
-          // If there are no pending requests and activeTab is Pending, show All
-          if (this.pendingCount === 0 && this.activeTab === 'Pending') {
-            this.activeTab = 'All';
+          } else {
+            this.requests = [];
           }
 
           this.updateStats();
+
+          // Switch away from Pending only if server returned 0 pending requests after stats are computed
+          if (this.pendingCount === 0 && this.activeTab === 'Pending' && this.requests.length > 0) {
+            this.activeTab = 'All';
+          }
+
           this.applyFilters();
+          this.isLoading = false;
           this.cdr.detectChanges();
         } else {
           // If approvals API only returned stats with empty content, query GetDoctors to load all registered doctors
@@ -983,7 +992,6 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
         }
       },
       error: (err: any) => {
-        this.isLoading = false;
         console.warn('GetDoctorApprovals API returned error, attempting GetDoctors live API:', err);
         this.loadDoctorsFromLiveApi();
       }
@@ -991,6 +999,7 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
   }
 
   private loadDoctorsFromLiveApi(): void {
+    this.isLoading = true;
     this.webApiService.GetDoctors({ page: 0, size: 50 }).subscribe({
       next: (docRes: any) => {
         let liveDoctors: any[] = [];
@@ -1012,14 +1021,12 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
             }
           }).filter((item): item is DoctorApprovalItem => item !== null);
 
-          if (mapped.length > 0) {
-            this.requests = this.sortApprovalsAscending(mapped);
-            this.saveToStorage();
-          }
+          this.requests = mapped.length > 0 ? this.sortApprovalsAscending(mapped) : [];
         } else {
           // If no doctors returned by live testing API, keep requests empty
           this.requests = [];
         }
+        this.isLoading = false;
         this.updateStats();
         this.applyFilters();
         this.cdr.detectChanges();
@@ -1057,7 +1064,7 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
       status = 'Pending';
     }
 
-    const expYrs = doc.experienceYears ? `${doc.experienceYears} yrs exp` : (doc.experience || '16 yrs exp');
+    const expYrs = doc.experienceYears ? `${doc.experienceYears} yrs exp` : (doc.experience || '—');
     
     // Extract raw documents array across all possible backend field names or JSON string
     let rawDocs: any = doc.documents || doc.doctorDocuments || doc.verificationDocuments || doc.credentials || doc.certificates || doc.documentList || doc.files || doc.doctorCertificates;
@@ -1109,9 +1116,8 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
         }
       }
       const targetDocId = (d && typeof d === 'object') ? (d.id !== undefined ? Number(d.id) : (d.documentId !== undefined ? Number(d.documentId) : (index * 10 + dIdx + 1))) : (index * 10 + dIdx + 1);
-      const isLocallyViewed = this.isDocViewed(String(docId), docName, targetDocId);
       const isExplicitBackendVerified = (d && typeof d === 'object') ? (d.verificationStatus === 'VERIFIED' || d.isVerified === true) : false;
-      const isVerified = status === 'Approved' ? true : (isLocallyViewed || isExplicitBackendVerified);
+      const isVerified = status === 'Approved' ? true : isExplicitBackendVerified;
 
       let rawUrl = '';
       if (typeof d === 'string') {
@@ -1131,30 +1137,17 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
         status: isVerified ? 'Verified' : 'Pending',
         verifiedDate: isVerified ? (d.verifiedAt || d.uploadedAt ? this.safeFormatDate(d.verifiedAt || d.uploadedAt, 'Verified') : 'Verified') : '',
         url: fullUrl,
-        certificateNumber: (d && d.certificateNumber) || doc.registrationNumber || `TGMC-${10000 + index}`,
-        issuer: (d && d.issuer) || doc.registrationCouncil || 'Telangana State Medical Council (TSMC)',
-        issueDate: this.safeFormatDate(doc.createdAt, 'Nov 19, 2026'),
-        expiryDate: 'Nov 18, 2036'
+        certificateNumber: (d && d.certificateNumber) || doc.registrationNumber || '',
+        issuer: (d && d.issuer) || doc.registrationCouncil || '',
+        issueDate: this.safeFormatDate((d && d.createdAt) || doc.createdAt, ''),
+        expiryDate: this.safeFormatDate((d && d.expiryDate) || doc.expiryDate, '')
       };
     });
 
-    const fallbackDocs: VerificationDocument[] = [
-      {
-        id: Number(doc.id ? Number(doc.id) * 10 + 1 : 1),
-        name: `Registration Council Proof (${doc.registrationCouncil || 'Medical Council'})`,
-        type: 'JPG',
-        status: this.isDocViewed(String(docId), `Registration Council Proof (${doc.registrationCouncil || 'Medical Council'})`) ? 'Verified' : 'Pending',
-        verifiedDate: '',
-        certificateNumber: doc.registrationNumber || 'TGMC-123456',
-        issuer: doc.registrationCouncil || 'Medical Council of India (MCI)',
-        issueDate: this.safeFormatDate(doc.createdAt, 'Nov 19, 2026'),
-        expiryDate: 'Nov 18, 2036',
-        url: doc.profilePhotoUrl ? this.normalizeDocumentUrl(doc.profilePhotoUrl) : ''
-      }
-    ];
-
-    const finalDocs = mappedDocuments.length > 0 ? mappedDocuments : fallbackDocs;
-    let finalTotalCount = Math.max(finalDocs.length, 1);
+    const finalDocs = mappedDocuments;
+    let finalTotalCount = backendTotalDocs !== undefined && backendTotalDocs !== null
+      ? Number(backendTotalDocs)
+      : finalDocs.length;
     let finalVerifiedCount = 0;
 
     if (status === 'Approved') {
@@ -1164,24 +1157,24 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
           d.verifiedDate = 'Verified';
         }
       });
-      finalVerifiedCount = finalDocs.length;
-      finalTotalCount = finalDocs.length;
+      finalVerifiedCount = finalTotalCount;
     } else {
-      const savedCount = this.getDoctorVerifiedCount(String(docId));
       const computedCount = finalDocs.filter((d: VerificationDocument) => d.status === 'Verified').length;
-      finalVerifiedCount = savedCount !== null ? savedCount : computedCount;
+      finalVerifiedCount = (backendVerifiedDocs !== undefined && backendVerifiedDocs !== null)
+        ? Number(backendVerifiedDocs)
+        : computedCount;
     }
 
-    // Clean location: extract primary hospital name without long multi-hospital concatenated addresses
-    let loc = (doc.hospitalName || doc.address || 'Apollo Hospital').trim();
+    // Clean location: extract primary hospital name from live API data
+    let loc = (doc.hospitalName || doc.address || '').trim();
     if (loc.includes(',')) {
       loc = loc.split(',')[0].trim();
     }
-    if (!loc) loc = 'Apollo Hospital';
 
-    let appliedDate = 'Applied Recently';
+    let appliedDate = '';
     if (doc.createdAt) {
-      appliedDate = 'Applied ' + this.safeFormatDate(doc.createdAt, 'Recently');
+      const formatted = this.safeFormatDate(doc.createdAt, '');
+      appliedDate = formatted ? ('Applied ' + formatted) : '';
     } else if (doc.appliedDate) {
       appliedDate = doc.appliedDate.startsWith('Applied') ? doc.appliedDate : ('Applied ' + doc.appliedDate);
     }
@@ -1190,7 +1183,7 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
     const profilePhoto = this.normalizeDocumentUrl(rawPhoto);
 
     return {
-      id: doc.id ? String(doc.id) : `REQ-${101 + index}`,
+      id: doc.id ? String(doc.id) : String(index + 1),
       numericId: Number(doc.id || doc.doctorId || (index + 1)),
       name: cleanName,
       initial: initial,
@@ -1198,7 +1191,7 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
       specialization: this.mapSpecialization(doc.specializationId, doc.specialization),
       experience: expYrs,
       email: doc.email || '',
-      location: loc,
+      location: loc || '—',
       appliedDate: appliedDate,
       status: status,
       registrationStatus: regStatus,
@@ -1206,12 +1199,12 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
       totalDocsCount: finalTotalCount,
       phone: doc.mobileNumber || doc.phone || '',
       hospitalName: doc.hospitalName || loc,
-      qualification: doc.qualification || 'MBBS',
-      licenseNumber: doc.registrationNumber || 'TGMC-123456',
-      registrationCouncil: doc.registrationCouncil || 'Medical Council of India (MCI)',
+      qualification: doc.qualification || '',
+      licenseNumber: doc.registrationNumber || doc.licenseNumber || '',
+      registrationCouncil: doc.registrationCouncil || '',
       profilePhotoUrl: profilePhoto,
       documents: finalDocs,
-      notes: doc.rejectionReason || (doc.registrationCouncil ? `${doc.registrationCouncil} • Verified Practitioner` : 'Medical Council of India (MCI) • Verified Practitioner')
+      notes: doc.rejectionReason || (doc.registrationCouncil ? `${doc.registrationCouncil}` : '')
     };
   }
 
@@ -1285,14 +1278,13 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
   }
 
   public approve(item: DoctorApprovalItem): void {
-    if (!item) return;
+    if (!item || this.isSubmittingStatus) return;
 
-    const totalCount = item.totalDocsCount || (item.documents?.length || 1);
+    const totalCount = item.totalDocsCount ?? (item.documents?.length || 0);
     const verifiedCount = (item.documents || []).filter((d: VerificationDocument) => d.status === 'Verified').length;
 
-    // Strict requirement: Admin MUST view and verify all certificates before approving!
-    // Only enforced for Pending requests
-    if (item.status === 'Pending' && verifiedCount < totalCount) {
+    // Strict requirement: Admin MUST view and verify all uploaded certificates before approving!
+    if (item.status === 'Pending' && totalCount > 0 && verifiedCount < totalCount) {
       this.showToast(`Please view all certificates (${verifiedCount}/${totalCount} verified) before approving ${item.name}.`, 'error');
       this.review(item);
       return;
@@ -1300,30 +1292,29 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
 
     const numId = item.numericId || this.extractNumber(item.id);
     const targetId = Number(numId || 1);
-
-    // 1. Instant UI update - zero latency (responds immediately on click)
-    this.closeReviewModal();
-    this.closeCertificateViewer();
-    this.closeRejectModal();
-    this.applyStatusChange(item, 'Approved');
-    this.showToast(`${item.name} approved successfully`, 'success');
-    this.cdr.markForCheck();
-    this.cdr.detectChanges();
-
-    // 2. Background backend synchronization
     const payload: { id: number; status: 'APPROVED' } = {
       id: targetId,
       status: 'APPROVED'
     };
 
-    console.log('[DoctorApprovals] Calling status API (APPROVED):', payload);
-
+    this.isSubmittingStatus = true;
     this.webApiService.UpdateDoctorApprovalStatus(payload).subscribe({
-      next: (res: any) => {
-        console.log('[DoctorApprovals] Status API approve response:', res);
+      next: () => {
+        this.isSubmittingStatus = false;
+        this.closeReviewModal();
+        this.closeCertificateViewer();
+        this.closeRejectModal();
+        this.applyStatusChange(item, 'Approved');
+        this.showToast(`${item.name} approved successfully`, 'success');
+        this.cdr.markForCheck();
+        this.cdr.detectChanges();
       },
       error: (err: any) => {
-        console.warn('[DoctorApprovals] UpdateDoctorApprovalStatus API error:', err);
+        this.isSubmittingStatus = false;
+        const msg = err?.error?.message || err?.message || 'Failed to approve doctor';
+        this.showToast(msg, 'error');
+        this.cdr.markForCheck();
+        this.cdr.detectChanges();
       }
     });
   }
@@ -1350,7 +1341,7 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
   }
 
   public confirmReject(): void {
-    if (!this.doctorToReject) return;
+    if (!this.doctorToReject || this.isSubmittingStatus) return;
     const rawReason = this.rejectionReasonInput ? String(this.rejectionReasonInput).trim() : '';
     if (!rawReason) {
       this.rejectionReasonError = 'Rejection reason is mandatory. Please provide a reason for rejecting this application.';
@@ -1364,30 +1355,30 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
     const numId = targetDoc.numericId || this.extractNumber(targetDoc.id);
     const targetId = Number(numId || 1);
 
-    // 1. Instant UI update - zero latency (responds immediately on click)
-    this.closeRejectModal();
-    this.closeReviewModal();
-    this.closeCertificateViewer();
-    this.applyStatusChange(targetDoc, 'Rejected', reason);
-    this.showToast(`${targetDoc.name} rejected: ${reason}`, 'success');
-    this.cdr.markForCheck();
-    this.cdr.detectChanges();
-
-    // 2. Background backend synchronization
     const payload: { id: number; status: 'REJECTED'; rejectionReason: string } = {
       id: targetId,
       status: 'REJECTED',
       rejectionReason: reason
     };
 
-    console.log('[DoctorApprovals] Calling status API (REJECTED):', payload);
-
+    this.isSubmittingStatus = true;
     this.webApiService.UpdateDoctorApprovalStatus(payload).subscribe({
-      next: (res: any) => {
-        console.log('[DoctorApprovals] Status API reject response:', res);
+      next: () => {
+        this.isSubmittingStatus = false;
+        this.closeRejectModal();
+        this.closeReviewModal();
+        this.closeCertificateViewer();
+        this.applyStatusChange(targetDoc, 'Rejected', reason);
+        this.showToast(`${targetDoc.name} rejected: ${reason}`, 'success');
+        this.cdr.markForCheck();
+        this.cdr.detectChanges();
       },
       error: (err: any) => {
-        console.warn('[DoctorApprovals] UpdateDoctorApprovalStatus API error:', err);
+        this.isSubmittingStatus = false;
+        const msg = err?.error?.message || err?.message || 'Failed to reject doctor application';
+        this.showToast(msg, 'error');
+        this.cdr.markForCheck();
+        this.cdr.detectChanges();
       }
     });
   }
@@ -1432,7 +1423,7 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
     }
 
     const verifiedCount = status === 'Approved'
-      ? (item.totalDocsCount || (item.documents?.length || 2))
+      ? (item.totalDocsCount || (item.documents?.length || 0))
       : (item.documents || []).filter((d: VerificationDocument) => d.status === 'Verified').length;
     item.verifiedDocsCount = verifiedCount;
 
@@ -1446,7 +1437,6 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
           r.documents.forEach((d: VerificationDocument) => {
             d.status = 'Verified';
             if (!d.verifiedDate) d.verifiedDate = 'Verified';
-            this.recordViewedDoc(String(r.id), d.name);
           });
         }
         return {
@@ -1455,7 +1445,7 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
           registrationStatus: status.toUpperCase(),
           approvalStatus: status.toUpperCase(),
           approval: status,
-          verifiedDocsCount: status === 'Approved' ? (r.totalDocsCount || (r.documents?.length || 2)) : (r.documents || []).filter((d: VerificationDocument) => d.status === 'Verified').length,
+          verifiedDocsCount: status === 'Approved' ? (r.totalDocsCount || (r.documents?.length || 0)) : (r.documents || []).filter((d: VerificationDocument) => d.status === 'Verified').length,
           notes: (status === 'Rejected' && reason) ? reason : r.notes
         };
       }
@@ -1472,7 +1462,6 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
           r.documents.forEach((d: VerificationDocument) => {
             d.status = 'Verified';
             if (!d.verifiedDate) d.verifiedDate = 'Verified';
-            this.recordViewedDoc(String(r.id), d.name);
           });
         }
         return {
@@ -1481,7 +1470,7 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
           registrationStatus: status.toUpperCase(),
           approvalStatus: status.toUpperCase(),
           approval: status,
-          verifiedDocsCount: status === 'Approved' ? (r.totalDocsCount || (r.documents?.length || 2)) : (r.documents || []).filter((d: VerificationDocument) => d.status === 'Verified').length,
+          verifiedDocsCount: status === 'Approved' ? (r.totalDocsCount || (r.documents?.length || 0)) : (r.documents || []).filter((d: VerificationDocument) => d.status === 'Verified').length,
           notes: (status === 'Rejected' && reason) ? reason : r.notes
         };
       }
@@ -1516,64 +1505,18 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
   }
 
   private getViewedDocsSet(): Set<string> {
-    try {
-      const raw = localStorage.getItem('activeLife_doctorViewedDocs_v1');
-      return raw ? new Set<string>(JSON.parse(raw)) : new Set<string>();
-    } catch (e) {
-      return new Set<string>();
-    }
+    return new Set<string>();
   }
 
-  private recordViewedDoc(doctorId: string, docName: string, docId?: number | string): void {
-    try {
-      const set = this.getViewedDocsSet();
-      const cleanDocName = (docName || '').trim();
-      set.add(`${doctorId}_${cleanDocName}`);
-      const numId = this.extractNumber(doctorId);
-      if (numId) {
-        set.add(`${numId}_${cleanDocName}`);
-      }
-      if (docId !== undefined && docId !== null) {
-        set.add(`${doctorId}_doc_${docId}`);
-        if (numId) set.add(`${numId}_doc_${docId}`);
-      }
-      localStorage.setItem('activeLife_doctorViewedDocs_v1', JSON.stringify(Array.from(set)));
-    } catch (e) {}
-  }
+  private recordViewedDoc(_doctorId: string, _docName: string, _docId?: number | string): void {}
 
-  public isDocViewed(doctorId: string, docName: string, docId?: number | string): boolean {
-    const set = this.getViewedDocsSet();
-    const cleanDocName = (docName || '').trim();
-    if (set.has(`${doctorId}_${cleanDocName}`)) return true;
-    const numId = this.extractNumber(doctorId);
-    if (numId && set.has(`${numId}_${cleanDocName}`)) return true;
-    if (docId !== undefined && docId !== null) {
-      if (set.has(`${doctorId}_doc_${docId}`)) return true;
-      if (numId && set.has(`${numId}_doc_${docId}`)) return true;
-    }
+  public isDocViewed(_doctorId: string, _docName: string, _docId?: number | string): boolean {
     return false;
   }
 
-  private saveDoctorVerifiedCount(doctorId: string, count: number): void {
-    try {
-      const raw = localStorage.getItem('activeLife_doctorVerifiedCounts_v1');
-      const map = raw ? JSON.parse(raw) : {};
-      map[String(doctorId)] = count;
-      const numId = this.extractNumber(doctorId);
-      if (numId) map[String(numId)] = count;
-      localStorage.setItem('activeLife_doctorVerifiedCounts_v1', JSON.stringify(map));
-    } catch (e) {}
-  }
+  private saveDoctorVerifiedCount(_doctorId: string, _count: number): void {}
 
-  private getDoctorVerifiedCount(doctorId: string): number | null {
-    try {
-      const raw = localStorage.getItem('activeLife_doctorVerifiedCounts_v1');
-      if (!raw) return null;
-      const map = JSON.parse(raw);
-      if (map[String(doctorId)] !== undefined) return Number(map[String(doctorId)]);
-      const numId = this.extractNumber(doctorId);
-      if (numId && map[String(numId)] !== undefined) return Number(map[String(numId)]);
-    } catch (e) {}
+  private getDoctorVerifiedCount(_doctorId: string): number | null {
     return null;
   }
 
@@ -1669,22 +1612,11 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
         }
         item.verifiedDocsCount = item.documents.length;
       }
-    } else {
-      if (item.documents) {
-        for (const doc of item.documents) {
-          const isViewed = this.isDocViewed(String(item.id), doc.name, doc.id);
-          if (isViewed) {
-            doc.status = 'Verified';
-            if (!doc.verifiedDate) doc.verifiedDate = 'Verified';
-          }
-        }
-        const savedCount = this.getDoctorVerifiedCount(String(item.id));
-        item.verifiedDocsCount = savedCount !== null ? savedCount : item.documents.filter((d: VerificationDocument) => d.status === 'Verified').length;
-      }
+    } else if (item.documents) {
+      item.verifiedDocsCount = item.documents.filter((d: VerificationDocument) => d.status === 'Verified').length;
     }
     this.selectedItem = item;
     this.isReviewModalOpen = true;
-    this.saveToStorage();
     this.cdr.markForCheck();
     this.cdr.detectChanges();
   }

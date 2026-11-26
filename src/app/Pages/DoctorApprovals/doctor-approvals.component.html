@@ -319,11 +319,11 @@
           </div>
           <div class="col-6">
             <div class="text-muted">License / Registration Number</div>
-            <div class="fw-semibold text-dark">{{ selectedItem.licenseNumber || 'CA-MED-981245' }}</div>
+            <div class="fw-semibold text-dark">{{ selectedItem.licenseNumber || '—' }}</div>
           </div>
           <div class="col-6">
             <div class="text-muted">Hospital / Medical Center</div>
-            <div class="fw-semibold text-dark">{{ selectedItem.hospitalName || 'Health Center Hospital' }}</div>
+            <div class="fw-semibold text-dark">{{ selectedItem.hospitalName || '—' }}</div>
           </div>
           <div class="col-6">
             <div class="text-muted">Official Email</div>
@@ -449,7 +449,7 @@
                 </span>
               </div>
               <span class="text-muted small">
-                {{ activeCertificateDoctor.name }} • Registration: {{ activeCertificateDoc.certificateNumber || activeCertificateDoctor.licenseNumber || 'TGMC-123456' }}
+                {{ activeCertificateDoctor.name }} • Registration: {{ activeCertificateDoc.certificateNumber || activeCertificateDoctor.licenseNumber || '—' }}
               </span>
             </div>
           </div>
@@ -552,7 +552,7 @@
                   <div class="col-md-4">
                     <span class="text-muted d-block" style="font-size: 11px;">Medical Council</span>
                     <strong class="text-dark text-truncate d-block" style="font-size: 12px;" [title]="activeCertificateDoctor['registrationCouncil']">
-                      {{ activeCertificateDoctor['registrationCouncil'] || 'Medical Council of India (MCI)' }}
+                      {{ activeCertificateDoctor['registrationCouncil'] || '—' }}
                     </strong>
                   </div>
                 </div>
@@ -564,7 +564,7 @@
                   </div>
                   <div class="col-md-4">
                     <span class="text-muted d-block" style="font-size: 11px;">Qualifications</span>
-                    <strong class="text-dark" style="font-size: 12px;">{{ activeCertificateDoctor.qualification || 'MBBS' }}</strong>
+                    <strong class="text-dark" style="font-size: 12px;">{{ activeCertificateDoctor.qualification || '—' }}</strong>
                   </div>
                   <div class="col-md-4">
                     <span class="text-muted d-block" style="font-size: 11px;">Experience</span>
