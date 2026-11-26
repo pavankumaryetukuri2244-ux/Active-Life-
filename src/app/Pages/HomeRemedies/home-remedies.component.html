@@ -431,7 +431,7 @@
 
 <!-- Custom Table Builder Modal -->
 @if (showCustomTableModal) {
-  <div (click)="closeCustomTableModal()"
+  <div (click)="closeCustomTableModal()" class="ha-modal-backdrop"
     style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.45); z-index: 1060; display: flex; align-items: center; justify-content: center; padding: 20px;">
     <div (click)="$event.stopPropagation()"
       style="background: #FFFFFF; border-radius: 12px; width: 100%; max-width: 440px; padding: 22px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); font-family: 'Inter', sans-serif;">
