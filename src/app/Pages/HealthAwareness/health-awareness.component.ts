@@ -268,6 +268,8 @@ export interface HealthAwarenessForm {
     /* Content Cards matching content.component.html */
     .cm-media-card {
       width: 100% !important;
+      max-width: 100% !important;
+      min-width: 0 !important;
       height: 100% !important;
       background: #FFFFFF !important;
       border: 1px solid rgba(0, 0, 0, 0.1) !important;
@@ -276,6 +278,8 @@ export interface HealthAwarenessForm {
       overflow: visible !important;
       transition: all 0.2s ease !important;
       box-sizing: border-box !important;
+      word-break: break-word !important;
+      overflow-wrap: anywhere !important;
     }
 
     .cm-media-card:hover {
@@ -290,6 +294,10 @@ export interface HealthAwarenessForm {
       line-height: 24px;
       letter-spacing: -0.31px;
       color: #0F172A;
+      min-width: 0 !important;
+      word-break: break-word !important;
+      overflow-wrap: anywhere !important;
+      word-wrap: break-word !important;
     }
 
     /* Modal Backdrop & Dialog */
@@ -397,19 +405,24 @@ export interface HealthAwarenessForm {
       color: #1E293B;
       max-height: 120px;
       overflow-y: auto;
+      overflow-x: hidden;
       padding-right: 4px;
+      min-width: 0 !important;
+      max-width: 100% !important;
+      word-break: break-word !important;
+      overflow-wrap: anywhere !important;
+      word-wrap: break-word !important;
     }
-    .ha-points-wrapper {
-      font-size: 13.5px;
-      line-height: 1.6;
-      color: #1E293B;
-    }
-    .ha-point-intro, .ha-desc-para {
-      font-size: 13.5px;
-      color: #1E293B;
-      margin-bottom: 6px;
-      font-weight: 400;
-      line-height: 1.6;
+    .ha-points-wrapper,
+    .ha-point-intro,
+    .ha-desc-para,
+    .ha-point-item,
+    .ha-desc-item {
+      min-width: 0 !important;
+      max-width: 100% !important;
+      word-break: break-word !important;
+      overflow-wrap: anywhere !important;
+      word-wrap: break-word !important;
     }
     .ha-points-list, .ha-desc-list, .ha-card-desc-container ul, .ha-points-wrapper ul {
       margin: 4px 0 6px 0 !important;
