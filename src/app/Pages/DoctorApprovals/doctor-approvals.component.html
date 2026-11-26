@@ -431,7 +431,7 @@
       <div class="da-cert-modal-content p-3" (click)="$event.stopPropagation()">
 
         <!-- Header -->
-        <div class="d-flex align-items-center justify-content-between pb-3 border-bottom mb-3 flex-wrap" style="gap: 12px;">
+        <div class="da-cert-no-print da-cert-modal-header d-flex align-items-center justify-content-between pb-3 border-bottom mb-3 flex-wrap" style="gap: 12px;">
           <div class="d-flex align-items-center" style="gap: 12px;">
             <div class="da-avatar" [style.background]="activeCertificateDoctor.avatarBg" style="width: 44px; height: 44px; font-size: 16px;">
               {{ activeCertificateDoctor.initial }}
@@ -478,7 +478,7 @@
 
         <!-- Document Tabs Switcher (when multiple documents exist) -->
         @if (activeCertificateDoctor.documents && activeCertificateDoctor.documents.length > 1) {
-          <div class="d-flex align-items-center gap-2 mb-3 p-1 rounded-3" style="background: #F1F5F9;">
+          <div class="da-cert-no-print da-cert-tabs-bar d-flex align-items-center gap-2 mb-3 p-1 rounded-3" style="background: #F1F5F9;">
             @for (d of activeCertificateDoctor.documents; track d.name; let i = $index) {
               <button type="button"
                 class="btn btn-sm flex-grow-1 text-truncate"
@@ -493,21 +493,29 @@
         }
 
         <!-- Backend Certificate Document Viewer (Displays backend document directly in frontend) -->
-        <div class="my-1">
-          <div class="da-doc-viewer-box rounded-3 border p-2 mb-2 text-center shadow-sm d-flex align-items-center justify-content-center"
-               style="min-height: 220px; max-height: 380px; overflow: hidden; background: #F8FAFC; position: relative;">
+        <div class="da-cert-doc-print-area my-1">
+          <div class="da-doc-viewer-box rounded-3 border mb-2 shadow-sm"
+               [class.da-doc-viewer-pdf]="isPdf(activeCertificateDoc.url)"
+               [class.da-doc-viewer-img]="!isPdf(activeCertificateDoc.url)"
+               style="position: relative; overflow: hidden; background: #F8FAFC;">
             @if (activeCertificateDoc.url) {
               @if (isPdf(activeCertificateDoc.url)) {
-                <iframe [src]="safeDocUrl" class="w-100 h-100 border-0 rounded-2" style="min-height: 340px;" title="Doctor Certificate PDF"></iframe>
+                <iframe id="daCertPdfIframe"
+                  [src]="safeDocUrl"
+                  class="w-100 h-100 border-0 rounded-2"
+                  style="width: 100%; height: 100%; min-height: 580px; display: block; background: #FFFFFF;"
+                  title="Doctor Certificate PDF"></iframe>
               } @else {
-                <img [src]="activeCertificateDoc.url" [alt]="activeCertificateDoc.name"
-                  (error)="onDocLoadError($event)"
-                  class="img-fluid rounded border shadow-sm bg-white"
-                  style="max-height: 360px; max-width: 100%; object-fit: contain;" />
+                <div class="d-flex align-items-center justify-content-center p-2 w-100" style="min-height: 360px;">
+                  <img [src]="activeCertificateDoc.url" [alt]="activeCertificateDoc.name"
+                    (error)="onDocLoadError($event)"
+                    class="img-fluid rounded border shadow-sm bg-white"
+                    style="max-height: 520px; max-width: 100%; object-fit: contain;" />
+                </div>
               }
             } @else {
-              <div class="p-3 text-center text-dark">
-                <svg width="36" height="36" fill="none" stroke="#64748B" stroke-width="2" viewBox="0 0 24 24" class="mb-2">
+              <div class="p-4 text-center text-dark d-flex flex-column align-items-center justify-content-center" style="min-height: 240px;">
+                <svg width="40" height="40" fill="none" stroke="#64748B" stroke-width="2" viewBox="0 0 24 24" class="mb-2">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                   <polyline points="14 2 14 8 20 8"></polyline>
                 </svg>
@@ -518,7 +526,7 @@
           </div>
 
           <!-- Backend Doctor Details Card -->
-          <div class="row g-2 mb-2">
+          <div class="da-cert-no-print da-doctor-info-card row g-2 mb-2">
             <!-- Doctor Information Card (Direct from backend) -->
             <div class="col-12">
               <div class="card border-0 rounded-3 shadow-none p-2 px-3" style="background: #F8FAFC; border: 1px solid #E2E8F0 !important;">
@@ -586,7 +594,7 @@
         </div>
 
         <!-- Navigation and Final Review Actions -->
-        <div class="d-flex align-items-center justify-content-between pt-3 border-top mt-2 flex-wrap" style="gap: 12px;">
+        <div class="da-cert-no-print da-cert-nav-footer d-flex align-items-center justify-content-between pt-3 border-top mt-2 flex-wrap" style="gap: 12px;">
           <!-- Prev / Next Document Buttons -->
           <div class="d-flex align-items-center" style="gap: 8px;">
             <button type="button" class="btn btn-sm btn-outline-secondary"

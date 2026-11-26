@@ -385,7 +385,7 @@ export interface DoctorApprovalItem {
       background: #FFFFFF;
       border-radius: 18px;
       width: 100%;
-      max-width: 860px;
+      max-width: 960px;
       max-height: 94vh;
       overflow-y: auto;
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
@@ -398,7 +398,28 @@ export interface DoctorApprovalItem {
       background: #F8FAFC;
       border: 1px solid #E2E8F0;
       border-radius: 12px;
+      width: 100%;
+      box-sizing: border-box;
+      position: relative;
+    }
+
+    .da-doc-viewer-box.da-doc-viewer-pdf {
+      height: 68vh;
+      min-height: 580px;
+      max-height: 800px;
+      display: block;
       overflow: hidden;
+      padding: 0;
+    }
+
+    .da-doc-viewer-box.da-doc-viewer-img {
+      min-height: 360px;
+      max-height: 560px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: auto;
+      padding: 8px;
     }
 
     .da-doc-empty-box {
@@ -492,6 +513,117 @@ export interface DoctorApprovalItem {
       transform: rotate(-3deg);
       display: inline-block;
       background: rgba(22, 163, 74, 0.06);
+    }
+
+    @media print {
+      /* 1. Reset document canvas and hide all page elements */
+      html, body {
+        height: auto !important;
+        overflow: visible !important;
+        background: #FFFFFF !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+
+      body * {
+        visibility: hidden !important;
+      }
+
+      /* 2. Hide common layout bars, sidebars, dashboard tables and interactive controls */
+      header, footer, nav, aside,
+      .sidebar, .app-sidebar, .da-container,
+      .da-stat-card, .da-filter-box, .da-card,
+      .da-modal-backdrop:not(.da-cert-modal-backdrop),
+      .da-cert-no-print {
+        display: none !important;
+      }
+
+      /* 3. Unhide ONLY the certificate modal and document print area */
+      .da-cert-modal-backdrop,
+      .da-cert-modal-content,
+      .da-cert-doc-print-area,
+      .da-cert-doc-print-area *,
+      .da-doc-viewer-box,
+      .da-doc-viewer-box * {
+        visibility: visible !important;
+      }
+
+      /* 4. Reset modal backdrop & content so it occupies 100% of the print sheet */
+      .da-cert-modal-backdrop {
+        position: static !important;
+        width: 100% !important;
+        height: auto !important;
+        min-height: 100% !important;
+        background: transparent !important;
+        backdrop-filter: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        display: block !important;
+      }
+
+      .da-cert-modal-content {
+        position: static !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
+        max-height: none !important;
+        background: #FFFFFF !important;
+        box-shadow: none !important;
+        border: none !important;
+        border-radius: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        overflow: visible !important;
+        display: block !important;
+      }
+
+      .da-cert-doc-print-area {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+
+      /* 5. Document viewer sizing for print - document ONLY occupies print sheet */
+      .da-doc-viewer-box {
+        position: static !important;
+        width: 100% !important;
+        height: auto !important;
+        min-height: 100vh !important;
+        max-height: none !important;
+        border: none !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        background: #FFFFFF !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        overflow: visible !important;
+        display: block !important;
+      }
+
+      .da-doc-viewer-box iframe {
+        width: 100% !important;
+        height: 100vh !important;
+        min-height: 100vh !important;
+        border: none !important;
+        display: block !important;
+      }
+
+      .da-doc-viewer-box img {
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
+        max-height: 100vh !important;
+        object-fit: contain !important;
+        display: block !important;
+        margin: 0 auto !important;
+        border: none !important;
+        box-shadow: none !important;
+      }
+
+      @page {
+        size: auto;
+        margin: 0mm;
+      }
     }
   `]
 })
@@ -1689,7 +1821,11 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
     this.docImageLoadFailed = false;
     if (this.activeCertificateDoc?.url) {
       this.activeCertificateDoc.url = this.normalizeDocumentUrl(this.activeCertificateDoc.url);
-      this.safeDocUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.activeCertificateDoc.url);
+      let targetUrl = this.activeCertificateDoc.url;
+      if (this.isPdf(targetUrl) && !targetUrl.includes('#')) {
+        targetUrl = `${targetUrl}#toolbar=1&navpanes=0&view=FitH,top`;
+      }
+      this.safeDocUrl = this.sanitizer.bypassSecurityTrustResourceUrl(targetUrl);
     } else {
       this.safeDocUrl = null;
     }
@@ -1702,7 +1838,11 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
         if (blob && blob.size > 0 && this.activeCertificateDoc) {
           const blobUrl = URL.createObjectURL(blob);
           this.activeCertificateDoc.url = blobUrl;
-          this.safeDocUrl = this.sanitizer.bypassSecurityTrustResourceUrl(blobUrl);
+          let targetUrl = blobUrl;
+          if (this.isPdf(url) && !targetUrl.includes('#')) {
+            targetUrl = `${targetUrl}#toolbar=1&navpanes=0&view=FitH,top`;
+          }
+          this.safeDocUrl = this.sanitizer.bypassSecurityTrustResourceUrl(targetUrl);
           this.docImageLoadFailed = false;
           this.cdr.markForCheck();
           this.cdr.detectChanges();
@@ -1755,7 +1895,7 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
     if (!url) {
       return (this.activeCertificateDoc?.type || '').toUpperCase() === 'PDF';
     }
-    const clean = url.split('?')[0].toLowerCase();
+    const clean = url.split('#')[0].split('?')[0].toLowerCase();
     return clean.endsWith('.pdf') || (this.activeCertificateDoc?.type || '').toUpperCase() === 'PDF';
   }
 
@@ -1764,7 +1904,7 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
       const type = (this.activeCertificateDoc?.type || '').toUpperCase();
       return ['PNG', 'JPG', 'JPEG', 'WEBP', 'GIF'].includes(type);
     }
-    const clean = url.split('?')[0].toLowerCase();
+    const clean = url.split('#')[0].split('?')[0].toLowerCase();
     return (
       clean.endsWith('.png') ||
       clean.endsWith('.jpg') ||
@@ -1782,14 +1922,46 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
   }
 
   public printCertificate(): void {
-    if (this.activeCertificateDoc?.url && !this.isPdf(this.activeCertificateDoc.url)) {
-      const win = window.open('', '_blank');
+    const docUrl = this.activeCertificateDoc?.url;
+    const docName = this.activeCertificateDoc?.name || 'Doctor Certificate';
+
+    if (!docUrl) {
+      window.print();
+      return;
+    }
+
+    // 1. If document is an image: print ONLY the image in an isolated clean window
+    if (this.isImage(docUrl)) {
+      const win = window.open('', '_blank', 'width=900,height=700');
       if (win) {
         win.document.write(`
+          <!DOCTYPE html>
           <html>
-            <head><title>${this.activeCertificateDoc.name}</title></head>
-            <body style="margin:0;display:flex;align-items:center;justify-content:center;">
-              <img src="${this.activeCertificateDoc.url}" style="max-width:100%;height:auto;" onload="window.print();window.close();"/>
+            <head>
+              <title>${docName}</title>
+              <style>
+                @page { size: auto; margin: 0; }
+                html, body {
+                  margin: 0;
+                  padding: 0;
+                  width: 100%;
+                  height: 100%;
+                  background: #FFFFFF;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                }
+                img {
+                  max-width: 100%;
+                  max-height: 100vh;
+                  object-fit: contain;
+                  display: block;
+                  margin: auto;
+                }
+              </style>
+            </head>
+            <body>
+              <img src="${docUrl}" alt="${docName}" onload="window.focus(); window.print(); window.close();" onerror="window.print(); window.close();" />
             </body>
           </html>
         `);
@@ -1797,6 +1969,58 @@ export class DoctorApprovalsComponent implements OnInit, OnDestroy {
         return;
       }
     }
+
+    // 2. If document is a PDF
+    if (this.isPdf(docUrl)) {
+      // First attempt: try printing directly via embedded iframe (prints only the PDF document stream)
+      const iframeEl = document.getElementById('daCertPdfIframe') as HTMLIFrameElement;
+      if (iframeEl && iframeEl.contentWindow) {
+        try {
+          iframeEl.contentWindow.focus();
+          iframeEl.contentWindow.print();
+          return;
+        } catch (e) {
+          console.warn('[DoctorApprovals] Direct iframe print failed, trying print iframe fallback:', e);
+        }
+      }
+
+      // Second attempt: dedicated hidden print iframe with clean URL
+      try {
+        const cleanUrl = docUrl.split('#')[0];
+        const printFrame = document.createElement('iframe');
+        printFrame.style.position = 'fixed';
+        printFrame.style.right = '0';
+        printFrame.style.bottom = '0';
+        printFrame.style.width = '0';
+        printFrame.style.height = '0';
+        printFrame.style.border = '0';
+        printFrame.src = cleanUrl;
+        document.body.appendChild(printFrame);
+
+        printFrame.onload = () => {
+          setTimeout(() => {
+            try {
+              printFrame.contentWindow?.focus();
+              printFrame.contentWindow?.print();
+            } catch (err) {
+              console.warn('[DoctorApprovals] Hidden iframe print blocked, falling back to window.print():', err);
+              window.print();
+            } finally {
+              setTimeout(() => {
+                if (document.body.contains(printFrame)) {
+                  document.body.removeChild(printFrame);
+                }
+              }, 3000);
+            }
+          }, 400);
+        };
+        return;
+      } catch (err) {
+        console.warn('[DoctorApprovals] Hidden print iframe creation failed:', err);
+      }
+    }
+
+    // 3. Fallback: window.print() (which @media print styles ensure prints ONLY the document)
     window.print();
   }
 

@@ -293,6 +293,77 @@ export interface DoctorForm {
       transform: rotate(-5deg);
       display: inline-block;
     }
+
+    @media print {
+      html, body {
+        height: auto !important;
+        overflow: visible !important;
+        background: #FFFFFF !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+
+      body * {
+        visibility: hidden !important;
+      }
+
+      header, footer, nav, aside,
+      .sidebar, .app-sidebar,
+      .da-modal-backdrop:not(.da-cert-modal-backdrop),
+      .da-cert-no-print {
+        display: none !important;
+      }
+
+      .da-cert-modal-backdrop,
+      .da-cert-modal-content,
+      .da-cert-doc-print-area,
+      .da-cert-doc-print-area *,
+      .da-cert-frame,
+      .da-cert-frame * {
+        visibility: visible !important;
+      }
+
+      .da-cert-modal-backdrop {
+        position: static !important;
+        width: 100% !important;
+        height: auto !important;
+        background: transparent !important;
+        backdrop-filter: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        display: block !important;
+      }
+
+      .da-cert-modal-content {
+        position: static !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
+        max-height: none !important;
+        background: #FFFFFF !important;
+        box-shadow: none !important;
+        border: none !important;
+        border-radius: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        overflow: visible !important;
+        display: block !important;
+      }
+
+      .da-cert-frame {
+        position: static !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 24px !important;
+        box-sizing: border-box !important;
+        border: 2px solid #1E3A8A !important;
+      }
+
+      @page {
+        size: auto;
+        margin: 8mm;
+      }
+    }
   `]
 })
 export class DoctorManagementComponent implements OnInit, OnDestroy {

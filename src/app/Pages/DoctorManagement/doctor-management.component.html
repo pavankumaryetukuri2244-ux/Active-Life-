@@ -868,7 +868,7 @@
     <div class="da-cert-modal-content p-4" (click)="$event.stopPropagation()">
 
       <!-- Header -->
-      <div class="d-flex align-items-center justify-content-between pb-3 border-bottom mb-3 flex-wrap" style="gap: 12px;">
+      <div class="da-cert-no-print da-cert-modal-header d-flex align-items-center justify-content-between pb-3 border-bottom mb-3 flex-wrap" style="gap: 12px;">
         <div class="d-flex align-items-center" style="gap: 12px;">
           <div class="um-avatar-circle" [style.background]="activeCertificateDoctor.avatarBg" style="width: 44px; height: 44px; font-size: 16px;">
             {{ activeCertificateDoctor.initial }}
@@ -915,7 +915,7 @@
 
       <!-- Document Tabs Switcher (when multiple documents exist) -->
       @if (activeCertificateDoctor.documents && activeCertificateDoctor.documents.length > 1) {
-        <div class="d-flex align-items-center gap-2 mb-3 p-1 rounded-3" style="background: #F1F5F9; overflow-x: auto;">
+        <div class="da-cert-no-print da-cert-tabs-bar d-flex align-items-center gap-2 mb-3 p-1 rounded-3" style="background: #F1F5F9; overflow-x: auto;">
           @for (d of activeCertificateDoctor.documents; track d.name; let i = $index) {
             <button type="button"
               class="btn btn-sm flex-grow-1 text-truncate"
@@ -930,7 +930,7 @@
       }
 
       <!-- Certificate Body -->
-      <div class="da-cert-frame my-2">
+      <div class="da-cert-doc-print-area da-cert-frame my-2">
         <!-- Watermark Logo -->
         <svg class="da-cert-watermark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
           <path d="M12 2v20M5 7l14 0M7 12l10 0M9 17l6 0"></path>
@@ -1054,7 +1054,7 @@
       </div>
 
       <!-- Navigation Footer -->
-      <div class="d-flex align-items-center justify-content-between pt-3 border-top mt-2 flex-wrap" style="gap: 12px;">
+      <div class="da-cert-no-print da-cert-nav-footer d-flex align-items-center justify-content-between pt-3 border-top mt-2 flex-wrap" style="gap: 12px;">
         <!-- Prev / Next Document Buttons -->
         <div class="d-flex align-items-center" style="gap: 8px;">
           <button type="button" class="btn btn-sm btn-outline-secondary"
