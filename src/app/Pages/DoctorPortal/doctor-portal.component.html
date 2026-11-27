@@ -1,0 +1,294 @@
+<div class="dp-web-page">
+  <!-- Teal Hero Welcome Card (Figma Home Screen + Live API Metrics) -->
+  <div class="dp-hero-card">
+    <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
+      <div>
+        <div class="dp-hero-greeting">{{ greetingText }} 👋</div>
+        <h1 class="dp-hero-name">{{ displayName }}</h1>
+        <p class="dp-hero-specialty">
+          {{ displaySubtitle }}
+          @if (formattedMobile) {
+            <span class="ms-2 opacity-75">• {{ formattedMobile }}</span>
+          }
+        </p>
+      </div>
+
+      <div class="d-flex align-items-center gap-2">
+        <span class="dp-initials-badge">
+          @if (profilePhotoUrl) {
+            <img [src]="profilePhotoUrl" alt="Doctor photo" style="width: 100%; height: 100%; object-fit: cover;" />
+          } @else {
+            {{ doctorInitials }}
+          }
+        </span>
+        <button type="button" class="dp-hero-logout-btn" (click)="signOut()" [disabled]="isLoggingOut">
+          <i class="pe-7s-power"></i>
+          <span>{{ isLoggingOut ? 'Signing out...' : 'Sign Out' }}</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Live KPI Tiles from /doctors/consultations/dashboard -->
+    <div class="row g-3">
+      <div class="col-md-3 col-6">
+        <div class="dp-kpi-tile">
+          <div class="dp-kpi-num">{{ dashboard?.todayAppointments ?? 0 }}</div>
+          <p class="dp-kpi-label">Today's Appts</p>
+        </div>
+      </div>
+      <div class="col-md-3 col-6">
+        <div class="dp-kpi-tile">
+          <div class="dp-kpi-num">{{ dashboard?.patientsToday ?? 0 }}</div>
+          <p class="dp-kpi-label">Patients Today</p>
+        </div>
+      </div>
+      <div class="col-md-3 col-6">
+        <div class="dp-kpi-tile">
+          <div class="dp-kpi-num">{{ dashboard?.pendingAppointments ?? 0 }}</div>
+          <p class="dp-kpi-label">Pending</p>
+        </div>
+      </div>
+      <div class="col-md-3 col-6">
+        <div class="dp-kpi-tile">
+          <div class="dp-kpi-num">{{ dashboard?.completedAppointments ?? 0 }}</div>
+          <p class="dp-kpi-label">Completed</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Live Onboarding & Verification Strip -->
+  <div class="dp-verify-strip">
+    <div>
+      <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+        <span style="font-size: 14px; font-weight: 700; color: #0F172A;">
+          {{ portalState.title || 'Doctor Account Verification' }}
+        </span>
+        <span class="dp-status-pill"
+          [ngClass]="{
+            'dp-status-completed': activeRegistrationStatus === 'APPROVED',
+            'dp-status-pending': activeRegistrationStatus === 'PENDING' || activeRegistrationStatus === 'REGISTERED',
+            'dp-status-rejected': activeRegistrationStatus === 'REJECTED',
+            'dp-status-upcoming': activeRegistrationStatus === 'NOT_REGISTERED'
+          }">
+          {{ formattedRegistrationStatus }}
+        </span>
+      </div>
+      @if (portalState.message) {
+        <div style="font-size: 13px; color: #64748B;">{{ portalState.message }}</div>
+      }
+    </div>
+
+    <div class="d-flex flex-wrap align-items-center gap-2">
+      @for (step of steps; track step.label) {
+        <span class="dp-verify-step-chip" [class.done]="step.completed">
+          <span>{{ step.completed ? '✓' : '○' }}</span>
+          <span>{{ step.label }}</span>
+        </span>
+      }
+      @if (activeRegistrationStatus === 'NOT_REGISTERED') {
+        <button type="button" class="btn btn-sm btn-primary fw-semibold" style="border-radius: 10px;"
+          (click)="navigateTo('/doctor/profile')">
+          Complete Profile
+        </button>
+      } @else if (activeRegistrationStatus !== 'APPROVED') {
+        <button type="button" class="btn btn-sm btn-outline-primary fw-semibold" style="border-radius: 10px;"
+          (click)="navigateTo('/doctor/profile-status')">
+          Check Status
+        </button>
+      }
+    </div>
+  </div>
+
+  @if (dashboardError && !dashboard) {
+    <div class="alert alert-warning border-0 rounded-3 mb-4 py-2 px-3 d-flex align-items-center justify-content-between"
+      style="font-size: 13.5px;">
+      <span>{{ dashboardError }}</span>
+      <button type="button" class="btn btn-sm btn-outline-dark" (click)="loadLiveDoctorDashboard()">Retry</button>
+    </div>
+  }
+
+  <!-- Main Web Grid -->
+  <div class="row g-4">
+    <!-- Left Column: Quick Actions + Today's Schedule -->
+    <div class="col-lg-7 d-flex flex-column gap-4">
+      <div>
+        <h2 class="dp-section-title mb-3">Quick Actions</h2>
+        <div class="row g-3">
+          <div class="col-sm-6">
+            <div class="dp-quick-tile" (click)="navigateTo('/doctor/consult')">
+              <div class="dp-quick-icon-box" style="background: #DBEAFE; color: #2563EB;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4.8 2.3A.3.3 0 0 0 4.5 2h-1a.3.3 0 0 0-.3.3v4.4a3.5 3.5 0 0 0 7 0V2.3a.3.3 0 0 0-.3-.3h-1a.3.3 0 0 0-.3.3v4.4a1.7 1.7 0 1 1-3.4 0V2.3z"></path>
+                  <path d="M6.7 10.1v2.4a3.8 3.8 0 0 0 3.8 3.8h.5a3.8 3.8 0 0 0 3.8-3.8v-2.4"></path>
+                  <circle cx="14.8" cy="12.5" r="1.5"></circle>
+                </svg>
+              </div>
+              <div>
+                <p class="dp-quick-title">New Consultation</p>
+                <p class="dp-quick-sub">Open today's patient queue</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-sm-6">
+            <div class="dp-quick-tile" (click)="navigateTo('/doctor/prescriptions')">
+              <div class="dp-quick-icon-box" style="background: #DCFCE7; color: #16A34A;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"></path>
+                  <path d="m8.5 8.5 7 7"></path>
+                </svg>
+              </div>
+              <div>
+                <p class="dp-quick-title">Prescriptions</p>
+                <p class="dp-quick-sub">Write & upload Rx</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-sm-6">
+            <div class="dp-quick-tile" (click)="navigateTo('/doctor/appointments')">
+              <div class="dp-quick-icon-box" style="background: #EDE9FE; color: #7C3AED;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+              </div>
+              <div>
+                <p class="dp-quick-title">Appointments</p>
+                <p class="dp-quick-sub">Slots, schedule & block dates</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-sm-6">
+            <div class="dp-quick-tile" (click)="navigateTo('/doctor/patients')">
+              <div class="dp-quick-icon-box" style="background: #FEF3C7; color: #D97706;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                  <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                  <line x1="8" y1="11" x2="16" y2="11"></line>
+                  <line x1="8" y1="15" x2="13" y2="15"></line>
+                </svg>
+              </div>
+              <div>
+                <p class="dp-quick-title">Patient Records</p>
+                <p class="dp-quick-sub">Search history & records</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Today's Schedule -->
+      <div class="dp-surface-card">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <h2 class="dp-section-title">Today's Schedule</h2>
+          <a class="dp-view-all-link" (click)="navigateTo('/doctor/consult')">View All</a>
+        </div>
+
+        @if (isLoading) {
+          <div class="text-center py-4" style="color: #64748B; font-size: 13.5px;">
+            <span class="spinner-border spinner-border-sm me-2"></span>
+            Loading today's consultation schedule...
+          </div>
+        } @else if (todaySchedule.length === 0) {
+          <div class="text-center py-4" style="color: #64748B; font-size: 13.5px;">
+            No scheduled consultations found for today.
+          </div>
+        } @else {
+          <div class="d-flex flex-column gap-3">
+            @for (item of todaySchedule; track (item.appointmentId || item.id || $index)) {
+              <div class="dp-schedule-row" (click)="navigateTo('/doctor/consult')">
+                <div class="d-flex align-items-center gap-3">
+                  <div class="dp-avatar-square">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                      stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                  </div>
+                  <div>
+                    <div style="font-size: 14.5px; font-weight: 600; color: #0F172A;">
+                      {{ item.patientName || item.fullName || 'Patient' }}
+                    </div>
+                    <div style="font-size: 12.5px; color: #64748B;">
+                      {{ item.appointmentTime || item.slotTime || 'Scheduled' }} · {{ item.consultationMode || item.mode || 'Online' }}
+                    </div>
+                  </div>
+                </div>
+                <span class="dp-status-pill"
+                  [ngClass]="(item.status || '').toUpperCase() === 'COMPLETED' ? 'dp-status-completed' : 'dp-status-upcoming'">
+                  {{ item.status || 'Upcoming' }}
+                </span>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Right Column: Appointment Load + Notifications -->
+    <div class="col-lg-5 d-flex flex-column gap-4">
+      <div class="dp-surface-card">
+        <h2 class="dp-section-title mb-3">Today's Appointment Load</h2>
+        <div class="d-flex flex-wrap gap-2">
+          <div class="dp-load-pill" [class.active-low]="activeLoad === 'LOW'">
+            <span class="dp-load-dot" style="background: #16A34A;"></span>
+            <span>Low (0–5)</span>
+          </div>
+
+          <div class="dp-load-pill" [class.active-medium]="activeLoad === 'MEDIUM'">
+            <span class="dp-load-dot" style="background: #D97706;"></span>
+            <span>Medium (6–10)</span>
+          </div>
+
+          <div class="dp-load-pill" [class.active-full]="activeLoad === 'FULL'">
+            <span class="dp-load-dot" style="background: #EF4444;"></span>
+            <span>Full (11+)</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="dp-surface-card">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <div class="d-flex align-items-center gap-2">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+            <h2 class="dp-section-title">Notifications</h2>
+          </div>
+          <span class="dp-notif-count">{{ liveNotifications.length }}</span>
+        </div>
+
+        @if (liveNotifications.length === 0) {
+          <div class="text-center py-3" style="font-size: 13.5px; color: #64748B;">
+            All clinical notifications are up to date.
+          </div>
+        } @else {
+          <div class="d-flex flex-column gap-2">
+            @for (notif of liveNotifications; track notif.label) {
+              <div class="dp-notif-row" (click)="navigateTo(notif.route)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                <span>{{ notif.label }}</span>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>

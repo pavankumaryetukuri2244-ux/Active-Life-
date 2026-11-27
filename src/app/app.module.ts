@@ -11,7 +11,8 @@ import { environment } from '../environments/environment';
 import {AppRoutingModule} from './app-routing.module';
 
 import {CommonModule} from '@angular/common';
-import {HttpClientModule} from '@angular/common/http';
+import {HttpClientModule, HTTP_INTERCEPTORS} from '@angular/common/http';
+import {DoctorAuthInterceptor} from './core/interceptors/doctor-auth.interceptor';
 import {ToastrModule} from 'ngx-toastr';
 import {AppComponent} from './app.component';
 import {SpinnerComponent} from './spinner.component';
@@ -84,7 +85,12 @@ import {ThemeOptions} from './theme-options';
   providers: [
     ConfigService,
     ThemeOptions,
-    provideCharts(withDefaultRegisterables())
+    provideCharts(withDefaultRegisterables()),
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: DoctorAuthInterceptor,
+      multi: true
+    }
   ],
   bootstrap: [AppComponent]
 })

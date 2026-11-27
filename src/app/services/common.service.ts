@@ -14,10 +14,14 @@ import { map } from 'rxjs/internal/operators/map';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import moment from "moment";
 import { WebapiService } from './webapi.service';
+import { environment } from '../../environments/environment';
 @Injectable({
   providedIn: 'root'
 })
 export class CommonService {
+  public doctorService: string = (environment as any).doctorServiceUrl || 'https://api.activelifedeveloper.com/doctorservice/api/v1';
+  public doctorApiUrl: string = (environment as any).doctorServiceUrl || 'https://api.activelifedeveloper.com/doctorservice/api/v1';
+  public doctorBookingService: string = (environment as any).doctorBookingServiceUrl || 'https://api.activelifedeveloper.com/healthappdashboard/api';
   public isSpinnerVisible = signal(false);
   public showMenu: boolean = false;
   public showAuth: boolean = false;
@@ -72,6 +76,35 @@ export class CommonService {
     resendOtp?: boolean;
   }) {
     return this.api.SendDoctorOtp(body);
+  }
+  public VerifyDoctorOtp(body: {
+    countryCode?: string;
+    mobileNumber: string;
+    otpCode: string;
+    purpose?: string;
+    role?: string;
+  }) {
+    return this.api.VerifyDoctorOtp(body);
+  }
+  public RegisterDoctorPassword(body: {
+    countryCode?: string;
+    mobileNumber: string;
+    password: string;
+    confirmPassword: string;
+    role?: string;
+  }) {
+    return this.api.RegisterDoctorPassword(body);
+  }
+  public LoginDoctorPassword(body: {
+    countryCode?: string;
+    mobileNumber: string;
+    password: string;
+    role?: string;
+  }) {
+    return this.api.LoginDoctorPassword(body);
+  }
+  public LogoutDoctor(token: string) {
+    return this.api.LogoutDoctor(token);
   }
   public VerifyOtp(email: string, otp: string) {
     return this.api.VerifyOtp(email, otp);
@@ -509,5 +542,26 @@ export class CommonService {
       }
     }
     return output;
+  }
+
+  /**
+   * Formats media and document URLs returned by doctorservice for web rendering.
+   */
+  public formatMediaUrl(url?: string | null): string {
+    if (!url || typeof url !== 'string') {
+      return '';
+    }
+    let clean = url.trim().replace(/\\/g, '/');
+    if (clean.startsWith('http://localhost') || clean.startsWith('http://127.0.0.1')) {
+      const pathOnly = clean.replace(/^http:\/\/[^/]+/, '');
+      return `${this.doctorService}${pathOnly}`;
+    }
+    if (clean.startsWith('http://') || clean.startsWith('https://') || clean.startsWith('data:')) {
+      return clean;
+    }
+    if (!clean.startsWith('/')) {
+      clean = '/' + clean;
+    }
+    return `${this.doctorService}${clean}`;
   }
 }

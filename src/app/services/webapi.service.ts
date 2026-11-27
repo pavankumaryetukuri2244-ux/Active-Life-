@@ -246,13 +246,105 @@ export class WebapiService {
     const payload = {
       countryCode: body.countryCode || '91',
       mobileNumber: body.mobileNumber,
-      purpose: body.purpose || 'REGISTER_MPIN',
+      purpose: body.purpose || 'REGISTER_PASSWORD',
       role: body.role || 'DOCTOR',
       resendOtp: Boolean(body.resendOtp)
     };
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     return this.Http.post<any>(url, payload, { headers }).pipe(
       timeout(15000)
+    );
+  }
+
+  /**
+   * Role-based Verify OTP API for Doctor Registration.
+   * Targets /userservice/v1/auth/otp/verify with role: 'DOCTOR'.
+   */
+  public VerifyDoctorOtp(body: {
+    countryCode?: string;
+    mobileNumber: string;
+    otpCode: string;
+    purpose?: string;
+    role?: string;
+  }) {
+    const baseUserService = (environment as any).userServiceUrl || 'https://api.activelifedeveloper.com/userservice';
+    const url = `${baseUserService}/v1/auth/otp/verify`;
+    const payload = {
+      countryCode: body.countryCode || '91',
+      mobileNumber: body.mobileNumber,
+      otpCode: body.otpCode,
+      purpose: body.purpose || 'REGISTER_PASSWORD',
+      role: body.role || 'DOCTOR'
+    };
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    return this.Http.post<any>(url, payload, { headers }).pipe(
+      timeout(15000)
+    );
+  }
+
+  /**
+   * Role-based Register Password API for Doctor Registration.
+   * Targets /userservice/v1/auth/register-password with role: 'DOCTOR'.
+   */
+  public RegisterDoctorPassword(body: {
+    countryCode?: string;
+    mobileNumber: string;
+    password: string;
+    confirmPassword: string;
+    role?: string;
+  }) {
+    const baseUserService = (environment as any).userServiceUrl || 'https://api.activelifedeveloper.com/userservice';
+    const url = `${baseUserService}/v1/auth/register-password`;
+    const payload = {
+      countryCode: body.countryCode || '91',
+      mobileNumber: body.mobileNumber,
+      password: body.password,
+      confirmPassword: body.confirmPassword,
+      role: body.role || 'DOCTOR'
+    };
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    return this.Http.post<any>(url, payload, { headers }).pipe(
+      timeout(15000)
+    );
+  }
+
+  /**
+   * Doctor web login with mobile + password.
+   * Targets /userservice/v1/auth/login/verify-password with role: 'DOCTOR'.
+   */
+  public LoginDoctorPassword(body: {
+    countryCode?: string;
+    mobileNumber: string;
+    password: string;
+    role?: string;
+  }) {
+    const baseUserService = (environment as any).userServiceUrl || 'https://api.activelifedeveloper.com/userservice';
+    const url = `${baseUserService}/v1/auth/login/verify-password`;
+    const payload = {
+      countryCode: body.countryCode || '91',
+      mobileNumber: body.mobileNumber,
+      password: body.password,
+      role: body.role || 'DOCTOR'
+    };
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    return this.Http.post<any>(url, payload, { headers }).pipe(
+      timeout(15000)
+    );
+  }
+
+  /**
+   * Doctor / UserService session logout.
+   * Targets /userservice/v1/auth/logout with Bearer access token.
+   */
+  public LogoutDoctor(token: string) {
+    const baseUserService = (environment as any).userServiceUrl || 'https://api.activelifedeveloper.com/userservice';
+    const url = `${baseUserService}/v1/auth/logout`;
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    });
+    return this.Http.post<any>(url, {}, { headers }).pipe(
+      timeout(10000)
     );
   }
 

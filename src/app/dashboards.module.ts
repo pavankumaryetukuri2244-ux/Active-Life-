@@ -17,6 +17,13 @@ import { HomeRemediesComponent } from './Pages/HomeRemedies/home-remedies.compon
 import { SupportGroupsComponent } from './Pages/SupportGroups/support-groups.component';
 import { AuditLogsComponent } from './Pages/AuditLogs/audit-logs.component';
 import { ReportsAnalyticsComponent } from './Pages/ReportsAnalytics/reports-analytics.component';
+import { DoctorPortalComponent } from './Pages/DoctorPortal/doctor-portal.component';
+import { DoctorAppointmentsComponent } from './Pages/DoctorPortal/doctor-appointments.component';
+import { DoctorConsultComponent } from './Pages/DoctorPortal/doctor-consult.component';
+import { DoctorPrescriptionsComponent } from './Pages/DoctorPortal/doctor-prescriptions.component';
+import { DoctorPatientsComponent } from './Pages/DoctorPortal/doctor-patients.component';
+import { DoctorProfileComponent } from './Pages/DoctorPortal/doctor-profile.component';
+import { DoctorProfileStatusComponent } from './Pages/DoctorPortal/doctor-profile-status.component';
 
 @NgModule({
   declarations: [
@@ -37,7 +44,14 @@ import { ReportsAnalyticsComponent } from './Pages/ReportsAnalytics/reports-anal
   ],
   imports: [
     SharedModule,
-    BaseChartDirective
+    BaseChartDirective,
+    DoctorPortalComponent,
+    DoctorAppointmentsComponent,
+    DoctorConsultComponent,
+    DoctorPrescriptionsComponent,
+    DoctorPatientsComponent,
+    DoctorProfileComponent,
+    DoctorProfileStatusComponent
   ],
   exports: [
     AnalyticsComponent,
@@ -53,7 +67,14 @@ import { ReportsAnalyticsComponent } from './Pages/ReportsAnalytics/reports-anal
     HomeRemediesComponent,
     SupportGroupsComponent,
     AuditLogsComponent,
-    ReportsAnalyticsComponent
+    ReportsAnalyticsComponent,
+    DoctorPortalComponent,
+    DoctorAppointmentsComponent,
+    DoctorConsultComponent,
+    DoctorPrescriptionsComponent,
+    DoctorPatientsComponent,
+    DoctorProfileComponent,
+    DoctorProfileStatusComponent
   ]
 })
 export class DashboardsModule { }

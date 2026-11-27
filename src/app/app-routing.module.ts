@@ -20,6 +20,13 @@ import {
   SupportGroupsComponent,
   AuditLogsComponent,
   ReportsAnalyticsComponent,
+  DoctorPortalComponent,
+  DoctorAppointmentsComponent,
+  DoctorConsultComponent,
+  DoctorPrescriptionsComponent,
+  DoctorPatientsComponent,
+  DoctorProfileComponent,
+  DoctorProfileStatusComponent,
   ForgotPasswordBoxedComponent,
   LoginBoxedComponent
 } from './components.barrel';
@@ -56,7 +63,17 @@ const routes: Routes = [
       { path: 'dashboards/reports-analytics', component: ReportsAnalyticsComponent, data: { extraParameter: 'analyticsMenu' } },
       { path: 'reports-analytics', redirectTo: '/dashboards/reports-analytics', pathMatch: 'full' },
       { path: 'analytics', redirectTo: '/dashboards/reports-analytics', pathMatch: 'full' },
-      { path: 'dashboards/audit-logs', component: AuditLogsComponent, data: { extraParameter: 'auditLogsMenu' } }
+      { path: 'dashboards/audit-logs', component: AuditLogsComponent, data: { extraParameter: 'auditLogsMenu' } },
+
+      // Doctor Portal
+      { path: 'doctor/dashboard', component: DoctorPortalComponent, data: { extraParameter: 'doctorDashboardMenu' } },
+      { path: 'doctor/appointments', component: DoctorAppointmentsComponent, data: { extraParameter: 'doctorAppointmentsMenu' } },
+      { path: 'doctor/consult', component: DoctorConsultComponent, data: { extraParameter: 'doctorConsultMenu' } },
+      { path: 'doctor/prescriptions', component: DoctorPrescriptionsComponent, data: { extraParameter: 'doctorPrescriptionsMenu' } },
+      { path: 'doctor/patients', component: DoctorPatientsComponent, data: { extraParameter: 'doctorPatientsMenu' } },
+      { path: 'doctor/profile', component: DoctorProfileComponent, data: { extraParameter: 'doctorProfileMenu' } },
+      { path: 'doctor/profile-status', component: DoctorProfileStatusComponent, data: { extraParameter: 'doctorStatusMenu' } },
+      { path: 'doctor-portal', redirectTo: '/doctor/dashboard', pathMatch: 'full' }
     ]
   },
   {

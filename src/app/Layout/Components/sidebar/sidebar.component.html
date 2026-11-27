@@ -9,7 +9,7 @@
           <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
         </svg>
       </div>
-      <span class="logo-text-title" style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-weight: 600; font-style: normal; font-size: 16px; line-height: 24px; letter-spacing: -0.31px; color: #0f172a; white-space: nowrap;">HealthAdmin</span>
+      <span class="logo-text-title" style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-weight: 600; font-style: normal; font-size: 16px; line-height: 24px; letter-spacing: -0.31px; color: #0f172a; white-space: nowrap;">{{ isDoctorPortal ? 'HealthDoctor' : 'HealthAdmin' }}</span>
     </div>
     <!-- Hamburger button (Dark Navy blue) -->
     <button (click)="$event.stopPropagation(); toggleSidebar()" class="btn btn-link p-0 border-0 bg-transparent sidebar-toggle-btn" style="outline: none; display: flex; align-items: center;">
@@ -37,27 +37,27 @@
             <div class="vsm-item">
               <a [routerLink]="item.route" routerLinkActive="active-item" [routerLinkActiveOptions]="{exact: true}" class="vsm-link d-flex align-items-center" (click)="selectDashboard()">
                 <!-- Render Premium SVGs for all menu items -->
-                @if (item.title === 'Dashboard') {
+                @if (item.title === 'Dashboard' || item.title === 'Doctor Portal' || item.title === 'Home') {
                   <svg class="vsm-icon-svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="3" y="3" width="7" height="9" rx="1"></rect>
                     <rect x="14" y="3" width="7" height="5" rx="1"></rect>
                     <rect x="14" y="12" width="7" height="9" rx="1"></rect>
                     <rect x="3" y="16" width="7" height="5" rx="1"></rect>
                   </svg>
-                } @else if (item.title === 'Users') {
+                } @else if (item.title === 'Users' || item.title === 'Patients' || item.title === 'Profile & KYC') {
                   <svg class="vsm-icon-svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                     <circle cx="9" cy="7" r="4"></circle>
                     <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
                     <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                   </svg>
-                } @else if (item.title === 'Doctors') {
+                } @else if (item.title === 'Doctors' || item.title === 'Consult') {
                   <svg class="vsm-icon-svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M4.8 2.3A.3.3 0 0 0 4.5 2h-1a.3.3 0 0 0-.3.3v4.4a3.5 3.5 0 0 0 7 0V2.3a.3.3 0 0 0-.3-.3h-1a.3.3 0 0 0-.3.3v4.4a1.7 1.7 0 1 1-3.4 0V2.3z"></path>
                     <path d="M6.7 10.1v2.4a3.8 3.8 0 0 0 3.8 3.8h.5a3.8 3.8 0 0 0 3.8-3.8v-2.4"></path>
                     <circle cx="14.8" cy="12.5" r="1.5"></circle>
                   </svg>
-                } @else if (item.title === 'Doctor Approvals') {
+                } @else if (item.title === 'Doctor Approvals' || item.title === 'Verification Status') {
                   <svg class="vsm-icon-svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
                     <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
@@ -77,6 +77,11 @@
                     <line x1="16" y1="13" x2="8" y2="13"></line>
                     <line x1="16" y1="17" x2="8" y2="17"></line>
                     <polyline points="10 9 9 9 8 9"></polyline>
+                  </svg>
+                } @else if (item.title === 'Prescriptions') {
+                  <svg class="vsm-icon-svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"></path>
+                    <path d="m8.5 8.5 7 7"></path>
                   </svg>
                 } @else if (item.title === 'Notifications') {
                   <svg class="vsm-icon-svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

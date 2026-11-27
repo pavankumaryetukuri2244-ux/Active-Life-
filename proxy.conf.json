@@ -1,4 +1,28 @@
 {
+  "/doctorservice": {
+    "target": "https://api.activelifedeveloper.com",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  },
+  "/healthappdashboard": {
+    "target": "https://api.activelifedeveloper.com",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  },
+  "/userservice": {
+    "target": "https://api.activelifedeveloper.com",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  },
+  "/healthappadmin": {
+    "target": "https://api.activelifedeveloper.com",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  },
   "/api": {
     "target": "http://20.193.140.173:8085",
     "secure": false,

@@ -1,0 +1,362 @@
+<div class="dpr-page">
+  <div class="dpr-hero d-flex flex-wrap align-items-center justify-content-between gap-3">
+    <div>
+      <h1 style="font-size: 24px; font-weight: 700; margin: 0 0 4px 0; color: #FFFFFF;">
+        {{ isEditMode ? 'Update Doctor Profile & Credentials' : 'Complete Doctor Registration' }}
+      </h1>
+      <p style="font-size: 14px; opacity: 0.92; margin: 0;">
+        {{ isEditMode ? 'Keep your medical council license, hospital affiliation, and documents up to date.' : 'Submit your medical credentials and verification documents to activate your clinical workspace.' }}
+      </p>
+    </div>
+
+    <div class="d-flex gap-2">
+      <a routerLink="/doctor/profile-status" class="btn btn-sm fw-semibold"
+        style="background: rgba(255,255,255,0.2); color: #FFFFFF; border-radius: 10px; padding: 8px 14px;">
+        Verification Status
+      </a>
+      <a routerLink="/doctor/dashboard" class="btn btn-sm fw-semibold"
+        style="background: #FFFFFF; color: #0082B3; border-radius: 10px; padding: 8px 14px;">
+        Dashboard
+      </a>
+    </div>
+  </div>
+
+  @if (isLoading) {
+    <div class="dpr-card text-center py-5">
+      <div class="spinner-border text-primary mb-2" role="status"></div>
+      <div style="font-size: 14px; color: #64748B;">Loading master registration options and profile...</div>
+    </div>
+  } @else {
+    @if (errorMessage) {
+      <div class="alert alert-danger border-0 rounded-3 mb-3 py-2 px-3" style="font-size: 13.5px; font-weight: 600;">
+        {{ errorMessage }}
+      </div>
+    }
+
+    @if (successMessage) {
+      <div class="alert alert-success border-0 rounded-3 mb-3 py-2 px-3 d-flex align-items-center gap-2"
+        style="background: #ECFDF5; color: #047857; font-size: 13.5px; font-weight: 600;">
+        <i class="pe-7s-check" style="font-size: 18px;"></i>
+        <span>{{ successMessage }}</span>
+      </div>
+    }
+
+    <form [formGroup]="profileForm" (ngSubmit)="submitProfile()">
+      <!-- Personal & Contact Info -->
+      <div class="dpr-card">
+        <h2 style="font-size: 16.5px; font-weight: 700; margin: 0 0 18px 0;">Personal & Contact Information</h2>
+
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="dpr-label">Full Name *</label>
+            <input type="text" class="dpr-input" formControlName="fullName" placeholder="Dr. Full Name" />
+          </div>
+
+          <div class="col-md-6">
+            <label class="dpr-label">Mobile Number *</label>
+            <input type="tel" class="dpr-input" formControlName="mobileNumber" placeholder="10-digit mobile number" maxlength="13" />
+            @if (fieldErrors['mobileNumber']) {
+              <div class="text-danger mt-1" style="font-size: 12px;">{{ fieldErrors['mobileNumber'] }}</div>
+            }
+          </div>
+
+          <div class="col-md-6">
+            <label class="dpr-label">Email Address *</label>
+            <input type="email" class="dpr-input" formControlName="email" placeholder="doctor@clinic.com" />
+          </div>
+
+          <div class="col-md-6">
+            <label class="dpr-label">Gender *</label>
+            <div class="custom-select-wrapper">
+              <div class="custom-select-trigger dpr-input d-flex align-items-center justify-content-between"
+                   (click)="toggleDropdown('gender', $event)"
+                   [class.active]="activeDropdown === 'gender'">
+                <span>{{ getGenderLabel() }}</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="chevron-icon" [class.rotated]="activeDropdown === 'gender'">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </div>
+
+              @if (activeDropdown === 'gender') {
+                <div class="custom-dropdown-menu" (click)="$event.stopPropagation()">
+                  <div class="custom-dropdown-item" [class.selected]="profileForm.get('gender')?.value === 'MALE'" (click)="selectGender('MALE')">
+                    Male
+                  </div>
+                  <div class="custom-dropdown-item" [class.selected]="profileForm.get('gender')?.value === 'FEMALE'" (click)="selectGender('FEMALE')">
+                    Female
+                  </div>
+                  <div class="custom-dropdown-item" [class.selected]="profileForm.get('gender')?.value === 'OTHER'" (click)="selectGender('OTHER')">
+                    Other
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Medical Credentials -->
+      <div class="dpr-card">
+        <h2 style="font-size: 16.5px; font-weight: 700; margin: 0 0 18px 0;">Medical Credentials</h2>
+
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="dpr-label">Qualification *</label>
+            <div class="custom-select-wrapper">
+              <div class="custom-select-trigger dpr-input d-flex align-items-center justify-content-between"
+                   (click)="toggleDropdown('qualification', $event)"
+                   [class.active]="activeDropdown === 'qualification'">
+                <span [class.placeholder-text]="!profileForm.get('qualification')?.value">
+                  {{ getQualificationLabel() }}
+                </span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="chevron-icon" [class.rotated]="activeDropdown === 'qualification'">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </div>
+
+              @if (activeDropdown === 'qualification') {
+                <div class="custom-dropdown-menu" (click)="$event.stopPropagation()">
+                  <div class="custom-dropdown-item" [class.selected]="!profileForm.get('qualification')?.value" (click)="selectQualification('')">
+                    Select Qualification
+                  </div>
+                  @for (qual of masterData.qualifications; track qual) {
+                    <div class="custom-dropdown-item" [class.selected]="profileForm.get('qualification')?.value === qual" (click)="selectQualification(qual)">
+                      {{ qual }}
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <label class="dpr-label">Specialization *</label>
+            <div class="custom-select-wrapper">
+              <div class="custom-select-trigger dpr-input d-flex align-items-center justify-content-between"
+                   (click)="toggleDropdown('specialization', $event)"
+                   [class.active]="activeDropdown === 'specialization'">
+                <span [class.placeholder-text]="!profileForm.get('specializationId')?.value">
+                  {{ getSpecializationLabel() }}
+                </span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="chevron-icon" [class.rotated]="activeDropdown === 'specialization'">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </div>
+
+              @if (activeDropdown === 'specialization') {
+                <div class="custom-dropdown-menu" (click)="$event.stopPropagation()">
+                  <div class="custom-dropdown-item" [class.selected]="!profileForm.get('specializationId')?.value" (click)="selectSpecialization({ id: 0, categoryName: '' })">
+                    Select Specialization
+                  </div>
+                  @for (spec of masterData.specializations; track spec.id) {
+                    <div class="custom-dropdown-item" [class.selected]="profileForm.get('specializationId')?.value === spec.id" (click)="selectSpecialization(spec)">
+                      {{ spec.categoryName }}
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <label class="dpr-label">Department (Optional)</label>
+            <div class="custom-select-wrapper">
+              <div class="custom-select-trigger dpr-input d-flex align-items-center justify-content-between"
+                   (click)="toggleDropdown('department', $event)"
+                   [class.active]="activeDropdown === 'department'">
+                <span [class.placeholder-text]="!profileForm.get('departmentId')?.value">
+                  {{ getDepartmentLabel() }}
+                </span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="chevron-icon" [class.rotated]="activeDropdown === 'department'">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </div>
+
+              @if (activeDropdown === 'department') {
+                <div class="custom-dropdown-menu" (click)="$event.stopPropagation()">
+                  <div class="custom-dropdown-item" [class.selected]="!profileForm.get('departmentId')?.value" (click)="selectDepartment({ id: 0, categoryName: '' })">
+                    Select Department
+                  </div>
+                  @for (dept of masterData.departments; track dept.id) {
+                    <div class="custom-dropdown-item" [class.selected]="profileForm.get('departmentId')?.value === dept.id" (click)="selectDepartment(dept)">
+                      {{ dept.categoryName }}
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <label class="dpr-label">Medical Council Reg. Number *</label>
+            <input type="text" class="dpr-input" formControlName="registrationNumber" placeholder="e.g., MCI-19482" />
+            @if (fieldErrors['registrationNumber']) {
+              <div class="text-danger mt-1" style="font-size: 12px;">{{ fieldErrors['registrationNumber'] }}</div>
+            }
+          </div>
+
+          <div class="col-md-4">
+            <label class="dpr-label">Registration Council *</label>
+            <div class="custom-select-wrapper">
+              <div class="custom-select-trigger dpr-input d-flex align-items-center justify-content-between"
+                   (click)="toggleDropdown('council', $event)"
+                   [class.active]="activeDropdown === 'council'">
+                <span [class.placeholder-text]="!profileForm.get('registrationCouncil')?.value">
+                  {{ getCouncilLabel() }}
+                </span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="chevron-icon" [class.rotated]="activeDropdown === 'council'">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </div>
+
+              @if (activeDropdown === 'council') {
+                <div class="custom-dropdown-menu" (click)="$event.stopPropagation()">
+                  <div class="custom-dropdown-item" [class.selected]="!profileForm.get('registrationCouncil')?.value" (click)="selectCouncil('')">
+                    Select Council
+                  </div>
+                  @for (council of masterData.registrationCouncils; track council) {
+                    <div class="custom-dropdown-item" [class.selected]="profileForm.get('registrationCouncil')?.value === council" (click)="selectCouncil(council)">
+                      {{ council }}
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <label class="dpr-label">Practice Start / Experience Date *</label>
+            <input type="date" class="dpr-input" formControlName="professionalExperienceDate" [max]="todayDate" />
+            @if (fieldErrors['professionalExperienceDate']) {
+              <div class="text-danger mt-1" style="font-size: 12px;">{{ fieldErrors['professionalExperienceDate'] }}</div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Clinic Details & Consultation Modes -->
+      <div class="dpr-card">
+        <h2 style="font-size: 16.5px; font-weight: 700; margin: 0 0 18px 0;">Clinic Details & Consultation Modes</h2>
+
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <label class="dpr-label">Hospital / Clinic Name *</label>
+            <input type="text" class="dpr-input" formControlName="hospitalName" placeholder="Clinic or hospital name" />
+          </div>
+
+          <div class="col-md-6">
+            <label class="dpr-label">PIN Code *</label>
+            <input type="text" class="dpr-input" formControlName="pinCode" maxlength="6" placeholder="6-digit PIN code" />
+          </div>
+
+          <div class="col-12">
+            <label class="dpr-label">Clinic Address *</label>
+            <input type="text" class="dpr-input" formControlName="address" placeholder="Full clinic address" />
+          </div>
+        </div>
+
+        @if (masterData.consultationModes.length) {
+          <div>
+            <label class="dpr-label">Consultation Modes</label>
+            <div class="d-flex flex-wrap gap-2">
+              @for (mode of masterData!.consultationModes; track mode.id) {
+                <button
+                  type="button"
+                  class="dpr-mode-chip"
+                  [class.selected]="isModeSelected(mode.modeCode)"
+                  (click)="toggleConsultationMode(mode.modeCode)">
+                  <span>{{ isModeSelected(mode.modeCode) ? '✓' : '+' }}</span>
+                  <span>{{ mode.displayName }}</span>
+                </button>
+              }
+            </div>
+            @if (fieldErrors['consultationModeIds'] || fieldErrors['consultationModes']) {
+              <div class="text-danger mt-2" style="font-size: 12.5px; font-weight: 500;">
+                {{ fieldErrors['consultationModeIds'] || fieldErrors['consultationModes'] }}
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Documents & Photo Upload -->
+      <div class="dpr-card">
+        <h2 style="font-size: 16.5px; font-weight: 700; margin: 0 0 18px 0;">Profile Photo & Verification Documents</h2>
+
+        <div class="row g-4">
+          <div class="col-md-5">
+            <label class="dpr-label">Profile Photo (Max 2MB · JPG/PNG)</label>
+            <div class="d-flex align-items-center gap-3">
+              @if (photoPreviewUrl) {
+                <img [src]="photoPreviewUrl" alt="Doctor profile preview" class="dpr-photo-preview" />
+              } @else {
+                <div class="dpr-photo-preview d-flex align-items-center justify-content-center" style="color: #94A3B8; font-size: 12px;">
+                  No photo
+                </div>
+              }
+              <input type="file" class="form-control" accept="image/png,image/jpeg,image/jpg" (change)="onPhotoSelected($event)" />
+            </div>
+            @if (photoError) {
+              <div class="text-danger mt-2" style="font-size: 12.5px; font-weight: 500;">{{ photoError }}</div>
+            }
+            @if (fieldErrors['profilePhoto'] || fieldErrors['uploadPhoto'] || fieldErrors['photo']) {
+              <div class="text-danger mt-2" style="font-size: 12.5px; font-weight: 500;">
+                {{ fieldErrors['profilePhoto'] || fieldErrors['uploadPhoto'] || fieldErrors['photo'] }}
+              </div>
+            }
+          </div>
+
+          <div class="col-md-7">
+            <label class="dpr-label">Degree & Medical Council Certificates (Max 5MB per file · PDF/JPG/PNG)</label>
+            <input type="file" class="form-control mb-2" multiple accept=".pdf,image/png,image/jpeg,image/jpg"
+              (change)="onCertificatesSelected($event)" />
+            @if (certError) {
+              <div class="text-danger mb-2" style="font-size: 12.5px; font-weight: 500;">{{ certError }}</div>
+            }
+            @if (fieldErrors['uploadFiles'] || fieldErrors['documents']) {
+              <div class="text-danger mb-2" style="font-size: 12.5px; font-weight: 500;">
+                {{ fieldErrors['uploadFiles'] || fieldErrors['documents'] }}
+              </div>
+            }
+
+            @if (selectedCertFiles.length > 0) {
+              <div class="d-flex flex-column gap-1 mt-2">
+                @for (file of selectedCertFiles; track $index) {
+                  <div class="d-flex align-items-center justify-content-between px-3 py-2 rounded-3"
+                    style="background: #F8FAFC; border: 1px solid #E2E8F0; font-size: 13px;">
+                    <span>{{ file.name }} ({{ (file.size / 1024 / 1024).toFixed(2) }} MB)</span>
+                    <button type="button" class="btn btn-sm btn-link text-danger p-0 text-decoration-none"
+                      (click)="removeSelectedCert($index)">Remove</button>
+                  </div>
+                }
+              </div>
+            }
+
+            @if (existingDocUrls.length > 0) {
+              <div class="mt-2">
+                <div style="font-size: 12px; font-weight: 600; color: #64748B; margin-bottom: 4px;">Uploaded Certificates:</div>
+                <div class="d-flex flex-wrap gap-2">
+                  @for (docUrl of existingDocUrls; track $index) {
+                    <a [href]="docUrl" target="_blank" rel="noopener" class="badge text-decoration-none"
+                      style="background: #EFF6FF; color: #1D4ED8; padding: 6px 10px; font-size: 12px;">
+                      Document {{ $index + 1 }} ↗
+                    </a>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-end gap-3 mb-4">
+        <button type="submit" class="dpr-submit-btn" [disabled]="isSubmitting">
+          @if (isSubmitting) {
+            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+          }
+          <span>{{ isEditMode ? 'Update Doctor Profile' : 'Submit Registration for Verification' }}</span>
+        </button>
+      </div>
+    </form>
+  }
+</div>

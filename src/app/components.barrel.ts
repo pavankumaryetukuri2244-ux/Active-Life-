@@ -16,6 +16,13 @@ export { HomeRemediesComponent } from './Pages/HomeRemedies/home-remedies.compon
 export { SupportGroupsComponent } from './Pages/SupportGroups/support-groups.component';
 export { AuditLogsComponent } from './Pages/AuditLogs/audit-logs.component';
 export { ReportsAnalyticsComponent } from './Pages/ReportsAnalytics/reports-analytics.component';
+export { DoctorPortalComponent } from './Pages/DoctorPortal/doctor-portal.component';
+export { DoctorAppointmentsComponent } from './Pages/DoctorPortal/doctor-appointments.component';
+export { DoctorConsultComponent } from './Pages/DoctorPortal/doctor-consult.component';
+export { DoctorPrescriptionsComponent } from './Pages/DoctorPortal/doctor-prescriptions.component';
+export { DoctorPatientsComponent } from './Pages/DoctorPortal/doctor-patients.component';
+export { DoctorProfileComponent } from './Pages/DoctorPortal/doctor-profile.component';
+export { DoctorProfileStatusComponent } from './Pages/DoctorPortal/doctor-profile-status.component';
 
 // User pages components
 export { ForgotPasswordBoxedComponent } from './Pages/UserPages/forgot-password-boxed/forgot-password-boxed.component';

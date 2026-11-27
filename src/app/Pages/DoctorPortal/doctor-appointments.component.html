@@ -1,0 +1,331 @@
+<div class="da-page">
+  <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+    <h1 class="da-title m-0">Appointment Settings</h1>
+    <button type="button" class="btn btn-sm btn-outline-primary fw-semibold" style="border-radius: 10px;"
+      (click)="loadAllAppointmentData()" [disabled]="isLoading">
+      {{ isLoading ? 'Refreshing...' : 'Refresh' }}
+    </button>
+  </div>
+
+  <!-- Underline Tabs: Profile | Slots & Fees | Schedule | Block Dates -->
+  <div class="da-tabs">
+    <button type="button" class="da-tab-btn" [class.active]="activeTab === 'profile'" (click)="activeTab = 'profile'">
+      Profile
+    </button>
+    <button type="button" class="da-tab-btn" [class.active]="activeTab === 'slots'" (click)="activeTab = 'slots'">
+      Slots & Fees
+    </button>
+    <button type="button" class="da-tab-btn" [class.active]="activeTab === 'schedule'" (click)="activeTab = 'schedule'">
+      Schedule
+    </button>
+    <button type="button" class="da-tab-btn" [class.active]="activeTab === 'blocks'" (click)="activeTab = 'blocks'">
+      Block Dates
+    </button>
+  </div>
+
+  @if (isLoading) {
+    <div class="da-card text-center py-5">
+      <div class="spinner-border text-primary mb-2" role="status"></div>
+      <div style="font-size: 14px; color: #64748B;">Loading appointment settings...</div>
+    </div>
+  } @else {
+    <!-- TAB 1: PROFILE -->
+    @if (activeTab === 'profile') {
+      @if (profileErrorMsg) {
+        <div class="alert alert-danger border-0 rounded-3 mb-3 py-2 px-3" style="font-size: 13.5px; font-weight: 600;">
+          {{ profileErrorMsg }}
+        </div>
+      }
+      @if (profileSavedMsg) {
+        <div class="alert alert-success border-0 rounded-3 mb-3 py-2 px-3 d-flex align-items-center gap-2"
+          style="background: #ECFDF5; color: #047857; font-size: 13.5px; font-weight: 600;">
+          <i class="pe-7s-check" style="font-size: 18px;"></i>
+          <span>{{ profileSavedMsg }}</span>
+        </div>
+      }
+
+      <div class="da-card" style="max-width: 760px;">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+          <h2 style="font-size: 16.5px; font-weight: 700; color: #0F172A; margin: 0;">Doctor Profile</h2>
+          <a routerLink="/doctor/profile" [queryParams]="{ mode: 'edit' }" class="text-decoration-none fw-semibold"
+            style="font-size: 13px; color: #0092CD;">
+            Edit Full KYC & Certificates &rarr;
+          </a>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="da-field-label">Doctor ID</label>
+            <input type="text" class="da-input" [value]="doctorId || 'Pending Assignment'" readonly />
+          </div>
+
+          <div class="col-md-6">
+            <label class="da-field-label">Doctor Name</label>
+            <input type="text" class="da-input" [(ngModel)]="doctorName" placeholder="Doctor Name" />
+          </div>
+
+          <div class="col-md-6">
+            <label class="da-field-label">Specialization</label>
+            <input type="text" class="da-input" [value]="specialization || '—'" readonly />
+          </div>
+
+          <div class="col-md-6">
+            <label class="da-field-label">Hospital / Clinic</label>
+            <input type="text" class="da-input" [(ngModel)]="hospitalClinic" placeholder="Hospital / Clinic Name" />
+          </div>
+        </div>
+
+        <div class="mt-4">
+          <button type="button" class="da-cyan-btn" (click)="saveProfile()" [disabled]="profileSaving">
+            {{ profileSaving ? 'Saving Profile...' : 'Save Profile' }}
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- TAB 2: SLOTS & FEES -->
+    @if (activeTab === 'slots') {
+      @if (slotErrorMsg) {
+        <div class="alert alert-danger border-0 rounded-3 mb-3 py-2 px-3" style="font-size: 13.5px; font-weight: 600;">
+          {{ slotErrorMsg }}
+        </div>
+      }
+      @if (slotSuccessMsg) {
+        <div class="alert alert-success border-0 rounded-3 mb-3 py-2 px-3" style="font-size: 13.5px; font-weight: 600;">
+          {{ slotSuccessMsg }}
+        </div>
+      }
+
+      <div class="da-card" style="max-width: 760px;">
+        <h2 style="font-size: 16.5px; font-weight: 700; color: #0F172A; margin: 0 0 18px 0;">
+          Slot Duration & Consultation Fee
+        </h2>
+
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="da-field-label">Slot Duration</label>
+            <select class="da-input" [(ngModel)]="slotDurationId">
+              <option value="">Select Slot Duration</option>
+              @for (dur of masterData?.slotDurations || []; track dur.id) {
+                <option [value]="dur.id">{{ dur.displayName }} ({{ dur.durationMinutes }} mins)</option>
+              }
+            </select>
+          </div>
+
+          <div class="col-md-6">
+            <label class="da-field-label">Consultation Fee (INR ₹)</label>
+            <input type="number" min="0" class="da-input" [(ngModel)]="consultationFee" placeholder="e.g. 500" />
+          </div>
+        </div>
+
+        <div class="mt-4">
+          <button type="button" class="da-cyan-btn" (click)="saveSlotConfig()" [disabled]="slotSaving">
+            {{ slotSaving ? 'Saving Configuration...' : 'Save Slot & Fee Settings' }}
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- TAB 3: WEEKLY SCHEDULE -->
+    @if (activeTab === 'schedule') {
+      @if (scheduleErrorMsg) {
+        <div class="alert alert-danger border-0 rounded-3 mb-3 py-2 px-3" style="font-size: 13.5px; font-weight: 600;">
+          {{ scheduleErrorMsg }}
+        </div>
+      }
+      @if (scheduleSavedMsg) {
+        <div class="alert alert-success border-0 rounded-3 mb-3 py-2 px-3" style="font-size: 13.5px; font-weight: 600;">
+          {{ scheduleSavedMsg }}
+        </div>
+      }
+
+      <div class="da-schedule-card" style="max-width: 820px;">
+        <div class="da-schedule-banner">
+          <span>Weekly Schedule</span>
+          <span style="font-size: 12.5px; font-weight: 500; opacity: 0.9;">Click Open / Closed or Add Session to update backend schedule</span>
+        </div>
+
+        @for (row of weeklySchedule; track row.day) {
+          <div class="da-day-row">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+              <div style="font-size: 15.5px; font-weight: 600; color: #0F172A;">{{ row.label }}</div>
+
+              <div class="d-flex align-items-center gap-2">
+                @if (row.saving) {
+                  <span class="spinner-border spinner-border-sm text-primary" role="status"></span>
+                }
+                @if (row.open) {
+                  <button type="button" class="btn btn-sm btn-link text-decoration-none fw-semibold p-0 me-2"
+                    style="color: #0092CD; font-size: 12.5px;" (click)="startAddingSession(row)">
+                    + Add Session
+                  </button>
+                }
+                <button
+                  type="button"
+                  class="da-day-pill"
+                  [ngClass]="row.open ? 'da-day-open' : 'da-day-closed'"
+                  [disabled]="row.saving"
+                  (click)="toggleDayOpen(row)">
+                  {{ row.open ? 'Open' : 'Closed' }}
+                </button>
+              </div>
+            </div>
+
+            @if (row.errorMsg) {
+              <div class="text-danger mt-1" style="font-size: 12.5px; font-weight: 500;">{{ row.errorMsg }}</div>
+            }
+
+            @if (row.open) {
+              @for (sess of row.sessions; track $index) {
+                <div class="da-session-line">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                  </svg>
+                  <span>
+                    Session {{ $index + 1 }}: {{ sess.startTime }} - {{ sess.endTime }}
+                    @if (sess.consultationMode) { ({{ sess.consultationMode }}) }
+                  </span>
+                  @if (row.sessions.length > 1) {
+                    <button type="button" class="btn btn-link btn-sm text-danger p-0 ms-2 text-decoration-none"
+                      style="font-size: 12px;" (click)="removeSession(row, $index)">
+                      Remove
+                    </button>
+                  }
+                </div>
+              }
+
+              @if (row.addingSession) {
+                <div class="d-flex flex-wrap align-items-center gap-2 mt-2 pt-2">
+                  <input type="time" class="form-control form-control-sm" style="width: 130px;" [(ngModel)]="row.draftStart" />
+                  <span style="font-size: 13px; color: #64748B;">to</span>
+                  <input type="time" class="form-control form-control-sm" style="width: 130px;" [(ngModel)]="row.draftEnd" />
+                  <select class="form-select form-select-sm" style="width: 130px;" [(ngModel)]="row.draftMode">
+                    @for (mode of masterData?.consultationModes || []; track mode.id) {
+                      <option [value]="mode.modeCode">{{ mode.displayName }}</option>
+                    }
+                    @if (!masterData?.consultationModes?.length) {
+                      <option value="VIDEO">Video</option>
+                      <option value="OFFLINE">In-person</option>
+                    }
+                  </select>
+                  <button type="button" class="btn btn-sm btn-primary" (click)="confirmAddSession(row)">Save Session</button>
+                  <button type="button" class="btn btn-sm btn-light" (click)="row.addingSession = false">Cancel</button>
+                </div>
+              }
+            }
+          </div>
+        }
+      </div>
+    }
+
+    <!-- TAB 4: BLOCK DATES -->
+    @if (activeTab === 'blocks') {
+      <div class="row g-4">
+        <div class="col-lg-6">
+          <div class="da-card">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <h2 style="font-size: 16.5px; font-weight: 700; color: #0F172A; margin: 0;">Block Dates</h2>
+
+              <div class="da-mode-switch">
+                <button type="button" class="da-mode-opt" [class.active]="blockMode === 'SINGLE'"
+                  (click)="blockMode = 'SINGLE'">
+                  Single
+                </button>
+                <button type="button" class="da-mode-opt" [class.active]="blockMode === 'RANGE'"
+                  (click)="blockMode = 'RANGE'">
+                  Range
+                </button>
+              </div>
+            </div>
+
+            @if (blockError) {
+              <div class="alert alert-danger border-0 rounded-3 py-2 px-3 mb-3" style="font-size: 13px;">
+                {{ blockError }}
+              </div>
+            }
+            @if (blockSuccessMsg) {
+              <div class="alert alert-success border-0 rounded-3 py-2 px-3 mb-3" style="font-size: 13px;">
+                {{ blockSuccessMsg }}
+              </div>
+            }
+
+            <div class="row g-3 mb-3">
+              <div [class]="blockMode === 'RANGE' ? 'col-sm-6' : 'col-12'">
+                <label class="da-field-label">{{ blockMode === 'RANGE' ? 'Start Date' : 'Select Date' }}</label>
+                <input type="date" class="da-input" [(ngModel)]="blockStartDate" />
+              </div>
+
+              @if (blockMode === 'RANGE') {
+                <div class="col-sm-6">
+                  <label class="da-field-label">End Date</label>
+                  <input type="date" class="da-input" [(ngModel)]="blockEndDate" />
+                </div>
+              }
+            </div>
+
+            <div class="mb-3">
+              <label class="da-field-label">Reason</label>
+              <input type="text" class="da-input" [(ngModel)]="blockReason" placeholder="Leave" />
+            </div>
+
+            <div class="mb-4">
+              <label class="da-field-label">Note (optional)</label>
+              <input type="text" class="da-input" [(ngModel)]="blockNote"
+                placeholder="e.g. Annual medical conference in Delhi" />
+            </div>
+
+            <button type="button" class="da-cyan-btn" (click)="addBlockedDate()" [disabled]="blockSaving">
+              {{ blockSaving ? 'Adding...' : '+ Add to Queue' }}
+            </button>
+          </div>
+        </div>
+
+        <div class="col-lg-6">
+          <div class="da-card h-100">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <h2 style="font-size: 16.5px; font-weight: 700; color: #0F172A; margin: 0;">Blocked Dates Queue</h2>
+              <span style="font-size: 12.5px; font-weight: 600; color: #64748B;">{{ blockedDates.length }} scheduled</span>
+            </div>
+
+            @if (blockedDates.length === 0) {
+              <div class="da-empty-block">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="1.8"
+                  stroke-linecap="round" stroke-linejoin="round" class="mb-2">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+                <div style="font-size: 14.5px; font-weight: 600; color: #94A3B8;">No blocked dates</div>
+                <div style="font-size: 13px; color: #CBD5E1; margin-top: 2px;">Add single dates or a date range on the left</div>
+              </div>
+            } @else {
+              <div class="d-flex flex-column gap-2">
+                @for (item of blockedDates; track item.id) {
+                  <div class="d-flex align-items-start justify-content-between gap-2 p-3 rounded-3"
+                    style="background: #F8FAFC; border: 1px solid #E2E8F0;">
+                    <div>
+                      <div style="font-size: 14px; font-weight: 600; color: #0F172A;">
+                        {{ (item.type === 'RANGE' || (item.endDate && item.startDate !== item.endDate)) ? (item.startDate + ' to ' + item.endDate) : item.startDate }}
+                      </div>
+                      <div style="font-size: 12.5px; color: #0092CD; font-weight: 600;">{{ item.reason || 'Leave' }}</div>
+                      @if (item.note) {
+                        <div style="font-size: 12.5px; color: #64748B; margin-top: 2px;">{{ item.note }}</div>
+                      }
+                    </div>
+                    <button type="button" class="btn btn-sm btn-light text-danger fw-semibold"
+                      (click)="removeBlockedDate(item.id)">
+                      Remove
+                    </button>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    }
+  }
+</div>

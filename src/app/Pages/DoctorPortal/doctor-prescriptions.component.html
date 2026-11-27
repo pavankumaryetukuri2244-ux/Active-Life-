@@ -1,0 +1,227 @@
+<div class="dx-page">
+  <div class="dx-hero">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+      <div>
+        <h1 class="dx-hero-title">Prescription Management</h1>
+        <p class="dx-hero-sub">Write & submit digital prescriptions</p>
+      </div>
+      <button type="button" class="dx-back-btn" (click)="backToQueue()">
+        &larr; Consultation Queue
+      </button>
+    </div>
+  </div>
+
+  @if (saveError) {
+    <div class="alert alert-danger border-0 rounded-3 mb-3 py-2 px-3" style="font-size: 13.5px; font-weight: 600;">
+      {{ saveError }}
+    </div>
+  }
+
+  @if (saveNotice) {
+    <div class="alert alert-success border-0 rounded-3 mb-3 py-2 px-3 d-flex align-items-center gap-2"
+      style="background: #ECFDF5; color: #047857; font-size: 13.5px; font-weight: 600;">
+      <i class="pe-7s-check" style="font-size: 18px;"></i>
+      <span>{{ saveNotice }}</span>
+    </div>
+  }
+
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <!-- Patient / Appointment Context Card -->
+      <div class="dx-card">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
+          <span style="font-size: 15px; font-weight: 700; color: #0F172A;">Patient & Consultation</span>
+          @if (appointmentsQueue.length > 0) {
+            <select class="form-select form-select-sm" style="width: auto; min-width: 240px; border-radius: 10px;"
+              [(ngModel)]="selectedAppointmentId" (ngModelChange)="onAppointmentSelectionChange()">
+              <option value="">Select Today's Appointment</option>
+              @for (apt of appointmentsQueue; track (apt.appointmentId || apt.id || $index)) {
+                <option [value]="apt.appointmentId || apt.id">
+                  #{{ apt.appointmentId || apt.id }} · {{ apt.patientName || apt.fullName }}
+                </option>
+              }
+            </select>
+          } @else {
+            <div class="d-flex align-items-center gap-2">
+              <input type="number" class="form-control form-control-sm" style="width: 170px; border-radius: 10px;"
+                [(ngModel)]="selectedAppointmentId" placeholder="Appointment ID" />
+              <span class="badge bg-light text-secondary border" style="font-size: 11px;">Queue empty</span>
+            </div>
+          }
+        </div>
+
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <div class="dx-avatar">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </div>
+          <div>
+            <div style="font-size: 15.5px; font-weight: 700; color: #0F172A;">
+              {{ patientName || 'Select Consultation Patient' }}
+              @if (patientAge) { <span>· Age {{ patientAge }}</span> }
+            </div>
+            <div style="font-size: 13px; color: #64748B;">
+              @if (patientCode) { <span>{{ patientCode }} · </span> }
+              <span>Appointment ID: {{ selectedAppointmentId || 'Not selected' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="dx-field-label">Category</label>
+            <input type="text" class="dx-input" [(ngModel)]="category" placeholder="General Consultation" />
+          </div>
+          <div class="col-md-6">
+            <label class="dx-field-label">Report Name</label>
+            <input type="text" class="dx-input" [(ngModel)]="reportName" placeholder="Prescription" />
+          </div>
+          <div class="col-12">
+            <label class="dx-field-label">Clinical Diagnosis & General Advice</label>
+            <textarea class="dx-input" rows="2" [(ngModel)]="description"
+              placeholder="Chief complaints, clinical findings, diet & follow-up advice..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dynamic Medicine Cards -->
+      @for (med of medicines; track $index) {
+        <div class="dx-card">
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <h2 style="font-size: 16px; font-weight: 700; color: #0F172A; margin: 0;">Medicine {{ $index + 1 }}</h2>
+            @if (medicines.length > 1) {
+              <button type="button" class="btn btn-sm btn-link text-danger text-decoration-none p-0 fw-semibold"
+                (click)="removeMedicine($index)">
+                Remove
+              </button>
+            }
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-8">
+              <label class="dx-field-label">Medicine Name *</label>
+              <input type="text" class="dx-input" [(ngModel)]="med.medicineName"
+                placeholder="e.g., Paracetamol 500mg" />
+            </div>
+            <div class="col-md-4">
+              <label class="dx-field-label">Form</label>
+              <select class="dx-input" [(ngModel)]="med.medicationForm">
+                @for (formOpt of medicationFormOptions; track formOpt) {
+                  <option [value]="formOpt">{{ formOpt }}</option>
+                }
+              </select>
+            </div>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-sm-4">
+              <label class="dx-field-label">Dosage *</label>
+              <input type="text" class="dx-input" [(ngModel)]="med.dosage" placeholder="e.g., 650 mg / 1-0-1" />
+            </div>
+            <div class="col-sm-4">
+              <label class="dx-field-label">Frequency *</label>
+              <select class="dx-input" [(ngModel)]="med.frequency">
+                @for (freq of frequencyOptions; track freq) {
+                  <option [value]="freq">{{ freq }}</option>
+                }
+              </select>
+            </div>
+            <div class="col-sm-4">
+              <label class="dx-field-label">Days *</label>
+              <input type="number" min="1" class="dx-input" [(ngModel)]="med.durationDays" placeholder="5" />
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="dx-field-label">Timing</label>
+            <div class="d-flex gap-2">
+              <button type="button" class="dx-timing-btn" [class.active]="med.timing === 'Before food'"
+                (click)="med.timing = 'Before food'">
+                Before food
+              </button>
+              <button type="button" class="dx-timing-btn" [class.active]="med.timing === 'After food'"
+                (click)="med.timing = 'After food'">
+                After food
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label class="dx-field-label">Special Instructions</label>
+            <input type="text" class="dx-input" [(ngModel)]="med.instructions"
+              placeholder="e.g., Take with warm water" />
+          </div>
+        </div>
+      }
+
+      <button type="button" class="dx-add-med-btn" (click)="addMedicine()">
+        + Add Another Medicine
+      </button>
+
+      <!-- Optional Scan Attachment -->
+      <div class="dx-card">
+        <label class="dx-field-label">Optional Handwritten Rx / Diagnostic Chart (Max 5MB)</label>
+        <input type="file" class="form-control" accept=".pdf,image/png,image/jpeg,image/jpg" multiple
+          (change)="onAttachmentSelected($event)" />
+        @if (attachments.length > 0) {
+          <div class="d-flex flex-wrap gap-2 mt-2">
+            @for (att of attachments; track $index) {
+              <span class="badge bg-light text-dark border px-2 py-1">
+                {{ att.fileName }}
+                <button type="button" class="btn btn-link btn-sm text-danger p-0 ms-1 text-decoration-none"
+                  (click)="removeAttachment($index)">×</button>
+              </span>
+            }
+          </div>
+        }
+        <div style="font-size: 12px; color: #64748B; margin-top: 6px;">
+          @if (attachments.length === 0) {
+            <span class="text-success"><i class="pe-7s-check me-1"></i>A digital prescription slip will be auto-generated and attached on save.</span>
+          } @else {
+            <span>{{ attachments.length }} file(s) attached.</span>
+          }
+        </div>
+      </div>
+
+      <button type="button" class="dx-save-btn" (click)="savePrescription()" [disabled]="isSubmitting">
+        {{ isSubmitting ? 'Saving Prescription...' : 'Save & Upload Prescription' }}
+      </button>
+    </div>
+
+    <!-- Right Column: Live Prescription Preview -->
+    <div class="col-lg-4">
+      <div class="dx-card">
+        <div class="d-flex align-items-center justify-content-between mb-3 pb-2" style="border-bottom: 1px solid #F1F5F9;">
+          <h3 style="font-size: 16px; font-weight: 700; margin: 0;">Rx Summary Preview</h3>
+          <span style="font-size: 12px; font-weight: 600; color: #00A36C;">{{ medicines.length }} items</span>
+        </div>
+
+        <div class="mb-3" style="font-size: 13px; color: #64748B;">
+          <div style="font-weight: 600; color: #0F172A;">{{ patientName || 'No patient selected' }}</div>
+          <div>Appointment #{{ selectedAppointmentId || '—' }}</div>
+        </div>
+
+        <div class="d-flex flex-column gap-2">
+          @for (med of medicines; track $index) {
+            <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; padding: 12px;">
+              <div style="font-size: 14px; font-weight: 600; color: #0F172A;">
+                {{ $index + 1 }}. {{ med.medicineName || 'Unspecified medicine' }} ({{ med.medicationForm }})
+              </div>
+              <div style="font-size: 12.5px; color: #475569; margin-top: 3px;">
+                {{ med.dosage || '—' }} · {{ med.frequency || '—' }} · {{ med.durationDays }} days · {{ med.timing }}
+              </div>
+              @if (med.instructions) {
+                <div style="font-size: 12px; color: #00895B; margin-top: 4px;">
+                  Note: {{ med.instructions }}
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

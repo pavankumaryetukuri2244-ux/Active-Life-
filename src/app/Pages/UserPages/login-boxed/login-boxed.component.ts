@@ -810,6 +810,10 @@ export class LoginBoxedComponent implements OnInit, OnDestroy {
   docOtpExpiresInSeconds = 180;
   docOtpExpiryTimer = 0;
   docExistUser = false;
+  docIsNewUser = true;
+  docIsMpinSet = false;
+  docIsMobileVerified = false;
+  docOtpVerified = false;
   docNextStep = 'REGISTER';
   docResendTimer = 30;
   private resendTimerInterval: any = null;
@@ -842,7 +846,21 @@ export class LoginBoxedComponent implements OnInit, OnDestroy {
       const hasToken = !!token && token !== 'null' && token !== 'undefined' && token.trim().length > 10;
       if (localStorage.getItem('isLoggedIn') === 'true' || hasToken) {
         const email = (localStorage.getItem('adminEmail') || '').trim().toLowerCase();
-        const targetDashboard = (email === 'testadmin@healthfamily.com') ? '/dashboards/users' : '/dashboards/analytics';
+        const savedRole = (localStorage.getItem('userRole') || '').trim().toUpperCase();
+        let hasDoctorJwtRole = false;
+        if (hasToken && token && token.includes('.')) {
+          try {
+            const payloadPart = token.split('.')[1];
+            const decoded = JSON.parse(atob(payloadPart.replace(/-/g, '+').replace(/_/g, '/')));
+            hasDoctorJwtRole = Array.isArray(decoded?.realm_access?.roles) && decoded.realm_access.roles.includes('DOCTOR');
+          } catch {
+            hasDoctorJwtRole = false;
+          }
+        }
+        const isDoctorSession = savedRole === 'DOCTOR' || (hasDoctorJwtRole && !email);
+        const targetDashboard = isDoctorSession
+          ? '/doctor/dashboard'
+          : (email === 'testadmin@healthfamily.com' ? '/dashboards/users' : '/dashboards/analytics');
         this.ngZone.run(() => {
           this.router.navigateByUrl(targetDashboard).then(navigated => {
             if (!navigated) window.location.href = targetDashboard;
@@ -873,10 +891,65 @@ export class LoginBoxedComponent implements OnInit, OnDestroy {
       return;
     }
 
+    const rawLoginId = String(this.Form.value.loginid || '').trim();
+    const password = String(this.Form.value.password || '');
+
+    if (rawLoginId.includes('@')) {
+      this.loginAdminWithEmail(rawLoginId, password);
+      return;
+    }
+
+    const parsedPhone = this.parseDoctorPhone(rawLoginId);
+    if (!parsedPhone) {
+      this.errorMessage = 'Please enter a valid email address or 10-digit mobile number.';
+      return;
+    }
+
+    this.loginDoctorWithMobile(parsedPhone.countryCode, parsedPhone.mobileNumber, password);
+  }
+
+  private parseDoctorPhone(rawInput: string): { countryCode: string; mobileNumber: string } | null {
+    const cleaned = (rawInput || '').trim();
+    const digits = cleaned.replace(/\D/g, '');
+    if (digits.length === 10) {
+      return { countryCode: '91', mobileNumber: digits };
+    }
+    if (digits.length === 12 && digits.startsWith('91')) {
+      return { countryCode: '91', mobileNumber: digits.slice(2) };
+    }
+    if (digits.length >= 11 && digits.length <= 15 && cleaned.startsWith('+')) {
+      return {
+        countryCode: digits.slice(0, digits.length - 10),
+        mobileNumber: digits.slice(-10)
+      };
+    }
+    return null;
+  }
+
+  private navigateAfterLogin(targetDashboard: string): void {
+    this.ngZone.run(() => {
+      this.router.navigateByUrl(targetDashboard).then((navigated: boolean) => {
+        if (!navigated) {
+          window.location.href = targetDashboard;
+        }
+      }).catch((err: any) => {
+        console.warn('Router navigation error, using window.location.href:', err);
+        window.location.href = targetDashboard;
+      });
+    });
+
+    setTimeout(() => {
+      if (window.location.pathname.includes('login')) {
+        window.location.href = targetDashboard;
+      }
+    }, 120);
+  }
+
+  private loginAdminWithEmail(emailInput: string, password: string): void {
     this.success = true;
     const requestBody = {
-      email: this.Form.value.loginid,
-      password: this.Form.value.password
+      email: emailInput,
+      password
     };
 
     this.webApiService.LoginAdmin(requestBody).subscribe({
@@ -886,15 +959,23 @@ export class LoginBoxedComponent implements OnInit, OnDestroy {
           const accessToken = (response.data?.accessToken || response.accessToken || response.data?.token || response.token || '').trim();
           const tokenType = response.data?.tokenType || response.tokenType || 'Bearer';
           const expiresIn = response.data?.expiresIn != null ? String(response.data.expiresIn) : '43200';
-          const enteredEmail = (this.Form.value.loginid || '').trim().toLowerCase();
+          const enteredEmail = emailInput.toLowerCase();
+
+          // Clear any previous Doctor session keys
+          localStorage.removeItem('refreshToken');
+          localStorage.removeItem('doctorPortalState');
+          localStorage.removeItem('doctorMobile');
+          localStorage.removeItem('doctorCountryCode');
+          localStorage.removeItem('doctorLoginExpiresIn');
 
           localStorage.setItem('isLoggedIn', 'true');
           localStorage.setItem('accessToken', accessToken);
           localStorage.setItem('tokenType', tokenType);
           localStorage.setItem('expiresIn', expiresIn);
+          localStorage.setItem('userRole', 'ADMIN');
           localStorage.setItem('adminEmail', enteredEmail);
-          if (this.Form.value.password) {
-            localStorage.setItem('lastKnownPassword', this.Form.value.password);
+          if (password) {
+            localStorage.setItem('lastKnownPassword', password);
           }
 
           let adminProfile: any = {};
@@ -933,24 +1014,7 @@ export class LoginBoxedComponent implements OnInit, OnDestroy {
             ? '/dashboards/users'
             : '/dashboards/analytics';
 
-          // Immediate navigation inside NgZone with hard redirect fallback
-          this.ngZone.run(() => {
-            this.router.navigateByUrl(targetDashboard).then((navigated: boolean) => {
-              if (!navigated) {
-                window.location.href = targetDashboard;
-              }
-            }).catch((err: any) => {
-              console.warn('Router navigation error, using window.location.href:', err);
-              window.location.href = targetDashboard;
-            });
-          });
-
-          // Fast fallback: if router did not transition within 120ms, force redirect
-          setTimeout(() => {
-            if (window.location.pathname.includes('login')) {
-              window.location.href = targetDashboard;
-            }
-          }, 120);
+          this.navigateAfterLogin(targetDashboard);
         } else {
           this.errorMessage = response?.message || 'Login failed. Please check your credentials.';
         }
@@ -958,7 +1022,7 @@ export class LoginBoxedComponent implements OnInit, OnDestroy {
       },
       error: (error: any) => {
         this.success = false;
-        console.error('Login error:', error);
+        console.error('Admin Login error:', error);
         if (error?.status === 0) {
           this.errorMessage = 'Cannot connect to backend server. Please verify backend API status or network.';
         } else if (error?.status === 504 || error?.name === 'TimeoutError') {
@@ -970,6 +1034,87 @@ export class LoginBoxedComponent implements OnInit, OnDestroy {
         } else {
           this.errorMessage = error?.error?.message || 'Server error. Please try again later.';
         }
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  private loginDoctorWithMobile(countryCode: string, mobileNumber: string, password: string): void {
+    this.success = true;
+    const payload = {
+      countryCode: countryCode || '91',
+      mobileNumber,
+      password,
+      role: 'DOCTOR'
+    };
+
+    this.webApiService.LoginDoctorPassword(payload).subscribe({
+      next: (response: any) => {
+        this.success = false;
+        const data = response?.data || {};
+        const accessToken = (data?.accessToken || response?.accessToken || '').trim();
+        const isApiSuccess =
+          Boolean(response) &&
+          response.success !== false &&
+          (response.errorCode === 0 || response.errorCode === undefined || response.errorCode === null) &&
+          (response.responseCode === 200 || response.responseCode === undefined || response.responseCode === null) &&
+          data.success !== false &&
+          Boolean(accessToken);
+
+        if (!isApiSuccess) {
+          this.errorMessage =
+            data?.message ||
+            response?.message ||
+            'Doctor login failed. Please verify your phone number and password.';
+          this.cdr.detectChanges();
+          return;
+        }
+
+        const refreshToken = (data?.refreshToken || response?.refreshToken || '').trim();
+        const expiresIn = data?.expiresIn != null ? String(data.expiresIn) : '43200';
+        const doctorPortalState = {
+          success: data?.success ?? response?.success ?? true,
+          message: data?.message || response?.message || '',
+          title: data?.title || '',
+          registrationStatus: data?.registrationStatus || '',
+          isProfileVerified: Boolean(data?.isProfileVerified),
+          isProfileComplete: data?.isProfileComplete,
+          steps: Array.isArray(data?.steps) ? data.steps : []
+        };
+
+        // Clear any previous Admin session keys
+        localStorage.removeItem('adminEmail');
+        localStorage.removeItem('adminProfile');
+        localStorage.removeItem('lastKnownPassword');
+
+        localStorage.setItem('isLoggedIn', 'true');
+        localStorage.setItem('accessToken', accessToken);
+        if (refreshToken) {
+          localStorage.setItem('refreshToken', refreshToken);
+        }
+        localStorage.setItem('tokenType', 'Bearer');
+        localStorage.setItem('expiresIn', expiresIn);
+        localStorage.setItem('userRole', 'DOCTOR');
+        localStorage.setItem('doctorCountryCode', payload.countryCode);
+        localStorage.setItem('doctorMobile', mobileNumber);
+        localStorage.setItem('doctorPortalState', JSON.stringify(doctorPortalState));
+
+        this.CF.SetLS$('accessToken', accessToken);
+        this.CF.SetLS$('isLoggedIn', 'true');
+        this.CF.refreshLogin$.next(true);
+        this.CF.showAuth = false;
+
+        this.navigateAfterLogin('/doctor/dashboard');
+        this.cdr.detectChanges();
+      },
+      error: (error: any) => {
+        this.success = false;
+        console.error('Doctor Login API error:', error);
+        this.errorMessage = this.getDoctorAuthErrorMessage(
+          error,
+          'Invalid phone number or password. Please verify your credentials.',
+          'DOCTOR login'
+        );
         this.cdr.detectChanges();
       }
     });
@@ -1016,6 +1161,10 @@ export class LoginBoxedComponent implements OnInit, OnDestroy {
     this.docOtpExpiresInSeconds = 180;
     this.docOtpExpiryTimer = 0;
     this.docExistUser = false;
+    this.docIsNewUser = true;
+    this.docIsMpinSet = false;
+    this.docIsMobileVerified = false;
+    this.docOtpVerified = false;
     this.docNextStep = 'REGISTER';
     this.docResendTimer = 30;
     this.docNewPassword = '';
@@ -1057,7 +1206,7 @@ export class LoginBoxedComponent implements OnInit, OnDestroy {
     const requestBody = {
       countryCode: this.doctorCountryCode || '91',
       mobileNumber,
-      purpose: 'REGISTER_MPIN',
+      purpose: 'REGISTER_PASSWORD',
       role: this.doctorRole || 'DOCTOR',
       resendOtp
     };
@@ -1108,30 +1257,26 @@ export class LoginBoxedComponent implements OnInit, OnDestroy {
       error: (err: any) => {
         this.docRegLoading = false;
         console.error('Doctor Send OTP API error:', err);
-        if (err?.status === 0) {
-          this.docRegError = 'Cannot connect to authentication server. Please check your network.';
-        } else if (err?.status === 403) {
-          this.docRegError =
-            err?.error?.message ||
-            err?.error?.data?.message ||
-            'Access denied: Role-based access restricted for DOCTOR registration.';
-        } else if (err?.status === 401) {
-          this.docRegError =
-            err?.error?.message ||
-            err?.error?.data?.message ||
-            'Unauthorized access for DOCTOR role.';
-        } else if (err?.name === 'TimeoutError' || err?.status === 504) {
-          this.docRegError = 'OTP request timed out. Please try again.';
-        } else {
-          this.docRegError =
-            err?.error?.data?.message ||
-            err?.error?.message ||
-            err?.message ||
-            'Failed to send OTP. Please try again.';
-        }
+        this.docRegError = this.getDoctorAuthErrorMessage(err, 'Failed to send OTP. Please try again.', 'DOCTOR registration');
         this.cdr.detectChanges();
       }
     });
+  }
+
+  private getDoctorAuthErrorMessage(err: any, fallback: string, accessContext: string): string {
+    if (err?.status === 0) {
+      return 'Cannot connect to authentication server. Please check your network.';
+    }
+    if (err?.status === 403) {
+      return err?.error?.message || err?.error?.data?.message || `Access denied: Role-based access restricted for ${accessContext}.`;
+    }
+    if (err?.status === 401) {
+      return err?.error?.message || err?.error?.data?.message || 'Unauthorized access for DOCTOR role.';
+    }
+    if (err?.name === 'TimeoutError' || err?.status === 504) {
+      return 'Request timed out. Please try again.';
+    }
+    return err?.error?.data?.message || err?.error?.message || err?.message || fallback;
   }
 
   startResendTimer(expiresInSeconds: number = 180): void {
@@ -1262,10 +1407,10 @@ export class LoginBoxedComponent implements OnInit, OnDestroy {
     return this.getEnteredDocOtp().length === 6;
   }
 
-  // Step 2: Verify OTP
+  // Step 2: Verify OTP via role-based userservice Verify OTP API
   verifyDoctorOtp(): void {
     const entered = this.getEnteredDocOtp();
-    if (!entered || entered.length !== 6) {
+    if (!entered || !/^\d{6}$/.test(entered)) {
       this.docRegError = 'Please enter all 6 digits of the OTP code.';
       return;
     }
@@ -1275,29 +1420,67 @@ export class LoginBoxedComponent implements OnInit, OnDestroy {
       return;
     }
 
+    const rawPhone = (this.doctorPhone || '').replace(/\D/g, '').trim();
+    if (!rawPhone || rawPhone.length !== 10) {
+      this.docRegError = 'Please enter a valid 10-digit mobile phone number.';
+      this.docRegStep = 'phone';
+      return;
+    }
+
     this.docRegLoading = true;
     this.docRegError = '';
     this.docRegSuccessMsg = '';
 
-    // Verify against server-returned otpCode if provided, otherwise validate 6-digit format
-    setTimeout(() => {
-      this.docRegLoading = false;
-      const isOtpValid = this.docGeneratedOtp
-        ? entered === this.docGeneratedOtp
-        : /^\d{6}$/.test(entered);
+    const payload = {
+      countryCode: this.doctorCountryCode || '91',
+      mobileNumber: rawPhone,
+      otpCode: entered,
+      purpose: 'REGISTER_PASSWORD',
+      role: this.doctorRole || 'DOCTOR'
+    };
 
-      if (isOtpValid) {
+    this.webApiService.VerifyDoctorOtp(payload).subscribe({
+      next: (res: any) => {
+        this.docRegLoading = false;
+        const data = res?.data || {};
+        const isApiSuccess =
+          res &&
+          res.success === true &&
+          (res.errorCode === 0 || res.errorCode === undefined || res.errorCode === null) &&
+          (res.responseCode === 200 || res.responseCode === undefined || res.responseCode === null);
+
+        const isOtpVerified = data.otpVerified !== false && data.isMobileVerified !== false;
+
+        if (!isApiSuccess || !isOtpVerified) {
+          this.docRegError =
+            data?.message ||
+            res?.message ||
+            'Invalid OTP code. Please enter the correct 6-digit verification code.';
+          this.cdr.detectChanges();
+          return;
+        }
+
+        this.docIsNewUser = data.isNewUser !== undefined ? Boolean(data.isNewUser) : !this.docExistUser;
+        this.docIsMpinSet = Boolean(data.isMpinSet);
+        this.docIsMobileVerified = data.isMobileVerified !== undefined ? Boolean(data.isMobileVerified) : true;
+        this.docOtpVerified = data.otpVerified !== undefined ? Boolean(data.otpVerified) : true;
+        this.docNextStep = (data.nextStep || 'REGISTER_PASSWORD').toString().toUpperCase();
+
         this.clearDoctorTimers();
         this.docRegStep = 'password';
-        this.docRegSuccessMsg = 'Phone number verified successfully! Please set your password.';
-      } else {
-        this.docRegError = 'Invalid OTP code. Please enter the correct 6-digit verification code.';
+        this.docRegSuccessMsg = data?.message || res?.message || 'OTP verified successfully.';
+        this.cdr.detectChanges();
+      },
+      error: (err: any) => {
+        this.docRegLoading = false;
+        console.error('Doctor Verify OTP API error:', err);
+        this.docRegError = this.getDoctorAuthErrorMessage(err, 'Invalid OTP code. Please verify and try again.', 'DOCTOR verification');
+        this.cdr.detectChanges();
       }
-      this.cdr.detectChanges();
-    }, 400);
+    });
   }
 
-  // Step 3: Complete Registration with New Password & Confirm Password
+  // Step 3: Complete Registration via role-based userservice Register Password API
   completeDoctorRegistration(): void {
     this.docRegError = '';
     this.docRegSuccessMsg = '';
@@ -1317,29 +1500,59 @@ export class LoginBoxedComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.docRegLoading = true;
-
-    // Store in localStorage for persistence
-    const registeredDoctor = {
-      phone: this.doctorPhone,
-      registeredAt: new Date().toISOString()
-    };
-    try {
-      localStorage.setItem('lastRegisteredDoctor', JSON.stringify(registeredDoctor));
-      localStorage.setItem('lastKnownPassword', this.docNewPassword);
-    } catch (e) {
-      // ignore
+    const rawPhone = (this.doctorPhone || '').replace(/\D/g, '').trim();
+    if (!rawPhone || rawPhone.length !== 10) {
+      this.docRegError = 'Please enter a valid 10-digit mobile phone number.';
+      this.docRegStep = 'phone';
+      return;
     }
 
-    setTimeout(() => {
-      this.docRegLoading = false;
-      this.docRegStep = 'success';
-      this.cdr.detectChanges();
-    }, 400);
+    this.docRegLoading = true;
+
+    const payload = {
+      countryCode: this.doctorCountryCode || '91',
+      mobileNumber: rawPhone,
+      password: this.docNewPassword,
+      confirmPassword: this.docConfirmPassword,
+      role: this.doctorRole || 'DOCTOR'
+    };
+
+    this.webApiService.RegisterDoctorPassword(payload).subscribe({
+      next: (res: any) => {
+        this.docRegLoading = false;
+        const data = res?.data || {};
+        const isApiSuccess =
+          res &&
+          res.success === true &&
+          (res.errorCode === 0 || res.errorCode === undefined || res.errorCode === null) &&
+          (res.responseCode === 200 || res.responseCode === undefined || res.responseCode === null) &&
+          data.success !== false;
+
+        if (!isApiSuccess) {
+          this.docRegError =
+            data?.message ||
+            res?.message ||
+            'Failed to register password. Please try again.';
+          this.cdr.detectChanges();
+          return;
+        }
+
+        this.docRegStep = 'success';
+        this.docRegSuccessMsg = data?.message || res?.message || 'Password registered successfully';
+        this.cdr.detectChanges();
+      },
+      error: (err: any) => {
+        this.docRegLoading = false;
+        console.error('Doctor Register Password API error:', err);
+        this.docRegError = this.getDoctorAuthErrorMessage(err, 'Failed to register password. Please try again.', 'DOCTOR registration');
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   // Step 4: Proceed to Log In
   proceedToLogin(): void {
+    const countryCodeToUse = this.doctorCountryCode || '91';
     const phoneToFill = this.doctorPhone;
     const pwdToFill = this.docNewPassword;
 
@@ -1353,7 +1566,7 @@ export class LoginBoxedComponent implements OnInit, OnDestroy {
     this.Form.markAsDirty();
     this.Form.markAllAsTouched();
 
-    this.successMessage = `Registration successful! Account +91 ${this.doctorPhone} is ready. Click Sign In to enter.`;
+    this.successMessage = `Registration successful! Account +${countryCodeToUse} ${phoneToFill} is ready. Click Sign In to enter.`;
     this.cdr.detectChanges();
   }
 }

@@ -1,0 +1,161 @@
+<div class="dc-page">
+  <div class="dc-hero">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+      <div>
+        <h1 class="dc-hero-title">Consultation Management</h1>
+        <p class="dc-hero-sub">Today's patient queue ({{ filteredQueue.length }} patients)</p>
+      </div>
+
+      <div class="d-flex flex-wrap align-items-center gap-2">
+        <button type="button" class="dc-filter-pill" [class.active]="modeFilter === 'All'" (click)="modeFilter = 'All'">
+          All
+        </button>
+        <button type="button" class="dc-filter-pill" [class.active]="modeFilter === 'Online'" (click)="modeFilter = 'Online'">
+          Online
+        </button>
+        <button type="button" class="dc-filter-pill" [class.active]="modeFilter === 'In-person'" (click)="modeFilter = 'In-person'">
+          In-person
+        </button>
+        <button type="button" class="dc-filter-pill" (click)="loadTodayQueue()">
+          Refresh
+        </button>
+      </div>
+    </div>
+  </div>
+
+  @if (statusToast) {
+    <div class="alert alert-success border-0 rounded-3 mb-4 py-2 px-3 d-flex align-items-center gap-2"
+      style="background: #ECFDF5; color: #047857; font-size: 13.5px; font-weight: 600;">
+      <i class="pe-7s-check" style="font-size: 18px;"></i>
+      <span>{{ statusToast }}</span>
+    </div>
+  }
+
+  @if (isLoading) {
+    <div class="dc-card text-center py-5">
+      <div class="spinner-border text-primary mx-auto mb-2" role="status"></div>
+      <div style="font-size: 14px; color: #64748B;">Loading today's consultations...</div>
+    </div>
+  } @else if (errorMessage) {
+    <div class="dc-card text-center py-5">
+      <div style="font-size: 15px; font-weight: 600; color: #92400E; margin-bottom: 8px;">{{ errorMessage }}</div>
+      <div class="d-flex justify-content-center gap-2">
+        <button type="button" class="btn btn-sm btn-primary" (click)="loadTodayQueue()">Retry</button>
+        <a routerLink="/doctor/profile-status" class="btn btn-sm btn-outline-secondary">Check Profile Status</a>
+      </div>
+    </div>
+  } @else if (filteredQueue.length === 0) {
+    <div class="dc-card text-center py-5" style="color: #64748B;">
+      No consultations found in today's queue for this filter.
+    </div>
+  } @else {
+    <div class="row g-4">
+      @for (item of filteredQueue; track (item.appointmentId || item.id || $index)) {
+        <div class="col-lg-6">
+          <div class="dc-card">
+            <div>
+              <div class="d-flex align-items-start justify-content-between gap-2 mb-3">
+                <div class="d-flex align-items-center gap-3">
+                  <div class="dc-avatar">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                      stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                  </div>
+                  <div>
+                    <div class="d-flex align-items-center gap-2">
+                      <h2 style="font-size: 16.5px; font-weight: 700; color: #0F172A; margin: 0;">
+                        {{ item.patientName || item.fullName || 'Patient' }}
+                      </h2>
+                      <span class="dc-state-chip"
+                        [ngClass]="{
+                          'dc-state-waiting': item.localState === 'Waiting',
+                          'dc-state-active': item.localState === 'Active',
+                          'dc-state-paused': item.localState === 'Paused',
+                          'dc-state-completed': item.localState === 'Completed'
+                        }">
+                        {{ item.localState }}
+                      </span>
+                    </div>
+                    <div style="font-size: 13px; color: #64748B; margin-top: 2px;">
+                      @if (item.age) { <span>Age {{ item.age }} · </span> }
+                      <span>{{ item.consultationMode || item.mode || 'Online' }}</span>
+                      @if (item.appointmentTime || item.slotTime) { <span> · {{ item.appointmentTime || item.slotTime }}</span> }
+                    </div>
+                  </div>
+                </div>
+
+                <span class="dc-mode-badge"
+                  [ngClass]="isOnlineMode(item) ? 'dc-mode-online' : 'dc-mode-inperson'">
+                  {{ item.consultationMode || item.mode || 'Online' }}
+                </span>
+              </div>
+
+              <!-- Complaint & Clinical Context -->
+              <div style="font-size: 13.5px; color: #475569; padding-bottom: 12px; border-bottom: 1px solid #F1F5F9; margin-bottom: 12px;">
+                <div>
+                  Chief complaint:
+                  <span style="color: #1E293B; font-weight: 500;">
+                    {{ item.chiefComplaint || item.symptoms || 'General Consultation' }}
+                  </span>
+                </div>
+                @if (item.allergies?.length || item.chronicConditions?.length) {
+                  <div class="mt-2 d-flex flex-wrap gap-2" style="font-size: 12px;">
+                    @if (item.allergies?.length) {
+                      <span class="badge bg-danger-subtle text-danger">Allergies: {{ item.allergies!.join(', ') }}</span>
+                    }
+                    @if (item.chronicConditions?.length) {
+                      <span class="badge bg-warning-subtle text-dark">Conditions: {{ item.chronicConditions!.join(', ') }}</span>
+                    }
+                  </div>
+                }
+                @if (item.documents?.length) {
+                  <div class="mt-2 d-flex flex-wrap gap-2">
+                    @for (doc of item.documents!; track $index) {
+                      <a [href]="commonService.formatMediaUrl(doc.url || doc.fileUrl)" target="_blank" rel="noopener"
+                        class="badge bg-light text-primary text-decoration-none border">
+                        {{ doc.name || ('Report ' + ($index + 1)) }} ↗
+                      </a>
+                    }
+                  </div>
+                }
+              </div>
+
+              <div class="mb-3">
+                <label class="fw-semibold mb-2 d-block" style="font-size: 13px;">Diagnosis / Notes</label>
+                <textarea
+                  class="dc-notes-area"
+                  [(ngModel)]="item.notesDraft"
+                  placeholder="Enter diagnosis and clinical notes..."></textarea>
+              </div>
+            </div>
+
+            <div class="d-flex flex-column gap-2">
+              <button type="button" class="dc-btn-rx" (click)="openAddPrescription(item)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 20h9"></path>
+                  <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4Z"></path>
+                </svg>
+                <span>Add Prescription</span>
+              </button>
+
+              <div class="d-flex align-items-center gap-2">
+                <button type="button" class="dc-action-btn dc-btn-start" (click)="updateSessionState(item, 'Active')">
+                  <span>✓ Start</span>
+                </button>
+                <button type="button" class="dc-action-btn dc-btn-pause" (click)="updateSessionState(item, 'Paused')">
+                  <span>❚❚ Pause</span>
+                </button>
+                <button type="button" class="dc-action-btn dc-btn-end" (click)="updateSessionState(item, 'Completed')">
+                  <span>■ End</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

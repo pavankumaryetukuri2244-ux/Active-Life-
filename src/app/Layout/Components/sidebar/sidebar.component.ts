@@ -435,6 +435,7 @@ export class SidebarComponent implements OnInit {
   public config$: Observable<ConfigState>;
 
   public isLoggingOut: boolean = false;
+  public isDoctorPortal: boolean = false;
   public adminName: string = 'Admin User';
   public adminEmail: string = 'admin@health.com';
   public adminInitial: string = 'A';
@@ -590,6 +591,8 @@ export class SidebarComponent implements OnInit {
 
   loadAdminProfile(): void {
     try {
+      const token = localStorage.getItem('accessToken') || '';
+      const userRole = (localStorage.getItem('userRole') || '').trim().toUpperCase();
       const storedEmail = (localStorage.getItem('adminEmail') || '').trim().toLowerCase();
       const profileStr = localStorage.getItem('adminProfile');
       let profile: any = null;
@@ -601,6 +604,87 @@ export class SidebarComponent implements OnInit {
 
       const email = storedEmail || (profile?.email || profile?.username || '').trim().toLowerCase();
 
+      let decodedJwt: any = null;
+      if (token && token.includes('.')) {
+        try {
+          const base64Url = token.split('.')[1];
+          const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+          const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), '=');
+          decodedJwt = JSON.parse(atob(padded));
+        } catch {
+          decodedJwt = null;
+        }
+      }
+
+      const jwtRoles: string[] = Array.isArray(decodedJwt?.realm_access?.roles)
+        ? decodedJwt.realm_access.roles.map((r: any) => String(r))
+        : [];
+      const hasDoctorRole = jwtRoles.includes('DOCTOR');
+
+      if (userRole === 'DOCTOR' || (hasDoctorRole && !storedEmail)) {
+        this.isDoctorPortal = true;
+        const countryCode = localStorage.getItem('doctorCountryCode') || '91';
+        const mobile = localStorage.getItem('doctorMobile') || '';
+        const displayMobile = mobile ? `+${countryCode} ${mobile}` : (decodedJwt?.preferred_username || 'Doctor Account');
+
+        this.adminName = 'Doctor Portal';
+        this.adminEmail = displayMobile;
+        this.adminInitial = 'D';
+        this.menuStructure = [
+          {
+            type: 'link',
+            title: 'Home',
+            route: '/doctor/dashboard',
+            icon: 'pe-7s-home',
+            activeMenu: 'doctorDashboardMenu'
+          },
+          {
+            type: 'link',
+            title: 'Appointments',
+            route: '/doctor/appointments',
+            icon: 'pe-7s-date',
+            activeMenu: 'doctorAppointmentsMenu'
+          },
+          {
+            type: 'link',
+            title: 'Consult',
+            route: '/doctor/consult',
+            icon: 'pe-7s-id',
+            activeMenu: 'doctorConsultMenu'
+          },
+          {
+            type: 'link',
+            title: 'Prescriptions',
+            route: '/doctor/prescriptions',
+            icon: 'pe-7s-note2',
+            activeMenu: 'doctorPrescriptionsMenu'
+          },
+          {
+            type: 'link',
+            title: 'Patients',
+            route: '/doctor/patients',
+            icon: 'pe-7s-users',
+            activeMenu: 'doctorPatientsMenu'
+          },
+          {
+            type: 'link',
+            title: 'Profile & KYC',
+            route: '/doctor/profile',
+            icon: 'pe-7s-user',
+            activeMenu: 'doctorProfileMenu'
+          },
+          {
+            type: 'link',
+            title: 'Verification Status',
+            route: '/doctor/profile-status',
+            icon: 'pe-7s-check',
+            activeMenu: 'doctorStatusMenu'
+          }
+        ];
+        return;
+      }
+
+      this.isDoctorPortal = false;
       if (email) {
         this.adminEmail = email;
         this.adminName = profile?.name || profile?.username || email.split('@')[0];
@@ -687,7 +771,10 @@ export class SidebarComponent implements OnInit {
     const token = localStorage.getItem('accessToken') || '';
 
     if (token) {
-      this.webApiService.Logout(token).subscribe({
+      const logoutCall$ = this.isDoctorPortal
+        ? this.webApiService.LogoutDoctor(token)
+        : this.webApiService.Logout(token);
+      logoutCall$.subscribe({
         next: (response: any) => {
           console.log('Logout response:', response);
           this.cleanupAndRedirect();
@@ -706,10 +793,16 @@ export class SidebarComponent implements OnInit {
     this.isLoggingOut = false;
     localStorage.removeItem('isLoggedIn');
     localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
     localStorage.removeItem('tokenType');
     localStorage.removeItem('expiresIn');
     localStorage.removeItem('adminProfile');
     localStorage.removeItem('adminEmail');
+    localStorage.removeItem('userRole');
+    localStorage.removeItem('doctorPortalState');
+    localStorage.removeItem('doctorMobile');
+    localStorage.removeItem('doctorCountryCode');
+    localStorage.removeItem('doctorLoginExpiresIn');
     this.router.navigate(['/pages/login-boxed']);
   }
 }

@@ -1,0 +1,83 @@
+<div class="dps-page">
+  <div class="dps-card">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
+      <div>
+        <h1 style="font-size: 22px; font-weight: 700; margin: 0 0 4px 0;">Doctor Verification Status</h1>
+        <p style="font-size: 14px; color: #64748B; margin: 0;">
+          Live account review lifecycle from ActiveLife Doctor Service.
+        </p>
+      </div>
+
+      <div class="d-flex align-items-center gap-2">
+        <span class="dps-status-pill" [ngClass]="statusPillClass">{{ statusDisplayLabel }}</span>
+        <button type="button" class="btn btn-sm btn-outline-primary fw-semibold" style="border-radius: 10px;"
+          (click)="refreshStatus()" [disabled]="isLoading">
+          {{ isLoading ? 'Checking...' : 'Refresh Status' }}
+        </button>
+      </div>
+    </div>
+
+    @if (registrationStatus === 'PENDING' || registrationStatus === 'REGISTERED') {
+      <div class="p-3 rounded-3 mb-3" style="background: #FFFBEB; border: 1px solid #FDE68A; color: #92400E; font-size: 14px;">
+        Your submitted medical credentials are currently under review by the medical verification board. Typical review time is <strong>24 to 48 business hours</strong>.
+      </div>
+    } @else if (registrationStatus === 'REJECTED') {
+      <div class="p-3 rounded-3 mb-3" style="background: #FEF2F2; border: 1px solid #FECACA; color: #991B1B; font-size: 14px;">
+        <div class="fw-bold mb-1">Application Rejected</div>
+        <div>{{ rejectionReason || 'One or more uploaded documents require correction or clearer scans.' }}</div>
+        <button type="button" class="btn btn-sm btn-danger mt-3 fw-semibold" style="border-radius: 10px;"
+          (click)="editAndResubmit()">
+          Edit & Re-submit Documents
+        </button>
+      </div>
+    } @else if (registrationStatus === 'APPROVED') {
+      <div class="p-3 rounded-3 mb-3 d-flex flex-wrap align-items-center justify-content-between gap-3"
+        style="background: #ECFDF5; border: 1px solid #A7F3D0; color: #065F46; font-size: 14px;">
+        <div>
+          Your doctor profile is <strong>Verified & Approved</strong>. Full clinical features are enabled.
+        </div>
+        <button type="button" class="btn btn-sm btn-success fw-semibold" style="border-radius: 10px;"
+          (click)="goToDashboard()">
+          Go to Dashboard &rarr;
+        </button>
+      </div>
+    } @else {
+      <div class="p-3 rounded-3 mb-3 d-flex flex-wrap align-items-center justify-content-between gap-3"
+        style="background: #EFF6FF; border: 1px solid #BFDBFE; color: #1E40AF; font-size: 14px;">
+        <div>
+          {{ statusMessage || 'Please complete your doctor onboarding profile and upload medical council certificates.' }}
+        </div>
+        <button type="button" class="btn btn-sm btn-primary fw-semibold" style="border-radius: 10px;"
+          routerLink="/doctor/profile">
+          Complete Doctor Profile
+        </button>
+      </div>
+    }
+
+    @if (profile) {
+      <div class="mt-4">
+        <h2 style="font-size: 16px; font-weight: 700; margin: 0 0 10px 0;">Submitted Profile Summary</h2>
+        <div class="dps-row">
+          <span class="text-muted">Full Name</span>
+          <span class="fw-semibold">{{ profile.fullName }}</span>
+        </div>
+        <div class="dps-row">
+          <span class="text-muted">Registration Number</span>
+          <span class="fw-semibold">{{ profile.registrationNumber || '—' }}</span>
+        </div>
+        <div class="dps-row">
+          <span class="text-muted">Registration Council</span>
+          <span class="fw-semibold">{{ profile.registrationCouncil || '—' }}</span>
+        </div>
+        <div class="dps-row">
+          <span class="text-muted">Qualification & Specialization</span>
+          <span class="fw-semibold">{{ profile.qualification }} · {{ profile.specializationName || profile.specialization || '—' }}</span>
+        </div>
+        <div class="dps-row">
+          <span class="text-muted">Hospital / Clinic</span>
+          <span class="fw-semibold">{{ profile.hospitalName || '—' }}</span>
+        </div>
+      </div>
+    }
+  </div>
+</div>
