@@ -261,7 +261,7 @@ export class DoctorAppointmentsComponent implements OnInit {
   blockSuccessMsg = '';
   blockedDates: BlockDateEntry[] = [];
 
-  constructor(private doctorService: DoctorService) {}
+  constructor(private doctorService: DoctorService) { }
 
   ngOnInit(): void {
     this.loadAllAppointmentData();
@@ -329,11 +329,11 @@ export class DoctorAppointmentsComponent implements OnInit {
       const found = apiDays.find(d => (d.day || '').toUpperCase() === w.day);
       const sessions: WeeklySessionForm[] = Array.isArray(found?.sessions)
         ? found!.sessions.map(s => ({
-            startTime: this.formatScheduleTime(s.startTime),
-            endTime: this.formatScheduleTime(s.endTime),
-            consultationMode: s.consultationMode || 'VIDEO',
-            hospitalId: s.hospitalId ?? null
-          }))
+          startTime: this.formatScheduleTime(s.startTime),
+          endTime: this.formatScheduleTime(s.endTime),
+          consultationMode: s.consultationMode || 'VIDEO',
+          hospitalId: s.hospitalId ?? null
+        }))
         : [];
       return {
         day: w.day,

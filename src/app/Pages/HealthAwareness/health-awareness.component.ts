@@ -849,8 +849,8 @@ export class HealthAwarenessComponent implements OnInit, OnDestroy {
       this.formError = 'Title cannot contain only numbers.';
       return;
     }
-    if (title.length < 1 || title.length > 200) {
-      this.formError = 'Title must be between 1 and 200 characters.';
+    if (title.length < 5 || title.length > 500) {
+      this.formError = 'Title must be between 5 and 500 characters.';
       return;
     }
     const currentId = this.isEditing && this.formModel.id !== undefined && this.formModel.id !== null ? Number(this.formModel.id) : null;
@@ -932,7 +932,18 @@ export class HealthAwarenessComponent implements OnInit, OnDestroy {
       },
       error: (err: any) => {
         this.isSaving = false;
-        const backendMsg = err?.error?.message || err?.message || 'Failed to save health awareness content. Please check input and try again.';
+        let backendMsg = '';
+        if (err?.error?.errors && typeof err.error.errors === 'object') {
+          const detailMsgs = Object.entries(err.error.errors)
+            .map(([field, msg]) => `${field}: ${msg}`)
+            .filter(Boolean);
+          if (detailMsgs.length > 0) {
+            backendMsg = detailMsgs.join('; ');
+          }
+        }
+        if (!backendMsg) {
+          backendMsg = err?.error?.message || err?.message || 'Failed to save health awareness content. Please check input and try again.';
+        }
         if (backendMsg.toLowerCase().includes('already exists') || backendMsg.toLowerCase().includes('duplicate')) {
           this.titleError = 'An article with this title already exists. Please choose a unique title.';
           this.formError = this.titleError;
