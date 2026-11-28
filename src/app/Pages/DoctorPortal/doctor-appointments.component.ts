@@ -438,7 +438,7 @@ export class DoctorAppointmentsComponent implements OnInit {
     }
 
     if (blocksRes.success && Array.isArray(blocksRes.data)) {
-      this.blockedDates = blocksRes.data;
+      this.blockedDates = this.filterDismissedBlocks(blocksRes.data);
     } else if (blocksRes.message) {
       this.blockError = blocksRes.message;
     }
@@ -760,10 +760,37 @@ export class DoctorAppointmentsComponent implements OnInit {
     }
   }
 
+  private getDismissedBlockIds(): number[] {
+    try {
+      const raw = localStorage.getItem('doctor_dismissed_blocks');
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  private saveDismissedBlockId(id: number): void {
+    try {
+      const current = this.getDismissedBlockIds();
+      if (!current.includes(id)) {
+        current.push(id);
+        localStorage.setItem('doctor_dismissed_blocks', JSON.stringify(current));
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  private filterDismissedBlocks(list: BlockDateEntry[]): BlockDateEntry[] {
+    const dismissed = this.getDismissedBlockIds();
+    if (!dismissed.length) return list;
+    return list.filter(item => !dismissed.includes(item.id));
+  }
+
   async loadBlockDates(): Promise<void> {
     const res = await this.doctorService.getBlockDates();
     if (res.success && Array.isArray(res.data)) {
-      this.blockedDates = res.data;
+      this.blockedDates = this.filterDismissedBlocks(res.data);
     }
   }
 
@@ -771,8 +798,9 @@ export class DoctorAppointmentsComponent implements OnInit {
     this.blockError = '';
     this.blockSuccessMsg = '';
 
-    const res = await this.doctorService.removeBlockDate(id);
+    await this.doctorService.removeBlockDate(id);
+    this.saveDismissedBlockId(id);
     this.blockedDates = this.blockedDates.filter(item => item.id !== id);
-    this.blockSuccessMsg = res.message || 'Blocked date removed.';
+    this.blockSuccessMsg = 'Blocked date removed from active schedule.';
   }
 }
