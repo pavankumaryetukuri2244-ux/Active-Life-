@@ -138,6 +138,127 @@ const WEEK_DAYS: Array<{ day: string; label: string }> = [
       cursor: not-allowed;
     }
 
+    .da-today-warning {
+      background: #FFFBEB;
+      border: 1px solid #FEF3C7;
+      border-radius: 12px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #92400E;
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 16px;
+    }
+
+    .da-pending-card {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+      margin-top: 20px;
+    }
+
+    .da-pending-item {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+      transition: all 0.2s ease;
+    }
+
+    .da-pending-item:hover {
+      border-color: #CBD5E1;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+    }
+
+    .da-badge-leave {
+      background: #FFF7ED;
+      color: #EA580C;
+      font-size: 11.5px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 6px;
+      display: inline-block;
+    }
+
+    .da-badge-today {
+      background: #FEF3C7;
+      color: #D97706;
+      font-size: 11.5px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 6px;
+      display: inline-block;
+    }
+
+    .da-badge-count {
+      background: #FFF7ED;
+      color: #EA580C;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid #FFEDD5;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .da-btn-remove-circle {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: #FEE2E2;
+      color: #EF4444;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+      transition: all 0.15s ease;
+      flex-shrink: 0;
+    }
+
+    .da-btn-remove-circle:hover {
+      background: #FCA5A5;
+      color: #B91C1C;
+    }
+
+    .da-orange-btn {
+      width: 100%;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #F97316 0%, #EA580C 100%);
+      color: #FFFFFF;
+      padding: 14px 20px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(234, 88, 12, 0.3);
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .da-orange-btn:hover {
+      background: linear-gradient(135deg, #EA580C 0%, #C2410C 100%);
+      box-shadow: 0 6px 18px rgba(234, 88, 12, 0.4);
+    }
+
+    .da-orange-btn:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
     .da-schedule-card {
       background: #FFFFFF;
       border: 1px solid #E2E8F0;
@@ -260,6 +381,17 @@ export class DoctorAppointmentsComponent implements OnInit {
   blockError = '';
   blockSuccessMsg = '';
   blockedDates: BlockDateEntry[] = [];
+  pendingBlocks: Array<{
+    id: string;
+    type: 'SINGLE' | 'RANGE';
+    startDate: string;
+    endDate?: string;
+    formattedDateStr: string;
+    reason: string;
+    note?: string;
+    isToday: boolean;
+    activeAppointmentsCount: number;
+  }> = [];
 
   constructor(private doctorService: DoctorService) { }
 
@@ -494,7 +626,43 @@ export class DoctorAppointmentsComponent implements OnInit {
     return true;
   }
 
-  async addBlockedDate(): Promise<void> {
+  isStartDateToday(): boolean {
+    if (!this.blockStartDate) return false;
+    const today = this.getTodayDateString();
+    if (this.blockMode === 'RANGE' && this.blockEndDate) {
+      return this.blockStartDate <= today && today <= this.blockEndDate;
+    }
+    return this.blockStartDate === today;
+  }
+
+  getTodayDateString(): string {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+
+  formatDisplayDate(dateStr?: string | null): string {
+    if (!dateStr) return '';
+    let d: Date;
+    const trimmed = dateStr.trim();
+    if (/^\d{2}-\d{2}-\d{4}$/.test(trimmed)) {
+      const [dd, mm, yyyy] = trimmed.split('-');
+      d = new Date(Number(yyyy), Number(mm) - 1, Number(dd));
+    } else if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+      const [yyyy, mm, dd] = trimmed.split('-');
+      d = new Date(Number(yyyy), Number(mm) - 1, Number(dd));
+    } else {
+      d = new Date(trimmed);
+    }
+    if (isNaN(d.getTime())) return dateStr;
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return `${days[d.getDay()]}, ${d.getDate()} ${months[d.getMonth()]}, ${d.getFullYear()}`;
+  }
+
+  addToPendingQueue(): void {
     this.blockError = '';
     this.blockSuccessMsg = '';
 
@@ -507,29 +675,95 @@ export class DoctorAppointmentsComponent implements OnInit {
       return;
     }
 
-    this.blockSaving = true;
-    const res = await this.doctorService.addBlockDate(
-      this.blockMode,
-      this.blockStartDate,
-      this.blockMode === 'RANGE' ? this.blockEndDate : undefined,
-      (this.blockReason || 'Leave').trim(),
-      (this.blockNote || '').trim()
-    );
-    this.blockSaving = false;
+    const todayStr = this.getTodayDateString();
+    let isToday = false;
+    let formattedDateStr = '';
 
-    if (!res.success) {
-      this.blockError = res.message || 'Failed to block dates.';
+    if (this.blockMode === 'RANGE' && this.blockEndDate && this.blockEndDate !== this.blockStartDate) {
+      formattedDateStr = `${this.formatDisplayDate(this.blockStartDate)} - ${this.formatDisplayDate(this.blockEndDate)}`;
+      isToday = (this.blockStartDate <= todayStr && todayStr <= this.blockEndDate);
+    } else {
+      formattedDateStr = this.formatDisplayDate(this.blockStartDate);
+      isToday = (this.blockStartDate === todayStr);
+    }
+
+    const isDuplicate = this.pendingBlocks.some(p =>
+      p.startDate === this.blockStartDate && (p.endDate || '') === (this.blockEndDate || '')
+    );
+    if (isDuplicate) {
+      this.blockError = 'This date is already in the pending blocks queue.';
       return;
     }
+
+    this.pendingBlocks.push({
+      id: 'pending_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+      type: this.blockMode,
+      startDate: this.blockStartDate,
+      endDate: this.blockMode === 'RANGE' ? this.blockEndDate : undefined,
+      formattedDateStr,
+      reason: (this.blockReason || 'Leave').trim(),
+      note: (this.blockNote || '').trim(),
+      isToday,
+      activeAppointmentsCount: 0
+    });
 
     this.blockStartDate = '';
     this.blockEndDate = '';
     this.blockNote = '';
-    this.blockSuccessMsg = res.message || 'Leave / block date added.';
+    this.blockReason = 'Leave';
+  }
 
-    const refreshed = await this.doctorService.getBlockDates();
-    if (refreshed.success && Array.isArray(refreshed.data)) {
-      this.blockedDates = refreshed.data;
+  removePendingBlock(id: string): void {
+    this.pendingBlocks = this.pendingBlocks.filter(p => p.id !== id);
+  }
+
+  clearPendingQueue(): void {
+    this.pendingBlocks = [];
+    this.blockError = '';
+  }
+
+  async confirmPendingBlocks(): Promise<void> {
+    if (this.pendingBlocks.length === 0) return;
+
+    this.blockSaving = true;
+    this.blockError = '';
+    this.blockSuccessMsg = '';
+
+    let successCount = 0;
+    const errors: string[] = [];
+
+    for (const item of [...this.pendingBlocks]) {
+      const res = await this.doctorService.addBlockDate(
+        item.type,
+        item.startDate,
+        item.endDate,
+        item.reason,
+        item.note
+      );
+
+      if (res.success) {
+        successCount++;
+        this.pendingBlocks = this.pendingBlocks.filter(p => p.id !== item.id);
+      } else {
+        errors.push(res.message || `Failed to block ${item.formattedDateStr}`);
+      }
+    }
+
+    this.blockSaving = false;
+
+    if (errors.length > 0) {
+      this.blockError = errors.join('; ');
+    }
+    if (successCount > 0) {
+      this.blockSuccessMsg = `Successfully confirmed ${successCount} blocked date${successCount > 1 ? 's' : ''}.`;
+      await this.loadBlockDates();
+    }
+  }
+
+  async loadBlockDates(): Promise<void> {
+    const res = await this.doctorService.getBlockDates();
+    if (res.success && Array.isArray(res.data)) {
+      this.blockedDates = res.data;
     }
   }
 
